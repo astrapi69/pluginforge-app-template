@@ -1,72 +1,152 @@
-# Adaptive Learner
+# PluginForge App Template
 
-Projekt-Skeleton-Template, abgeleitet aus [MyApp](https://github.com/astrapi69/pluginforge-app-template) (einer Buch-Autorenplattform). Schlanke Grundlage für Anwendungen zum adaptiven Lernen, auf demselben Architekturmuster aufgebaut: FastAPI + SQLAlchemy + React + TypeScript + Plugin-Loader auf Basis von [PluginForge](https://github.com/astrapi69/pluginforge).
+Produktionsfähiges Projektgerüst zum Bauen plugin-getriebener Full-Stack-Anwendungen auf Basis von [PluginForge](https://github.com/astrapi69/pluginforge). Liefert ein sauberes FastAPI + React + TypeScript-Skelett mit CRUD, Einstellungen, i18n, Tests, CI, plattformübergreifendem Launcher und Docker-Deployment. Domänenmodelle werden als `EXAMPLE-DOMAIN` ausgeliefert — pro Projekt zu ersetzen.
 
-[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-yellow.svg)](LICENSE)
-
-## Was das ist
-
-Ein lauffähiger Full-Stack-Startpunkt. Die Plugin-Loader-Infrastruktur, die Schichten-Architektur, die Test-Disziplin, das Build/Deploy/Release-Tooling und der Python+React-Tech-Stack werden 1:1 von MyApp übernommen. **Die DOMÄNE liegt als EXAMPLE-DOMAIN bei**: Book, Chapter, Article, ArticleComment, Author, Asset, ... sind im Code als Arbeitsreferenz vorhanden, wie man SQLAlchemy-Modelle + Pydantic-Schemas + FastAPI-Router + React-Seiten + Tests end-to-end verdrahtet. Ersetze jede Konzeption durch deine Adaptive-Learner-Äquivalente (LearningConcept, CurriculumItem, SkillAssessment, LearnerProgress, ...), sobald die tatsächliche Projekt-Domäne feststeht.
-
-Dateien mit einem expliziten `EXAMPLE-DOMAIN:`- oder `TEMPLATE:`-Header sind oben markiert, sodass sie per grep auffindbar sind:
-
-```bash
-grep -rn "EXAMPLE-DOMAIN\|TEMPLATE:" --include='*.py' --include='*.ts' --include='*.tsx'
-```
-
-## Was enthalten ist
-
-- **Backend** (`backend/`) — FastAPI-App, SQLAlchemy 2.0-Modelle, Pydantic v2-Schemas, Alembic-Migrationen, Soft-Delete + Papierkorb-Lebenszyklus, schichtweise Konfig (Projekt-YAML < User-Override < Env-Vars), Test-Isolations-Tripwires, i18n für 8 Sprachen
-- **Frontend** (`frontend/`) — React 18 + TypeScript (strict) + Vite + TipTap-Editor + Radix UI + react-toastify + Playwright-E2E
-- **Plugin-System** (`plugins/`) — leerer Platzhalter + `plugins/README.md` mit der minimalen Plugin-Struktur. Das Skeleton liefert keine Plugins; der Loader ist verdrahtet und bereit.
-- **Launcher** (`launcher/`) — plattformübergreifender PyInstaller-Desktop-Launcher (Linux + macOS + Windows) mit Auto-Update- und Uninstall-Flows. Per-OS-Build-Pipelines unter `.github/workflows/launcher-{linux,macos,windows}.yml`.
-- **CI/CD** — GitHub-Actions für Tests, Coverage, Docs-Site, Release-Gates, Mutation-Testing
-- **Docs** (`docs/`) — Architekturübersicht, Config-Chain, ROADMAP-Form, In-App-Help-Struktur (`docs/help/_meta.yaml`), MkDocs-Site-Config
-- **Tooling** — Makefile, Docker Compose (Dev + Prod), Install-Skripte für alle drei OS, Pre-Commit-Hooks (ruff + ruff-format + check-yaml/json), Versions-Pin-Sync-Skript
-
-## Anpassen an dein Projekt
-
-1. **Umbenennen** — Suche im Codebase nach `myapp` / `MyApp` / `MYAPP` / `myapp-` und ersetze in derselben Vier-Casings mit deinem Projektnamen.
-2. **Domäne ersetzen** — Beginne mit `backend/app/models/__init__.py` (das EXAMPLE-DOMAIN-Docstring oben erklärt das Muster), dann kaskadiert durch die passenden `backend/app/routers/*.py`, die `api.<model>`-Namespaces in `frontend/src/api/client.ts` und die Page-Komponenten unter `frontend/src/pages/*`.
-3. **`docs/` auffrischen** — `CONCEPT.md`, `ROADMAP.md`, `API.md`, `docs/help/` tragen die aus MyApp übernommene Form. Adaptiere sie an deine Domäne.
-4. **Plugin-Scaffolding** — beim ersten Plugin folge `plugins/README.md`. Hookspecs liegen in `backend/app/hookspecs.py`.
-
-## Tech-Stack
-
-| Schicht | Tech |
-|---|---|
-| Backend | Python 3.11+, FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, Poetry, Alembic |
-| Frontend | React 18+, TypeScript (strict), TipTap, Vite, Radix UI, @dnd-kit, Lucide, react-toastify |
-| Plugins | pluginforge ^0.5.0 (PyPI), pluggy-Entry-Points |
-| Launcher | PyInstaller, plattformübergreifend (Linux + macOS + Windows) |
-| Tests | pytest, Vitest, Playwright, mutmut, Stryker |
-| Tooling | Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit |
-| Docs-Site | MkDocs |
-
-Siehe [CLAUDE.md](CLAUDE.md) für den vollständigen Entwicklungs-Guide für Claude Code (und als Lektüre für Menschen nützlich). Regeln liegen unter [.claude/rules/](.claude/rules/).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Schnellstart
 
 ```bash
-# Einmalig
-make install              # Poetry + npm + Plugins
+# Klonen und als eigenes Repo aufsetzen
+git clone https://github.com/astrapi69/pluginforge-app-template.git my-app
+cd my-app
+rm -rf .git && git init
 
-# Täglich
-make dev                  # Backend (8000) + Frontend (5173) parallel
-make test                 # Backend + Frontend, ohne Coverage
-make test-coverage        # Opt-in-Coverage-Lauf
-
-# Docker
-make prod                 # Docker Compose
-make prod-down            # stoppen
+# Anpassungsleitfaden lesen BEVOR make install läuft
+cat CUSTOMIZE.md
 ```
 
-E2E: `npx playwright test --project=smoke` oder `--project=full`.
+Dann [CUSTOMIZE.md](CUSTOMIZE.md) für die globale Umbenennung, den EXAMPLE-DOMAIN-Austausch und die ersten Plugin-Schritte folgen. Nach der Anpassung:
 
-## Herkunft
+```bash
+make install              # Poetry (Backend + Launcher) + npm (Frontend)
+make test                 # Backend pytest + Frontend vitest
+make dev                  # Backend auf :8000, Frontend auf :5173
+```
 
-Aus MyApp v0.33.0 gescaffolded am 2026-05-17. Alle 11 Plugins (`audiobook`, `export`, `getstarted`, `git-sync`, `grammar`, `help`, `kdp`, `kinderbuch`, `medium-import`, `ms-tools`, `translation`) und ihr daran gekoppelter Backend-Code wurden in Phase 1 der Skeleton-Extraktion entfernt. Die Plugin-Loader-Infrastruktur ist unangetastet. Siehe Abschnitt "Origin" in `CLAUDE.md` und `git log --oneline` für den vollständigen Extraktionsverlauf.
+## Was enthalten ist
+
+### Backend
+- **FastAPI**-App mit geschichteter Architektur (Routers → Services → Models)
+- **SQLAlchemy 2.0** Mapped Columns + **Alembic**-Migrationen
+- **Pydantic v2**-Schemas für Request/Response-Validierung
+- **PluginForge**-Integration: Hookspec-Discovery, Entry-Point-Loader, Plugin-Lebenszyklus
+- **Geschichtete Konfiguration**: Projekt-YAML < User-Override (`~/.config/myapp/`) < Env-Variablen (`MYAPP_*`)
+- **Test-Isolation**: tmp-Datenverzeichnis + Produktions-Marker-Sicherung + In-Memory-Test-DB
+- **i18n**: 8 Sprachen (DE, EN, ES, FR, EL, PT, TR, JA) in `backend/config/i18n/*.yaml`
+- **Soft-Delete + Papierkorb-Lebenszyklus** auf EXAMPLE-DOMAIN-Entitäten (Book, Article, Comment)
+- **Backup / Restore**-Gerüst (`backup_history`-Modell + Service)
+- **Lizenzierungs**-Infrastruktur (HMAC-signierte offline-validierbare Schlüssel, standardmäßig ruhend)
+
+### Frontend
+- **React 18 + TypeScript (strict)** mit Vite-Build
+- **Radix UI**-Primitive (Dialog, Tabs, Dropdown, Select, Tooltip)
+- **@dnd-kit** für Drag-and-Drop, **Lucide React** für Icons, **react-toastify** für Feedback
+- **Theming**: CSS Custom Properties, mehrere Paletten × hell/dunkel
+- **Typisierter API-Client** in `frontend/src/api/client.ts` mit `ApiError`-Klasse und Toast-freundlicher Fehlerkette
+- **i18n-Hook** (`useI18n`), liest die Backend-YAML-Kataloge
+
+### Plugin-System
+- **Keine Plugins enthalten** — der Loader ist verdrahtet und einsatzbereit
+- `plugins/README.md` dokumentiert das minimale Plugin-Layout
+- Hook-Specs in `backend/app/hookspecs.py`; Entry-Point-Gruppe `myapp.plugins`
+
+### Launcher
+- **Plattformübergreifender PyInstaller-Launcher** unter `launcher/` (Linux + macOS + Windows)
+- Startet das Backend, öffnet das Frontend im Browser, verwaltet Auto-Update + Deinstallation
+- Build-Pipelines pro OS: `.github/workflows/launcher-{linux,macos,windows}.yml`
+- Single-Source-of-Truth für die Version (nur `backend/pyproject.toml` wird per Hand editiert; alle anderen Versionsfelder leiten sich via `make sync-versions` ab)
+
+### CI/CD
+- **GitHub Actions**: `ci.yml`, `coverage.yml`, `docs.yml`, `launcher-{linux,macos,windows}.yml`, `release-gate.yml`, `mutation-import.yml`
+- **Pre-Commit-Hooks**: ruff (Lint + Format), check-yaml/json, trailing-whitespace, end-of-file-fixer
+- **Release-Gate**-Erzwingung (Versionspins synchron; Subsystem-Lockstep; install.sh-Template-Aktualität)
+
+### Docs
+- **MkDocs Material** mit i18n (`mkdocs.yml`, `docs/pyproject.toml` enthält das Docs-Venv)
+- `docs/CONCEPT.md`, `docs/ROADMAP.md`, `docs/API.md`, `docs/help/{en,de}/...`
+- Generator-Skripte für ROADMAP-Archivierung, MkDocs-Nav, Audit-Reports
+
+### Deployment
+- **Docker Compose** (Dev + Prod)
+- **install.sh / install.cmd / install.ps1 / install.command** Einzeiler-Installer
+- **start.sh / stop.sh / uninstall.sh** Einstiegspunkte
+
+## Tech-Stack im Überblick
+
+| Schicht | Stack |
+|---------|-------|
+| Backend | Python 3.11+, FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, Poetry |
+| Frontend | React 18+, TypeScript (strict), Vite, Radix UI, @dnd-kit, Lucide, react-toastify |
+| Plugins | pluginforge ^0.5.0 (PyPI) |
+| Launcher | PyInstaller |
+| Tests | pytest, Vitest, Playwright, mutmut, Stryker |
+| Werkzeuge | Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit |
+| Docs | MkDocs Material |
+
+## Repository-Struktur
+
+```
+pluginforge-app-template/
+├── backend/app/           # FastAPI-Kern (main, models, routers, services, hookspecs)
+├── backend/config/        # app.yaml + i18n/ (8 Sprachen)
+├── backend/tests/         # pytest-Suite (mit Test-Isolations-Sicherungen)
+├── plugins/               # leer + plugins/README.md
+├── frontend/src/          # React-App (api, components, pages, styles)
+├── e2e/                   # Playwright-Specs (smoke + full)
+├── launcher/              # PyInstaller plattformübergreifender Launcher
+├── docs/                  # MkDocs-Site + CONCEPT/ROADMAP/API
+├── scripts/               # Versions-Sync, ROADMAP-Archiv, Audits
+├── .github/workflows/     # CI/CD-Pipelines
+└── Makefile, docker-compose*.yml, install.{sh,cmd,ps1,command}, .env.example
+```
+
+Siehe [CUSTOMIZE.md](CUSTOMIZE.md) als Feldführer für die Anpassung der einzelnen Teile.
+
+## Ökosystem
+
+| Repo | Rolle |
+|------|-------|
+| [pluginforge](https://github.com/astrapi69/pluginforge) | Plugin-Framework (PyPI). Die Laufzeit-Grundlage. |
+| [pluginforge-app-template](https://github.com/astrapi69/pluginforge-app-template) | Dieses Template. Generisches Gerüst für neue PluginForge-Apps. |
+| [adaptive-learner](https://github.com/astrapi69/adaptive-learner) | Referenz-Downstream-App. Die Muster in `.claude/rules/` sind hier entstanden. |
+| [bibliogon](https://github.com/astrapi69/bibliogon) | Buch-Autorenplattform. Aus ihr wurde das ursprüngliche Skelett extrahiert. Attribution; keine Laufzeit-Abhängigkeit. |
+
+## Kommandos
+
+```bash
+make install              # Poetry + npm install
+make dev                  # Backend (8000) + Frontend (5173) parallel
+make dev-bg / dev-down    # Hintergrund-Modus
+make test                 # Backend pytest + Frontend vitest
+make test-coverage        # Opt-in Coverage-Lauf
+make test-backend         # nur Backend
+make test-frontend        # nur vitest
+make prod                 # Docker Compose (Prod-Compose-Datei)
+make prod-down            # Docker stoppen
+make clean                # Build-Artefakte entfernen
+make help                 # alle Targets auflisten
+```
+
+E2E-Tests laufen NICHT im Standard-`make test`-Pfad. Separat ausführen:
+
+```bash
+npx playwright test --project=smoke
+npx playwright test --project=full
+```
+
+## Versionierung
+
+Das Template folgt Semantic Versioning. Die aktuelle Minor-Version (`v0.x`) spiegelt eine sich entwickelnde Template-Oberfläche wider; das erste feature-vollständige Release wird `v1.0.0`. Single Source of Truth für den Versions-Pin ist `backend/pyproject.toml`; alles andere leitet sich via `make sync-versions` ab.
 
 ## Lizenz
 
 MIT — siehe [LICENSE](LICENSE).
+
+## Dokumentation
+
+- [CUSTOMIZE.md](CUSTOMIZE.md) — erste Lektüre nach dem Clone
+- [CLAUDE.md](CLAUDE.md) — Anleitung für die Arbeit mit Claude Code an diesem Codebase
+- [docs/CONCEPT.md](docs/CONCEPT.md) — Architektur-Konzept
+- [docs/help/de/](docs/help/de/) — In-App-Hilfe (auch via MkDocs ausgeliefert)
+- [.claude/rules/](.claude/rules/) — Entwicklungsregeln (Architektur, Coding-Standards, Hygiene, Lessons Learned, Quality Checks, Release-Workflow)
