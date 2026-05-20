@@ -1,20 +1,31 @@
-"""EXAMPLE-DOMAIN: Adapt or replace for your actual project domain.
+"""EXAMPLE-DOMAIN models — replace per project.
 
-Inherited from MyApp: Book, Chapter, Article, ArticleComment,
-Author, Asset, BookTemplate, ChapterTemplate, Page,
-BookImportSource, Publication, ...
+TEMPLATE: This module ships a content-authoring example domain
+(Book, Chapter, Article, ArticleComment, Author, Asset,
+BookTemplate, ChapterTemplate, Page, BookImportSource, Publication)
+so the wiring model -> schema -> router -> service -> frontend ->
+tests is concrete. Treat it as a working reference for how to wire:
 
-Treat this module as a working reference for how to wire
-SQLAlchemy 2.0 mapped columns + relationships + soft-delete /
-trash lifecycle + ChapterType enum patterns, then replace each
-concept with myapp equivalents
-(e.g. LearningConcept, CurriculumItem, SkillAssessment,
-LearnerProgress) as the project domain solidifies.
+- SQLAlchemy 2.0 mapped columns + relationships
+- Soft-delete / trash lifecycle (deleted_at + restore endpoints)
+- Enum patterns (ChapterType)
+- File uploads (Asset)
+- Parent/child cascades (Book -> Chapter, Article -> Comment)
+
+Then replace each entity with your own domain concepts.
+Example replacements:
+
+- LearningConcept, CurriculumItem, SkillAssessment, LearnerProgress
+- Patient, Visit, Prescription, ProviderNote
+- Product, Order, OrderItem, Customer
+- BlogPost, Tag, Comment, Reaction
 
 The CRUD routers under ``app.routers.*`` mirror this module's
 shape one-to-one; renaming a model here cascades to the matching
 router file + its Pydantic schemas + the frontend ``api.<model>``
-namespace in ``frontend/src/api/client.ts``.
+namespace in ``frontend/src/api/client.ts``. Use Alembic to migrate:
+
+    poetry run alembic revision --autogenerate -m "<change>"
 """
 
 import enum
@@ -69,6 +80,12 @@ class ChapterType(str, enum.Enum):
     CONCLUSION = "conclusion"
 
 
+# TEMPLATE: Replace with your primary container entity (the "owns N
+# children" aggregate root). Example mappings: Book -> Course (owns
+# Chapters/Lessons), Book -> Project (owns Tasks), Book -> Album
+# (owns Tracks). Keep the soft-delete (deleted_at), language, and
+# author fields; drop the publishing-specific columns (book_type,
+# subtitle, series, marketing fields) if your domain has no use.
 class Book(Base):
     __tablename__ = "books"
 
@@ -493,6 +510,11 @@ class AudioVoice(Base):
         return f"<AudioVoice {self.voice_id!r} engine={self.engine} lang={self.language}>"
 
 
+# TEMPLATE: Replace with your primary standalone entity (no
+# required parent). Example mappings: Article -> BlogPost, Article
+# -> Patient (clinical note), Article -> Recipe. Keep the
+# topic/tags/status pattern + soft-delete (deleted_at) + the
+# comment relationship if your domain has user-attached annotations.
 class Article(Base):
     """Standalone long-form article.
 
@@ -897,6 +919,11 @@ class Publication(Base):
         )
 
 
+# TEMPLATE: Replace with your "person / agent" entity. Example
+# mappings: Author -> User, Author -> Speaker (talks), Author ->
+# Contributor (open-source project). The pen-name/aliases pattern
+# is generally useful — keep if your domain has alternative
+# identities or display-name overrides; drop otherwise.
 class Author(Base):
     """MyApp's global Authors-Database (Bug 8 Phase 1).
 

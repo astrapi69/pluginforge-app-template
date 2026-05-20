@@ -1,7 +1,13 @@
-/* EXAMPLE-DOMAIN: This file demonstrates how the frontend connects
- * to the backend CRUD shape (inherited book / article / chapter
- * domain from MyApp). Adapt or replace for myapp's
- * actual domain when it solidifies.
+/* TEMPLATE: Dashboard is the template's primary list view. It
+ * demonstrates the full frontend stack:
+ *   - Typed API client (api.books.list, api.articles.list)
+ *   - Filter + selection hooks (useBookSelection, useBookFilters)
+ *   - Bulk action bar (BookBulkActionBar)
+ *   - Card + list view modes with persisted preference
+ *   - Trash lifecycle (soft-delete + restore)
+ *   - i18n via useI18n() — see backend/config/i18n/{lang}.yaml
+ * Replace the book-domain references with your primary container
+ * entity. See CUSTOMIZE.md step 4.
  */
 
 import {useEffect, useState} from "react";
