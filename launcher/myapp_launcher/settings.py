@@ -1,7 +1,7 @@
 """User-editable launcher settings stored in the platformdirs config dir.
 
 Lives alongside ``install.json`` and ``install.log`` at
-``platformdirs.user_config_dir("adaptive_learner") / "settings.json"``.
+``platformdirs.user_config_dir("myapp") / "settings.json"``.
 
 All reads fail open: a missing or corrupt file returns the built-in
 defaults. The launcher must never crash because of a broken settings
@@ -23,9 +23,9 @@ from typing import Any
 
 from platformdirs import user_config_dir
 
-logger = logging.getLogger("adaptive_learner_launcher.settings")
+logger = logging.getLogger("myapp_launcher.settings")
 
-APP_NAME = "adaptive_learner"
+APP_NAME = "myapp"
 SETTINGS_FILENAME = "settings.json"
 
 DEFAULTS: dict[str, Any] = {

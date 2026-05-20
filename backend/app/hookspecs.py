@@ -1,4 +1,4 @@
-"""AdaptiveLearner hook specifications.
+"""MyApp hook specifications.
 
 Defines the hooks that plugins can implement.
 Uses pluggy's HookspecMarker for type-safe hook dispatch.
@@ -9,11 +9,11 @@ from typing import Any
 
 import pluggy
 
-hookspec = pluggy.HookspecMarker("adaptive_learner.plugins")
+hookspec = pluggy.HookspecMarker("myapp.plugins")
 
 
-class AdaptiveLearnerHookSpec:
-    """Hook specifications for the AdaptiveLearner application."""
+class MyAppHookSpec:
+    """Hook specifications for the MyApp application."""
 
     @hookspec
     def export_formats(self) -> list[dict[str, Any]]:  # type: ignore[empty-body]

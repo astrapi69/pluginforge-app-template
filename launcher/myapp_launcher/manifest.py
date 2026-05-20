@@ -1,11 +1,11 @@
-"""Install manifest for tracking AdaptiveLearner installation state.
+"""Install manifest for tracking MyApp installation state.
 
 The manifest is a small JSON file stored in the platform-specific user
-config directory (``platformdirs.user_config_dir("adaptive_learner")``):
+config directory (``platformdirs.user_config_dir("myapp")``):
 
-- Linux:   ``~/.config/adaptive_learner/install.json``
-- macOS:   ``~/Library/Application Support/adaptive_learner/install.json``
-- Windows: ``%APPDATA%\\adaptive_learner\\install.json``
+- Linux:   ``~/.config/myapp/install.json``
+- macOS:   ``~/Library/Application Support/myapp/install.json``
+- Windows: ``%APPDATA%\\myapp\\install.json``
 
 Written by the launcher after a successful install and read on every
 startup to determine whether to show the install UI or the main UI.
@@ -21,7 +21,7 @@ from typing import Any
 
 from platformdirs import user_config_dir
 
-APP_NAME = "adaptive_learner"
+APP_NAME = "myapp"
 MANIFEST_FILENAME = "install.json"
 
 

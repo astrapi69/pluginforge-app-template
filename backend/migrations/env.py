@@ -1,4 +1,4 @@
-"""Alembic environment configuration for AdaptiveLearner."""
+"""Alembic environment configuration for MyApp."""
 
 import logging
 from logging.config import fileConfig

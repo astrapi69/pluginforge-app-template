@@ -40,7 +40,7 @@ def _make_plugin_zip(
 ) -> io.BytesIO:
     """Build a valid plugin ZIP in memory."""
     buf = io.BytesIO()
-    top = f"adaptive-learner-plugin-{plugin_name}"
+    top = f"myapp-plugin-{plugin_name}"
 
     with zipfile.ZipFile(buf, "w") as zf:
         if include_yaml:
@@ -115,7 +115,7 @@ def client(temp_base, monkeypatch):
     pi_module._installed_dir = temp_base / "plugins" / "installed"
     pi_module._manager = None  # skip dynamic registration
     config_overlay.set_project_config_dir(temp_base / "config")
-    monkeypatch.setenv("ADAPTIVE_LEARNER_DATA_DIR", str(temp_base))
+    monkeypatch.setenv("MYAPP_DATA_DIR", str(temp_base))
 
     yield TestClient(app)
 
@@ -233,12 +233,12 @@ def test_install_invalid_plugin_name_rejected(client):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
         zf.writestr(
-            "adaptive-learner-plugin-bad/plugin.yaml",
+            "myapp-plugin-bad/plugin.yaml",
             yaml.dump({"plugin": {"name": "INVALID!", "version": "1.0.0"}}),
         )
-        zf.writestr("adaptive-learner-plugin-bad/bad_pkg/__init__.py", "")
+        zf.writestr("myapp-plugin-bad/bad_pkg/__init__.py", "")
         zf.writestr(
-            "adaptive-learner-plugin-bad/bad_pkg/plugin.py",
+            "myapp-plugin-bad/bad_pkg/plugin.py",
             "from pluginforge import BasePlugin\nclass P(BasePlugin):\n  name='bad'\n  version='1'\n",
         )
     buf.seek(0)

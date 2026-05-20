@@ -1,24 +1,24 @@
 <!--
 TODO: Adapt for your project. Current content is inherited from
-upstream (Bibliogon) and serves as structural reference only.
+upstream (MyApp) and serves as structural reference only.
 The shape of this document (sections, headings, formatting
 conventions) is reusable; the specifics are not.
 -->
 
 # Configuration
 
-AdaptiveLearner uses a three-layer config chain so secrets stay out of
+MyApp uses a three-layer config chain so secrets stay out of
 the project tree.
 
 ```
 ┌─────────────────────────────────────────┐
 │ env-vars (CI/Docker, highest priority)  │
-│ ADAPTIVE_LEARNER_AI_API_KEY                    │
+│ MYAPP_AI_API_KEY                    │
 └─────────────────────────────────────────┘
                   ↑ overrides
 ┌─────────────────────────────────────────┐
 │ user override file (gitignored)         │
-│ ~/.config/adaptive_learner/secrets.yaml        │
+│ ~/.config/myapp/secrets.yaml        │
 └─────────────────────────────────────────┘
                   ↑ overrides
 ┌─────────────────────────────────────────┐
@@ -38,7 +38,7 @@ same key in `app.yaml`; an env-var replaces both. Lists are
 | Layer | Examples | Lives in |
 |---|---|---|
 | Project `app.yaml` | non-secret defaults: `app.name`, `app.default_language`, `editor.autosave_debounce_ms`, `plugins.enabled`, etc. | committed to git |
-| User override | secrets the user controls: `ai.api_key`. Anything else they want to override on this machine. | `~/.config/adaptive_learner/secrets.yaml` (Linux/macOS), `%APPDATA%/adaptive_learner/secrets.yaml` (Windows) |
+| User override | secrets the user controls: `ai.api_key`. Anything else they want to override on this machine. | `~/.config/myapp/secrets.yaml` (Linux/macOS), `%APPDATA%/myapp/secrets.yaml` (Windows) |
 | Env-var | CI/Docker secrets injected by the orchestrator | environment |
 
 **Rule of thumb:** anything sensitive belongs in the override file
@@ -52,20 +52,20 @@ accidental `git add -f`).
 
 ### Linux / macOS
 
-Default: `~/.config/adaptive_learner/secrets.yaml`.
+Default: `~/.config/myapp/secrets.yaml`.
 
 Set `XDG_CONFIG_HOME` to relocate (XDG-conformant):
 
 ```bash
 export XDG_CONFIG_HOME=/srv/configs
-# AdaptiveLearner now reads /srv/configs/adaptive_learner/secrets.yaml
+# MyApp now reads /srv/configs/myapp/secrets.yaml
 ```
 
 ### Windows
 
-Default: `%APPDATA%/adaptive_learner/secrets.yaml`.
+Default: `%APPDATA%/myapp/secrets.yaml`.
 
-Falls back to `~/AppData/Roaming/adaptive_learner/secrets.yaml` when
+Falls back to `~/AppData/Roaming/myapp/secrets.yaml` when
 `%APPDATA%` is unset.
 
 ---
@@ -78,10 +78,10 @@ steps:
 
 ```bash
 # 1. Pick the destination directory.
-mkdir -p ~/.config/adaptive_learner
+mkdir -p ~/.config/myapp
 
 # 2. Create the override file (paste your key).
-cat > ~/.config/adaptive_learner/secrets.yaml << 'EOF'
+cat > ~/.config/myapp/secrets.yaml << 'EOF'
 ai:
   api_key: sk-ant-api03-your-real-key-here
 EOF
@@ -107,10 +107,10 @@ explaining where the key lives.
 
 | Env-var | Maps to | Notes |
 |---|---|---|
-| `ADAPTIVE_LEARNER_AI_API_KEY` | `ai.api_key` | Beats both project and override |
-| `ADAPTIVE_LEARNER_DEBUG` | `DEBUG` constant in `main.py` | `true`/`1`/`yes` to enable |
-| `ADAPTIVE_LEARNER_CORS_ORIGINS` | CORS allowed origins | comma-separated |
-| `ADAPTIVE_LEARNER_SECRET_KEY` | licensing HMAC | leave default in dev |
+| `MYAPP_AI_API_KEY` | `ai.api_key` | Beats both project and override |
+| `MYAPP_DEBUG` | `DEBUG` constant in `main.py` | `true`/`1`/`yes` to enable |
+| `MYAPP_CORS_ORIGINS` | CORS allowed origins | comma-separated |
+| `MYAPP_SECRET_KEY` | licensing HMAC | leave default in dev |
 
 Plugin-yaml secrets (audiobook, grammar, translation) are NOT yet
 covered by this mechanism — they load via PluginManager and need a
@@ -126,15 +126,15 @@ files; the Settings UI for each plugin still writes back there.
 # docker-compose.prod.yml (example excerpt)
 services:
   backend:
-    image: adaptive_learner:0.24.0
+    image: myapp:0.24.0
     environment:
-      ADAPTIVE_LEARNER_AI_API_KEY: ${ADAPTIVE_LEARNER_AI_API_KEY}
-      ADAPTIVE_LEARNER_DEBUG: "false"
+      MYAPP_AI_API_KEY: ${MYAPP_AI_API_KEY}
+      MYAPP_DEBUG: "false"
     volumes:
       - ./config:/app/backend/config
 ```
 
-Inject `ADAPTIVE_LEARNER_AI_API_KEY` from CI secrets (GitHub Actions
+Inject `MYAPP_AI_API_KEY` from CI secrets (GitHub Actions
 secrets, GitLab CI variables, Vault, etc.). The committed
 `app.yaml` keeps `ai.api_key: ""` so the env-var wins on merge.
 
@@ -160,10 +160,10 @@ To confirm WHICH layer supplied a value:
 yq '.ai.api_key' backend/config/app.yaml
 
 # Override value
-yq '.ai.api_key' ~/.config/adaptive_learner/secrets.yaml
+yq '.ai.api_key' ~/.config/myapp/secrets.yaml
 
 # Env-var value
-echo "$ADAPTIVE_LEARNER_AI_API_KEY"
+echo "$MYAPP_AI_API_KEY"
 ```
 
 Whichever is non-empty AND highest in the chain wins.
@@ -173,14 +173,14 @@ Whichever is non-empty AND highest in the chain wins.
 ## Deprecation warning
 
 When `app.yaml` carries a non-empty `ai.api_key` AND no override
-file exists AND `ADAPTIVE_LEARNER_AI_API_KEY` is unset, the backend logs
+file exists AND `MYAPP_AI_API_KEY` is unset, the backend logs
 a one-shot WARNING at startup:
 
 ```
 WARNING: Secrets found in /path/to/backend/config/app.yaml (ai.api_key).
 This file is gitignored but may be committed accidentally, end up
 in backups, or appear in screen-shares. Move secrets to
-/home/.../.config/adaptive_learner/secrets.yaml or set ADAPTIVE_LEARNER_AI_API_KEY.
+/home/.../.config/myapp/secrets.yaml or set MYAPP_AI_API_KEY.
 See docs/configuration.md for details.
 ```
 

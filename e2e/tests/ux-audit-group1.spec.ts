@@ -126,7 +126,7 @@ test.describe("UX-Audit Group 1: Core Editors", () => {
         })
         await page.waitForSelector('[data-testid^="article-bulk-check-"]')
 
-        // Toggle to dark mode via localStorage (AdaptiveLearner pattern).
+        // Toggle to dark mode via localStorage (MyApp pattern).
         await page.evaluate(() => {
             document.documentElement.setAttribute("data-theme", "dark")
         })

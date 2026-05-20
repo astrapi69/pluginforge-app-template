@@ -1,13 +1,13 @@
 # Cross-platform installer scripts
 
-AdaptiveLearner ships four install entry points that all do the same thing — download AdaptiveLearner, build the Docker image, start the app on `http://localhost:7880`. Pick the one your operating system understands.
+MyApp ships four install entry points that all do the same thing — download MyApp, build the Docker image, start the app on `http://localhost:7880`. Pick the one your operating system understands.
 
 ## Quick reference
 
 | Platform | Entry point | How |
 |----------|-------------|-----|
-| Linux / macOS (terminal) | `install.sh` | `curl -fsSL https://raw.githubusercontent.com/astrapi69/adaptive_learner/main/install.sh \| bash` |
-| Windows (PowerShell) | `install.ps1` | `irm https://raw.githubusercontent.com/astrapi69/adaptive_learner/main/install.ps1 \| iex` |
+| Linux / macOS (terminal) | `install.sh` | `curl -fsSL https://raw.githubusercontent.com/astrapi69/myapp/main/install.sh \| bash` |
+| Windows (PowerShell) | `install.ps1` | `irm https://raw.githubusercontent.com/astrapi69/myapp/main/install.ps1 \| iex` |
 | macOS (Finder double-click) | `install.command` | Clone or download the repo, then double-click `install.command` in Finder |
 | Windows (double-click) | `install.cmd` | Clone or download the repo, then double-click `install.cmd` |
 
@@ -16,18 +16,18 @@ AdaptiveLearner ships four install entry points that all do the same thing — d
 All four entry points run the same five steps:
 
 1. Check for Docker (and Docker Compose). Abort with a download link if missing.
-2. Clone the AdaptiveLearner repo at the pinned release tag (or download a tarball if `git` is missing).
-3. Generate the `ADAPTIVE_LEARNER_SECRET_KEY` and `ADAPTIVE_LEARNER_CREDENTIALS_SECRET` if they do not already exist.
+2. Clone the MyApp repo at the pinned release tag (or download a tarball if `git` is missing).
+3. Generate the `MYAPP_SECRET_KEY` and `MYAPP_CREDENTIALS_SECRET` if they do not already exist.
 4. Write a `.env` file in the install directory.
 5. Run `docker compose up -d` and wait for the health endpoint.
 
-The default install directory is `~/adaptive_learner` (Linux/macOS) or `%USERPROFILE%\adaptive_learner` (Windows). Override with the `ADAPTIVE_LEARNER_DIR` environment variable. Override the version with `ADAPTIVE_LEARNER_VERSION=vX.Y.Z`.
+The default install directory is `~/myapp` (Linux/macOS) or `%USERPROFILE%\myapp` (Windows). Override with the `MYAPP_DIR` environment variable. Override the version with `MYAPP_VERSION=vX.Y.Z`.
 
 ## Prerequisites
 
 - **Docker Desktop** (Windows, macOS) or **Docker Engine + Compose plugin** (Linux). See the [Docker Desktop installation guide](docker-desktop.md).
 - **~5 GB disk space** for the Docker image + your data.
-- **Internet access** to download AdaptiveLearner and pull base images.
+- **Internet access** to download MyApp and pull base images.
 
 You do **not** need Python, Node, Poetry, npm, or any other tooling installed. Everything runs inside the Docker container.
 
@@ -36,7 +36,7 @@ You do **not** need Python, Node, Poetry, npm, or any other tooling installed. E
 The original entry point. Single-line install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/astrapi69/adaptive_learner/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/astrapi69/myapp/main/install.sh | bash
 ```
 
 The script is generated at release time from `install.sh.template`; the committed file is checked into the repo so the curl-pipe URL works directly. Reading the script before running it is supported and encouraged: `curl -fsSL ... -o install.sh`, inspect, then `bash install.sh`.
@@ -46,7 +46,7 @@ The script is generated at release time from `install.sh.template`; the committe
 PowerShell mirror of `install.sh`, generated from `install.ps1.template` via `make sync-versions`. Same five steps, written in PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/astrapi69/adaptive_learner/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/astrapi69/myapp/main/install.ps1 | iex
 ```
 
 `irm` (`Invoke-RestMethod`) downloads the script; `iex` (`Invoke-Expression`) runs it. Same caveat as curl-pipe: download and inspect first if you prefer (`irm ... -OutFile install.ps1`).
@@ -55,7 +55,7 @@ irm https://raw.githubusercontent.com/astrapi69/adaptive_learner/main/install.ps
 
 A 10-line wrapper around `install.sh` that lets users start the install without opening Terminal. Finder treats `.command` files as runnable. After cloning or downloading the repo:
 
-1. Open Finder, navigate to the AdaptiveLearner folder.
+1. Open Finder, navigate to the MyApp folder.
 2. Double-click `install.command`.
 3. Approve the Gatekeeper warning the first time (right-click → Open is the documented bypass).
 
@@ -81,8 +81,8 @@ Paid signing certificates would remove these warnings. They are deferred until a
 The wrappers are convenience. The underlying flow is just:
 
 ```bash
-git clone https://github.com/astrapi69/adaptive_learner.git
-cd adaptive_learner
+git clone https://github.com/astrapi69/pluginforge-app-template.git
+cd myapp
 ./start.sh
 ```
 
@@ -93,11 +93,11 @@ cd adaptive_learner
 Once installed:
 
 ```bash
-cd ~/adaptive_learner && ./stop.sh         # Stop
-cd ~/adaptive_learner && ./start.sh        # Restart
-cd ~/adaptive_learner && ./stop.sh && cd ~ && rm -rf ~/adaptive_learner  # Full removal
+cd ~/myapp && ./stop.sh         # Stop
+cd ~/myapp && ./start.sh        # Restart
+cd ~/myapp && ./stop.sh && cd ~ && rm -rf ~/myapp  # Full removal
 ```
 
-The AdaptiveLearner launcher (the binary you download from GitHub Releases) wraps the same lifecycle in a tray-icon UI; see [Windows Launcher](../launcher-windows.md), [macOS Launcher](../launcher-macos.md), [Linux Launcher](../launcher-linux.md).
+The MyApp launcher (the binary you download from GitHub Releases) wraps the same lifecycle in a tray-icon UI; see [Windows Launcher](../launcher-windows.md), [macOS Launcher](../launcher-macos.md), [Linux Launcher](../launcher-linux.md).
 
 > Last verified for v0.29.0 (2026-05-07).

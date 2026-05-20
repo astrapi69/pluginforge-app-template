@@ -8,14 +8,14 @@ plugin packages ship with the skeleton.
 ## Adding a plugin
 
 A plugin is a separate Python package that declares an entry point
-under the group `adaptive_learner.plugins`.
+under the group `myapp.plugins`.
 
 Minimal layout:
 
 ```
-plugins/adaptive-learner-plugin-<name>/
+plugins/myapp-plugin-<name>/
 ├── pyproject.toml
-├── adaptive_learner_<name>/
+├── myapp_<name>/
 │   ├── __init__.py
 │   ├── plugin.py        # <Name>Plugin(BasePlugin) with hook impls
 │   └── routes.py        # optional FastAPI router
@@ -26,14 +26,14 @@ plugins/adaptive-learner-plugin-<name>/
 `pyproject.toml` entry-point declaration:
 
 ```toml
-[tool.poetry.plugins."adaptive_learner.plugins"]
-<name> = "adaptive_learner_<name>.plugin:<Name>Plugin"
+[tool.poetry.plugins."myapp.plugins"]
+<name> = "myapp_<name>.plugin:<Name>Plugin"
 ```
 
 Register the path-dep in `backend/pyproject.toml`:
 
 ```toml
-adaptive-learner-plugin-<name> = {path = "../plugins/adaptive-learner-plugin-<name>", develop = true}
+myapp-plugin-<name> = {path = "../plugins/myapp-plugin-<name>", develop = true}
 ```
 
 Enable in `backend/config/app.yaml`:

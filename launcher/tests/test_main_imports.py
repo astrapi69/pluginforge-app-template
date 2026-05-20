@@ -3,7 +3,7 @@
 
 """Regression pin for PyInstaller-compatible imports.
 
-PyInstaller compiles adaptive_learner_launcher/__main__.py as the entry script,
+PyInstaller compiles myapp_launcher/__main__.py as the entry script,
 which strips the package context: ``__package__`` is empty and relative
 imports raise ``ImportError: attempted relative import with no known
 parent package``. Running __main__.py directly as a script reproduces
@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 MAIN_PATH = (
-    Path(__file__).resolve().parent.parent / "adaptive_learner_launcher" / "__main__.py"
+    Path(__file__).resolve().parent.parent / "myapp_launcher" / "__main__.py"
 )
 
 

@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "adaptive-learner-docs"
+name = "myapp-docs"
 version = "0.1.0"
-description = "AdaptiveLearner documentation build tools (MkDocs)"
+description = "MyApp documentation build tools (MkDocs)"
 authors = ["Asterios Raptis"]
 license = "MIT"
 package-mode = false

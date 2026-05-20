@@ -1,6 +1,6 @@
 /* EXAMPLE-DOMAIN: This file demonstrates how the frontend connects
  * to the backend CRUD shape (inherited book / article / chapter
- * domain from Bibliogon). Adapt or replace for adaptive-learner's
+ * domain from MyApp). Adapt or replace for myapp's
  * actual domain when it solidifies.
  */
 

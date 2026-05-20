@@ -63,7 +63,7 @@ describe("ErrorStep", () => {
         );
         const arg = (navigator.clipboard.writeText as ReturnType<typeof vi.fn>)
             .mock.calls[0][0] as string;
-        expect(arg).toContain("AdaptiveLearner import error");
+        expect(arg).toContain("MyApp import error");
         expect(arg).toContain("execute");
         expect(arg).toContain("Pandoc returned non-zero");
     });
@@ -74,7 +74,7 @@ describe("ErrorStep", () => {
         expect(window.open).toHaveBeenCalled();
         const url = (window.open as ReturnType<typeof vi.fn>).mock
             .calls[0][0] as string;
-        expect(url).toContain("github.com/astrapi69/adaptive_learner/issues/new");
+        expect(url).toContain("github.com/astrapi69/pluginforge-app-template/issues/new");
         expect(url).toContain("title=");
         expect(url).toContain("body=");
         expect(url).toContain("labels=bug");

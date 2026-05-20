@@ -29,8 +29,8 @@ features should land as plugins, not core changes.
 ### Bootstrap
 
 ```bash
-git clone https://github.com/astrapi69/adaptive_learner.git
-cd adaptive_learner
+git clone https://github.com/astrapi69/pluginforge-app-template.git
+cd myapp
 make install      # Poetry + npm + plugin path-deps
 make test         # baseline; should be green before you start
 make dev          # backend on :8000, frontend on :5173
@@ -62,13 +62,13 @@ core.
 ### Quickstart
 
 The smallest existing plugin to copy is
-[`plugins/adaptive-learner-plugin-getstarted/`](plugins/adaptive-learner-plugin-getstarted/).
+[`plugins/myapp-plugin-getstarted/`](plugins/myapp-plugin-getstarted/).
 Mirror its shape:
 
 ```
-plugins/adaptive-learner-plugin-yourname/
+plugins/myapp-plugin-yourname/
   pyproject.toml                # name, version, pluginforge dep, entry point
-  adaptive_learner_yourname/
+  myapp_yourname/
     __init__.py
     plugin.py                   # YourPlugin(BasePlugin)
     routes.py                   # FastAPI APIRouter (optional)
@@ -78,10 +78,10 @@ plugins/adaptive-learner-plugin-yourname/
 
 Steps:
 
-1. Copy the directory; rename `adaptive-learner-plugin-getstarted` and
-   `adaptive_learner_getstarted` to your plugin name.
+1. Copy the directory; rename `myapp-plugin-getstarted` and
+   `myapp_getstarted` to your plugin name.
 2. Edit `pyproject.toml`: package name, description, the
-   `[tool.poetry.plugins."adaptive_learner.plugins"]` entry point.
+   `[tool.poetry.plugins."myapp.plugins"]` entry point.
 3. Implement `plugin.py` extending `BasePlugin` with `name`,
    `version`, `api_version = "1"`, `license_tier = "core"`.
    Override `activate()`, `get_routes()`,

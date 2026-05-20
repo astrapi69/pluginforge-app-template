@@ -1,8 +1,8 @@
 site_name: Adaptive Learner
 site_description: Project skeleton template documentation
-site_url: https://astrapi69.github.io/adaptive-learner/
-repo_url: https://github.com/astrapi69/adaptive-learner
-repo_name: astrapi69/adaptive-learner
+site_url: https://astrapi69.github.io/myapp/
+repo_url: https://github.com/astrapi69/pluginforge-app-template
+repo_name: astrapi69/myapp
 docs_dir: docs/help
 theme:
   name: material
@@ -84,7 +84,7 @@ markdown_extensions:
 extra:
   social:
   - icon: fontawesome/brands/github
-    link: https://github.com/astrapi69/adaptive_learner
+    link: https://github.com/astrapi69/pluginforge-app-template
 nav:
 - Home: de/index.md
 - Erste Schritte: de/getting-started.md

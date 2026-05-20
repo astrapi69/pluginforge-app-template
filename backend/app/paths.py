@@ -8,7 +8,7 @@ XDG-conformant location).
 
 Two design constraints carried forward from Phase 1:
 
-1. Paths resolve via either ``ADAPTIVE_LEARNER_DATA_DIR`` env var (highest
+1. Paths resolve via either ``MYAPP_DATA_DIR`` env var (highest
    priority - tests, Docker, admin overrides) or platformdirs.
    They do NOT resolve relative to the current working directory;
    the original ``Path("uploads")`` was CWD-relative, the trap
@@ -32,21 +32,21 @@ from pathlib import Path
 
 from platformdirs import user_cache_dir, user_config_dir, user_data_dir
 
-PRODUCTION_MARKER_FILENAME = ".adaptive-learner-production"
-APP_NAME = "adaptive_learner"
+PRODUCTION_MARKER_FILENAME = ".myapp-production"
+APP_NAME = "myapp"
 
 
 def get_data_dir() -> Path:
     """Root directory for runtime data: DB, uploads.
 
     Resolution order:
-    1. ``ADAPTIVE_LEARNER_DATA_DIR`` env var (tests, Docker, admin override)
+    1. ``MYAPP_DATA_DIR`` env var (tests, Docker, admin override)
     2. ``platformdirs.user_data_dir(APP_NAME)``:
-       - Linux/macOS: ``~/.local/share/adaptive_learner``
-       - Windows: ``%LOCALAPPDATA%\\adaptive_learner``
+       - Linux/macOS: ``~/.local/share/myapp``
+       - Windows: ``%LOCALAPPDATA%\\myapp``
        - Tests: a tmp dir (set by ``backend/tests/conftest.py``).
     """
-    if env_dir := os.environ.get("ADAPTIVE_LEARNER_DATA_DIR"):
+    if env_dir := os.environ.get("MYAPP_DATA_DIR"):
         return Path(env_dir).expanduser().resolve()
     return Path(user_data_dir(APP_NAME)).resolve()
 
@@ -55,17 +55,17 @@ def get_config_dir() -> Path:
     """Config / secrets directory.
 
     Resolution order:
-    1. ``ADAPTIVE_LEARNER_CONFIG_DIR`` env var
+    1. ``MYAPP_CONFIG_DIR`` env var
     2. ``platformdirs.user_config_dir(APP_NAME)``:
-       - Linux/macOS: ``~/.config/adaptive_learner``
-       - Windows: ``%APPDATA%\\adaptive_learner``
+       - Linux/macOS: ``~/.config/myapp``
+       - Windows: ``%APPDATA%\\myapp``
 
     Existing override chain for ``secrets.yaml`` (see
-    ``docs/configuration.md``) already targets ``~/.config/adaptive_learner/``;
+    ``docs/configuration.md``) already targets ``~/.config/myapp/``;
     this helper just makes the canonical path discoverable next to
     the data and cache resolvers.
     """
-    if env_dir := os.environ.get("ADAPTIVE_LEARNER_CONFIG_DIR"):
+    if env_dir := os.environ.get("MYAPP_CONFIG_DIR"):
         return Path(env_dir).expanduser().resolve()
     return Path(user_config_dir(APP_NAME)).resolve()
 
@@ -74,16 +74,16 @@ def get_cache_dir() -> Path:
     """Cache directory: transient artifacts, derived data.
 
     Resolution order:
-    1. ``ADAPTIVE_LEARNER_CACHE_DIR`` env var
+    1. ``MYAPP_CACHE_DIR`` env var
     2. ``platformdirs.user_cache_dir(APP_NAME)``:
-       - Linux/macOS: ``~/.cache/adaptive_learner``
-       - Windows: ``%LOCALAPPDATA%\\adaptive_learner\\Cache``
+       - Linux/macOS: ``~/.cache/myapp``
+       - Windows: ``%LOCALAPPDATA%\\myapp\\Cache``
 
     No current production code consumes this. Added now so the
     resolver set is complete; future cache-able operations can
     target a canonical location without touching this module.
     """
-    if env_dir := os.environ.get("ADAPTIVE_LEARNER_CACHE_DIR"):
+    if env_dir := os.environ.get("MYAPP_CACHE_DIR"):
         return Path(env_dir).expanduser().resolve()
     return Path(user_cache_dir(APP_NAME)).resolve()
 
@@ -92,7 +92,7 @@ def get_upload_dir() -> Path:
     """Upload directory for cover images + article assets.
 
     Always resolved fresh - never cache the result at module import
-    time. Test fixtures setting ``ADAPTIVE_LEARNER_DATA_DIR`` after
+    time. Test fixtures setting ``MYAPP_DATA_DIR`` after
     ``app.*`` import still take effect.
     """
     return get_data_dir() / "uploads"
@@ -101,25 +101,25 @@ def get_upload_dir() -> Path:
 def get_db_path() -> Path:
     """SQLite database file path.
 
-    Returns ``<get_data_dir()>/adaptive_learner.db``. ``database.py`` calls
+    Returns ``<get_data_dir()>/myapp.db``. ``database.py`` calls
     this helper as the default fallback when ``DATABASE_URL`` is not
-    set; ``ADAPTIVE_LEARNER_DATA_DIR`` controls the resulting location via
-    ``get_data_dir()``. The legacy ``ADAPTIVE_LEARNER_DB_PATH`` env var was
+    set; ``MYAPP_DATA_DIR`` controls the resulting location via
+    ``get_data_dir()``. The legacy ``MYAPP_DB_PATH`` env var was
     removed as a path override in v0.30.0 (DEP-DBPATH-01 step 3).
     """
-    return get_data_dir() / "adaptive_learner.db"
+    return get_data_dir() / "myapp.db"
 
 
 def mark_data_dir_as_production() -> None:
-    """Write the ``.adaptive-learner-production`` marker into the data dir.
+    """Write the ``.myapp-production`` marker into the data dir.
 
     Called once from the FastAPI lifespan startup. Skipped when the
-    process is running in test mode (``ADAPTIVE_LEARNER_TEST=1``); the
+    process is running in test mode (``MYAPP_TEST=1``); the
     conftest tripwire treats the presence of this marker file as a
     fatal abort signal, so writing it during tests would defeat the
     isolation the marker is meant to enforce.
     """
-    if os.environ.get("ADAPTIVE_LEARNER_TEST") == "1":
+    if os.environ.get("MYAPP_TEST") == "1":
         return
 
     data_dir = get_data_dir()
@@ -130,7 +130,7 @@ def mark_data_dir_as_production() -> None:
         return
 
     marker.write_text(
-        "This directory contains production AdaptiveLearner data.\n"
+        "This directory contains production MyApp data.\n"
         "Do NOT delete this file. It protects against accidental\n"
         "data loss caused by test runs (see backend/tests/conftest.py).\n",
         encoding="utf-8",

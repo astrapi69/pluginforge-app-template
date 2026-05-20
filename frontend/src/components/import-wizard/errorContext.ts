@@ -55,11 +55,11 @@ export function toWizardError(
 /** Build the clipboard payload for the Copy details button. */
 export function formatDetails(error: WizardError): string {
     const lines: string[] = [];
-    lines.push(`# AdaptiveLearner import error`);
+    lines.push(`# MyApp import error`);
     lines.push("");
     lines.push(`**Failed at:** ${error.context}`);
     lines.push(`**Message:** ${error.message}`);
-    lines.push(`**AdaptiveLearner version:** ${__APP_VERSION__}`);
+    lines.push(`**MyApp version:** ${__APP_VERSION__}`);
     lines.push(
         `**Browser:** ${
             typeof navigator !== "undefined"
@@ -100,7 +100,7 @@ export function formatDetails(error: WizardError): string {
 
 /** Pre-fill a GitHub Issues URL with the formatted details. */
 export function buildGithubIssueUrl(error: WizardError): string {
-    const repo = "astrapi69/adaptive_learner";
+    const repo = "astrapi69/myapp";
     const title = encodeURIComponent(
         `[Import] ${error.context}: ${error.message.slice(0, 80)}`,
     );

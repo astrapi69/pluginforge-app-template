@@ -9,14 +9,14 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from adaptive_learner_launcher import manifest
+from myapp_launcher import manifest
 
 
 def _write_pending(tmp_path: Path, steps: dict[str, bool] | None = None) -> dict:
     """Write a cleanup.json with the given step states."""
     data = {
         "pending_since": "2026-04-16T12:00:00Z",
-        "install_dir": str(tmp_path / "adaptive_learner"),
+        "install_dir": str(tmp_path / "myapp"),
         "steps": steps or {s: False for s in manifest.CLEANUP_STEPS},
     }
     cleanup = tmp_path / "cleanup.json"

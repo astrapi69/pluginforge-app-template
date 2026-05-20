@@ -5,7 +5,7 @@
 
 Mirrors the backend's ``test_i18n_parity.py`` shape but for the
 launcher's JSON catalogs under
-``adaptive_learner_launcher/locales/{en,de,el,es,fr,pt,tr,ja}.json``.
+``myapp_launcher/locales/{en,de,el,es,fr,pt,tr,ja}.json``.
 
 Three contracts enforced:
 
@@ -35,7 +35,7 @@ import pytest
 
 LOCALES_DIR = (
     Path(__file__).resolve().parent.parent
-    / "adaptive_learner_launcher"
+    / "myapp_launcher"
     / "locales"
 )
 REFERENCE_LANG = "en"

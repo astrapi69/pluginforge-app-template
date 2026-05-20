@@ -1,12 +1,12 @@
 name: Question
-description: Ask a question about using or contributing to AdaptiveLearner
+description: Ask a question about using or contributing to MyApp
 labels: [question]
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for asking.
-        For usage questions, also check the documentation: https://astrapi69.github.io/adaptive_learner/
+        For usage questions, also check the documentation: https://astrapi69.github.io/myapp/
   - type: textarea
     id: question
     attributes:

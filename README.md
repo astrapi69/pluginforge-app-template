@@ -1,12 +1,12 @@
 # Adaptive Learner
 
-Project skeleton template derived from [Bibliogon](https://github.com/astrapi69/bibliogon) (a book authoring platform). Lean foundation for adaptive-learning applications built on the same architectural pattern: FastAPI + SQLAlchemy + React + TypeScript + a plugin loader on top of [PluginForge](https://github.com/astrapi69/pluginforge).
+Project skeleton template derived from [MyApp](https://github.com/astrapi69/pluginforge-app-template) (a book authoring platform). Lean foundation for adaptive-learning applications built on the same architectural pattern: FastAPI + SQLAlchemy + React + TypeScript + a plugin loader on top of [PluginForge](https://github.com/astrapi69/pluginforge).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## What this is
 
-A working full-stack starting point. The plugin-loader infrastructure, layered architecture, test discipline, build/deploy/release tooling, and Pythonic+React tech stack carry over from Bibliogon unchanged. **The DOMAIN ships as EXAMPLE-DOMAIN**: Book, Chapter, Article, ArticleComment, Author, Asset, ... are present in the code as a working reference for how to wire SQLAlchemy models + Pydantic schemas + FastAPI routers + React pages + tests end-to-end. Replace each concept with adaptive-learner equivalents (LearningConcept, CurriculumItem, SkillAssessment, LearnerProgress, ...) as the project's actual domain solidifies.
+A working full-stack starting point. The plugin-loader infrastructure, layered architecture, test discipline, build/deploy/release tooling, and Pythonic+React tech stack carry over from MyApp unchanged. **The DOMAIN ships as EXAMPLE-DOMAIN**: Book, Chapter, Article, ArticleComment, Author, Asset, ... are present in the code as a working reference for how to wire SQLAlchemy models + Pydantic schemas + FastAPI routers + React pages + tests end-to-end. Replace each concept with myapp equivalents (LearningConcept, CurriculumItem, SkillAssessment, LearnerProgress, ...) as the project's actual domain solidifies.
 
 Files carrying an explicit `EXAMPLE-DOMAIN:` or `TEMPLATE:` header are flagged at the top so you can find them by grep:
 
@@ -26,9 +26,9 @@ grep -rn "EXAMPLE-DOMAIN\|TEMPLATE:" --include='*.py' --include='*.ts' --include
 
 ## Adapting to your project
 
-1. **Rename** — search for `adaptive_learner` / `AdaptiveLearner` / `ADAPTIVE_LEARNER` / `adaptive-learner-` across the codebase and replace with your project's name in the same four casings.
+1. **Rename** — search for `myapp` / `MyApp` / `MYAPP` / `myapp-` across the codebase and replace with your project's name in the same four casings.
 2. **Replace domain** — start with `backend/app/models/__init__.py` (the EXAMPLE-DOMAIN docstring at the top explains the pattern), then cascade through the matching `backend/app/routers/*.py`, `frontend/src/api/client.ts` `api.<model>` namespaces, and `frontend/src/pages/*` page components.
-3. **Refresh `docs/`** — `CONCEPT.md`, `ROADMAP.md`, `API.md`, `docs/help/` all carry inherited shape from Bibliogon. Adapt them to your domain.
+3. **Refresh `docs/`** — `CONCEPT.md`, `ROADMAP.md`, `API.md`, `docs/help/` all carry inherited shape from MyApp. Adapt them to your domain.
 4. **Plugin scaffolding** — when adding your first plugin, follow `plugins/README.md`. Hookspecs live in `backend/app/hookspecs.py`.
 
 ## Tech stack
@@ -65,7 +65,7 @@ E2E: `npx playwright test --project=smoke` or `--project=full`.
 
 ## Provenance
 
-Scaffolded from Bibliogon v0.33.0 on 2026-05-17. All 11 plugins (`audiobook`, `export`, `getstarted`, `git-sync`, `grammar`, `help`, `kdp`, `kinderbuch`, `medium-import`, `ms-tools`, `translation`) and their coupled backend routers/services were removed in Phase 1 of the skeleton extraction. The plugin-loader infrastructure was retained intact. See `CLAUDE.md` "Origin" + `git log --oneline` for the full extraction trail.
+Scaffolded from MyApp v0.33.0 on 2026-05-17. All 11 plugins (`audiobook`, `export`, `getstarted`, `git-sync`, `grammar`, `help`, `kdp`, `kinderbuch`, `medium-import`, `ms-tools`, `translation`) and their coupled backend routers/services were removed in Phase 1 of the skeleton extraction. The plugin-loader infrastructure was retained intact. See `CLAUDE.md` "Origin" + `git log --oneline` for the full extraction trail.
 
 ## License
 

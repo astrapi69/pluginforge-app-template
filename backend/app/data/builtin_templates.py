@@ -1,4 +1,4 @@
-"""Builtin book templates shipped with AdaptiveLearner.
+"""Builtin book templates shipped with MyApp.
 
 ``seed_builtin_templates`` is called once at startup. It is idempotent:
 if any builtin templates already exist, it is a no-op. Non-builtin

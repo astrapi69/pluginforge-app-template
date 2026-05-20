@@ -60,7 +60,7 @@ describe("ErrorReportDialog", () => {
     renderDialog()
     expect(screen.getByText("Issue-Report erstellen")).toBeTruthy()
     expect(
-      screen.getByText(/AdaptiveLearner hat einen Fehler erkannt/),
+      screen.getByText(/MyApp hat einen Fehler erkannt/),
     ).toBeTruthy()
   })
 
@@ -105,7 +105,7 @@ describe("ErrorReportDialog", () => {
 
     expect(window.open).toHaveBeenCalledTimes(1)
     const url = (window.open as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
-    expect(url).toContain("github.com/astrapi69/adaptive_learner/issues/new")
+    expect(url).toContain("github.com/astrapi69/pluginforge-app-template/issues/new")
     expect(url).toContain("title=")
     expect(url).toContain("labels=bug")
   })

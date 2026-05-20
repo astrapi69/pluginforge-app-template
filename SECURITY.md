@@ -11,7 +11,7 @@ upgrade to the latest minor.
 Please report security vulnerabilities through GitHub's
 **Private Vulnerability Reporting** feature:
 
-1. Navigate to https://github.com/astrapi69/adaptive-learner/security
+1. Navigate to https://github.com/astrapi69/pluginforge-app-template/security
 2. Click "Report a vulnerability"
 3. Provide a clear description, reproduction steps, and an
    impact assessment

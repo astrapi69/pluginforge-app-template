@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "adaptive_learner"
-version = "0.33.0"
-description = "Open-source book authoring platform with WYSIWYG and Markdown editing, EPUB/PDF export via Pandoc."
+name = "pluginforge-app-template"
+version = "0.1.0"
+description = "Full-stack application template built on PluginForge. FastAPI + React + TypeScript + SQLite + PyInstaller launcher. Plugin-driven architecture with CI, tests, i18n, and cross-OS distribution out of the box."
 authors = ["Asterios Raptis"]
 license = "MIT"
 package-mode = false

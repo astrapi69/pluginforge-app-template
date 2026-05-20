@@ -1,6 +1,6 @@
-# AdaptiveLearner Help
+# MyApp Help
 
-Welcome to the AdaptiveLearner documentation. Everything you need to write, format, and export books.
+Welcome to the MyApp documentation. Everything you need to write, format, and export books.
 
 ## Quick Start
 
@@ -23,4 +23,4 @@ Welcome to the AdaptiveLearner documentation. Everything you need to write, form
 - [Troubleshooting](troubleshooting.md) - Solutions for known issues
 - [Glossary](glossary.md) - Terms and abbreviations
 - [Plugin Development](developers/plugins.md) - Build your own plugins
-- [GitHub Issues](https://github.com/astrapi69/adaptive_learner/issues) - Report bugs and suggest features
+- [GitHub Issues](https://github.com/astrapi69/pluginforge-app-template/issues) - Report bugs and suggest features

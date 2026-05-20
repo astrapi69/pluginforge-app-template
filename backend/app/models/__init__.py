@@ -1,13 +1,13 @@
 """EXAMPLE-DOMAIN: Adapt or replace for your actual project domain.
 
-Inherited from Bibliogon: Book, Chapter, Article, ArticleComment,
+Inherited from MyApp: Book, Chapter, Article, ArticleComment,
 Author, Asset, BookTemplate, ChapterTemplate, Page,
 BookImportSource, Publication, ...
 
 Treat this module as a working reference for how to wire
 SQLAlchemy 2.0 mapped columns + relationships + soft-delete /
 trash lifecycle + ChapterType enum patterns, then replace each
-concept with adaptive-learner equivalents
+concept with myapp equivalents
 (e.g. LearningConcept, CurriculumItem, SkillAssessment,
 LearnerProgress) as the project domain solidifies.
 
@@ -517,7 +517,7 @@ class Article(Base):
     language: Mapped[str] = mapped_column(String(10), nullable=False, default="en")
     content_type: Mapped[str] = mapped_column(String(20), nullable=False, default="article")
     # TipTap JSON serialised to a string. Matches the Chapter.content
-    # convention (AdaptiveLearner stores TipTap JSON as Text rather than the
+    # convention (MyApp stores TipTap JSON as Text rather than the
     # SQLAlchemy JSON type so the diff/version-history paths work the
     # same way for both entities).
     content_json: Mapped[str] = mapped_column(Text, nullable=False, default="")
@@ -612,13 +612,13 @@ class Article(Base):
         Surfaced via ``ArticleOut`` so dashboard tiles and the
         article view can display the canonical publish date (when
         the post first went live on any platform) instead of the
-        DB-row ``created_at`` (which is the import-into-AdaptiveLearner
+        DB-row ``created_at`` (which is the import-into-MyApp
         timestamp for imported posts and would otherwise show e.g.
         "May 2026" for a Medium article published in 2020).
 
         Returns None for:
 
-        - Native AdaptiveLearner articles with no publications yet
+        - Native MyApp articles with no publications yet
         - Articles whose publications are all still in ``planned``
           / ``scheduled`` status (``published_at is None``)
 
@@ -820,7 +820,7 @@ class ArticleComment(Base):
     source_filename: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     # Standard timestamps. ``deleted_at`` follows the rest of
-    # the AdaptiveLearner soft-delete pattern.
+    # the MyApp soft-delete pattern.
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
     )
@@ -898,7 +898,7 @@ class Publication(Base):
 
 
 class Author(Base):
-    """AdaptiveLearner's global Authors-Database (Bug 8 Phase 1).
+    """MyApp's global Authors-Database (Bug 8 Phase 1).
 
     Standalone catalogue of people who can be cited as the author of
     a Book (Phase 2 wizard datalist source) or an Article (future

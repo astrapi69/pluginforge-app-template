@@ -1,7 +1,7 @@
 # TEMPLATE: This test is included as adaptable example.
 # Replace with your domain logic when project domain is finalized.
 
-"""Smoke tests for AdaptiveLearner API."""
+"""Smoke tests for MyApp API."""
 from fastapi.testclient import TestClient
 
 from app.main import app

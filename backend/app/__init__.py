@@ -1,4 +1,4 @@
-"""AdaptiveLearner backend app package.
+"""MyApp backend app package.
 
 The running app's version is derived at import time from
 ``backend/pyproject.toml``, the canonical Python source-of-truth.

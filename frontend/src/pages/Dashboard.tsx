@@ -1,6 +1,6 @@
 /* EXAMPLE-DOMAIN: This file demonstrates how the frontend connects
  * to the backend CRUD shape (inherited book / article / chapter
- * domain from Bibliogon). Adapt or replace for adaptive-learner's
+ * domain from MyApp). Adapt or replace for myapp's
  * actual domain when it solidifies.
  */
 
@@ -410,7 +410,7 @@ export default function Dashboard() {
                 <div className={styles.headerInner}>
                     <div className={styles.logo} onClick={() => navigate("/")} role="button" title="Dashboard">
                         <BookOpen size={28} strokeWidth={1.5}/>
-                        <h1 className={styles.logoText}>AdaptiveLearner</h1>
+                        <h1 className={styles.logoText}>MyApp</h1>
                     </div>
                     <div className={styles.headerActions}>
                         {/* Always visible */}
@@ -613,7 +613,7 @@ export default function Dashboard() {
                     <EmptyState
                         testId="dashboard-empty-state"
                         icon={<BookOpen size={56} strokeWidth={1} color="var(--text-muted)"/>}
-                        title={t("ui.dashboard.welcome", "Willkommen bei AdaptiveLearner")}
+                        title={t("ui.dashboard.welcome", "Willkommen bei MyApp")}
                         body={t("ui.dashboard.welcome_text", "Erstelle dein erstes Buch, importiere ein bestehendes Projekt, oder schaue dir die Erste-Schritte-Anleitung an.")}
                         actions={
                             <>

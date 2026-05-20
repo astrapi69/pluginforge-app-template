@@ -179,36 +179,36 @@ Every layer catches only what it can handle itself. Everything else is passed up
 ```python
 # backend/app/exceptions.py
 
-class AdaptiveLearnerError(Exception):
-    """Base class for all AdaptiveLearner errors."""
+class MyAppError(Exception):
+    """Base class for all MyApp errors."""
     def __init__(self, message: str, detail: str | None = None):
         self.message = message
         self.detail = detail or message
         super().__init__(self.message)
 
-class NotFoundError(AdaptiveLearnerError):
+class NotFoundError(MyAppError):
     """Resource not found (-> HTTP 404)."""
     pass
 
-class ValidationError(AdaptiveLearnerError):
+class ValidationError(MyAppError):
     """Domain validation failed (-> HTTP 400)."""
     pass
 
-class ConflictError(AdaptiveLearnerError):
+class ConflictError(MyAppError):
     """Resource already exists (-> HTTP 409)."""
     pass
 
-class ExportError(AdaptiveLearnerError):
+class ExportError(MyAppError):
     """Export failed: Pandoc, scaffolding, conversion (-> HTTP 500)."""
     pass
 
-class PluginError(AdaptiveLearnerError):
+class PluginError(MyAppError):
     """Plugin could not load, activate, or run (-> HTTP 500)."""
     def __init__(self, plugin_name: str, message: str):
         self.plugin_name = plugin_name
         super().__init__(f"Plugin '{plugin_name}': {message}")
 
-class ExternalServiceError(AdaptiveLearnerError):
+class ExternalServiceError(MyAppError):
     """External service unreachable (-> HTTP 502)."""
     def __init__(self, service: str, message: str):
         self.service = service
@@ -229,8 +229,8 @@ ERROR_STATUS_MAP = {
     ExternalServiceError: 502,
 }
 
-@app.exception_handler(AdaptiveLearnerError)
-async def adaptive_learner_error_handler(request, exc: AdaptiveLearnerError):
+@app.exception_handler(MyAppError)
+async def myapp_error_handler(request, exc: MyAppError):
     status = ERROR_STATUS_MAP.get(type(exc), 500)
     logger.error(exc.message, exc_info=exc if status >= 500 else None)
     content = {"detail": exc.detail}
@@ -305,7 +305,7 @@ def check_grammar(text: str, lang: str) -> list[dict]:
 
 ### Backend: rules
 
-- Services throw AdaptiveLearnerError subclasses, NEVER HTTPException.
+- Services throw MyAppError subclasses, NEVER HTTPException.
 - Routers catch NOTHING. The global exception handler takes over.
 - No bare `except Exception`. Catch specific exceptions.
 - Always wrap external errors into ExternalServiceError.
@@ -375,7 +375,7 @@ async function handleExport() {
         toast.error(t('book_not_found'))
       } else if (error.isServerError) {
         // Toast with a "Report issue" link for GitHub
-        const issueUrl = error.toGitHubIssueUrl('astrapi69/adaptive_learner', APP_VERSION)
+        const issueUrl = error.toGitHubIssueUrl('astrapi69/myapp', APP_VERSION)
         toast.error(`${error.detail} | ${t('report_issue')}: ${issueUrl}`)
       } else {
         toast.error(error.detail)
@@ -474,7 +474,7 @@ logger.info(f"Exported {book}")  # no objects inside messages, use extra
 ```
 
 **Log levels:**
-- DEBUG: detailed developer info (only with ADAPTIVE_LEARNER_DEBUG=true).
+- DEBUG: detailed developer info (only with MYAPP_DEBUG=true).
 - INFO: important actions (export started, plugin loaded, backup created).
 - WARNING: unexpected behavior that is not critical (plugin not found, fallback used).
 - ERROR: errors that affect the user (export failed, DB error).
