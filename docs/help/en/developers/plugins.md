@@ -50,7 +50,7 @@ packages = [{include = "myapp_myplugin"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pluginforge = "^0.5.0"
+pluginforge = "^0.9.0"
 fastapi = "^0.135.0"
 
 [tool.poetry.plugins."myapp.plugins"]
@@ -500,7 +500,7 @@ packages = [{include = "myapp_<name>"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pluginforge = "^0.5.0"
+pluginforge = "^0.9.0"
 fastapi = "^0.135.0"
 # Add runtime deps here (e.g. gitpython for plugin-git-sync)
 

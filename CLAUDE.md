@@ -39,7 +39,7 @@ On a conflict between CLAUDE.md and the rules, the rules win.
 
 - **Backend:** Python 3.11+, FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, Poetry
 - **Frontend:** React 18+, TypeScript (strict), Vite, Radix UI, @dnd-kit, Lucide, react-toastify
-- **Plugins:** pluginforge ^0.5.0 (PyPI), entry points under group `myapp.plugins`
+- **Plugins:** pluginforge ^0.9.0 (PyPI), entry points under group `myapp.plugins`. Host passes `app_id="myapp"` + `app_version`, so plugins must declare `target_application = "myapp"` or they are rejected with `missing_target_application`.
 - **Launcher:** PyInstaller-based cross-OS desktop launcher (`launcher/`)
 - **Testing:** pytest, Vitest, Playwright, mutmut, Stryker
 - **Tooling:** Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit

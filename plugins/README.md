@@ -23,6 +23,23 @@ plugins/myapp-plugin-<name>/
     └── test_<name>.py
 ```
 
+`plugin.py` skeleton:
+
+```python
+from pluginforge import BasePlugin
+
+
+class HelloPlugin(BasePlugin):
+    name = "hello"
+    version = "0.1.0"
+    target_application = "myapp"   # required: host passes app_id="myapp" and rejects plugins without a match
+```
+
+Plugins under v0.9.0 with the hard-filter engaged MUST declare
+`target_application = "myapp"` (or whatever the host's app_id is
+after the CUSTOMIZE.md rename). Plugins without it are rejected
+during registration with `missing_target_application`.
+
 `pyproject.toml` entry-point declaration:
 
 ```toml
