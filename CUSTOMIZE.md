@@ -64,6 +64,8 @@ git mv launcher/myapp.ico launcher/yourapp.ico
 mv backend/.myapp-production backend/.yourapp-production 2>/dev/null || true
 ```
 
+> The sed sweep also rewrites `app_id="myapp"` in `backend/app/main.py` and any `target_application = "myapp"` declarations on your plugin classes; no separate step needed. PluginForge v0.9.0 runs the host in hard-filter mode: plugins without a `target_application` matching the host's `app_id` are rejected at registration.
+
 Finally update the package-metadata names (these are NOT `myapp`-prefixed — they identify the template on PyPI/npm):
 
 - `backend/pyproject.toml` → `name = "yourapp"`, description, authors
@@ -104,12 +106,12 @@ plugins/yourapp-plugin-<name>/
 ├── pyproject.toml          # entry point: [project.entry-points."yourapp.plugins"]
 ├── yourapp_<name>/
 │   ├── __init__.py
-│   ├── plugin.py           # {Name}Plugin(BasePlugin) with hook implementations
+│   ├── plugin.py           # {Name}Plugin(BasePlugin) with target_application = "yourapp"
 │   └── routes.py           # FastAPI router
 └── tests/test_<name>.py
 ```
 
-See `plugins/README.md` for the minimal skeleton. Register the plugin in `backend/config/app.yaml` under `enabled`.
+Every plugin class must declare `target_application = "yourapp"` (matching the `app_id` you renamed in Step 2). PluginForge v0.9.0 hard-filters any plugin without a match; see `plugins/README.md` for the minimal skeleton. Register the plugin in `backend/config/app.yaml` under `enabled`.
 
 ## Step 6: Configuration
 

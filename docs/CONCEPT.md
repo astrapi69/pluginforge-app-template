@@ -9,7 +9,7 @@ conventions) is reusable; the specifics are not.
 
 **Repository:** [github.com/astrapi69/pluginforge-app-template](https://github.com/astrapi69/pluginforge-app-template)
 **Related project:** [github.com/astrapi69/write-book-template](https://github.com/astrapi69/write-book-template)
-**PluginForge:** [github.com/astrapi69/pluginforge](https://github.com/astrapi69/pluginforge) (PyPI: pluginforge ^0.5.0)
+**PluginForge:** [github.com/astrapi69/pluginforge](https://github.com/astrapi69/pluginforge) (PyPI: pluginforge ^0.9.0)
 
 This document describes the architecture and the concept. For version history see `docs/CHANGELOG.md`, for current and planned work see `docs/ROADMAP.md`.
 
@@ -67,7 +67,7 @@ PluginForge is a standalone PyPI package:
 ```toml
 # myapp/backend/pyproject.toml
 [tool.poetry.dependencies]
-pluginforge = {version = "^0.5.0", extras = ["fastapi"]}
+pluginforge = "^0.9.0"
 ```
 
 Another developer can use PluginForge independently:
@@ -75,7 +75,7 @@ Another developer can use PluginForge independently:
 ```toml
 # podcast-tool/pyproject.toml
 [tool.poetry.dependencies]
-pluginforge = "^0.5.0"
+pluginforge = "^0.9.0"
 ```
 
 ### 2.3 Tech stack
@@ -263,7 +263,7 @@ pluggy is the de-facto standard for Python plugin systems. pytest, tox, datasett
 
 PluginForge does not reinvent the wheel, it adds the layers pluggy is missing: configuration, lifecycle, web integration.
 
-### 3.4 Plugin interface (v0.5.0)
+### 3.4 Plugin interface (v0.9.0)
 
 ```python
 # pluginforge/base.py (PyPI package, not local)
@@ -279,6 +279,8 @@ class BasePlugin(ABC):
     author: str = ""
     depends_on: list[str] = []        # plugin dependencies as a class attribute
     config_schema: dict[str, type] | None = None  # optional config validation
+    target_application: str | None = None  # v0.7.0+ identity gating; required under v0.9.0 hard-filter when host sets app_id
+    min_app_version: str | None = None     # v0.6.0+ SemVer gate against host app_version
 
     def init(self, app_config, plugin_config) -> None: ...
     def activate(self) -> None: ...
@@ -290,13 +292,15 @@ class BasePlugin(ABC):
 ```
 
 ```python
-# MyApp main.py - integration with PluginForge v0.5.0
+# MyApp main.py - integration with PluginForge v0.9.0
 from pluginforge import PluginManager
 
 manager = PluginManager(
     config_path="config/app.yaml",
     pre_activate=license_check,  # callback before plugin activation
     api_version="1",
+    app_id="myapp",              # v0.7.0+ identity; v0.9.0 hard-filters plugins without target_application
+    app_version=__version__,     # v0.6.0+ host version, compared against plugin.min_app_version
 )
 manager.register_hookspecs(MyAppHookSpec)
 manager.discover_plugins()       # load entry points, filter, sort, activate
@@ -307,11 +311,13 @@ manager.get_active_plugins()     # list of active plugins
 manager.get_plugin("export")     # plugin instance by name
 manager.deactivate_plugin("x")   # deactivate + hook unregister
 manager.reload_plugin("x")       # hot reload
-manager.reload_config()           # reload config from disk
-manager.health_check()            # health of all plugins
-manager.get_load_errors()         # errors during loading
-manager.call_hook("hook_name")    # invoke a hook
-manager.get_text("key", "de")     # i18n string
+manager.refresh_config()         # reload merged app config (v0.6.0+)
+manager.health_check()           # health of all plugins
+manager.get_load_errors()        # errors during loading (legacy dict API; still supported)
+manager.get_last_discovery_result()  # v0.6.0+ DiscoveryResult with PluginError + severity
+manager.inspect_plugin(name)     # v0.9.0 PluginInspection snapshot (state, config, health, hooks, routes)
+manager.call_hook("hook_name")   # invoke a hook
+manager.get_text("key", "de")    # i18n string
 ```
 
 ### 3.5 PluginForge repository
@@ -428,7 +434,7 @@ UserBackup (v0.4.0 - now replaced by the .bgb backup)
   path: str
 ```
 
-### 4.2 Integration with PluginForge v0.5.0
+### 4.2 Integration with PluginForge v0.9.0
 
 ```python
 # myapp/backend/app/main.py
@@ -439,6 +445,8 @@ manager = PluginManager(
     config_path="config/app.yaml",
     pre_activate=license_check,  # license check before activation
     api_version="1",
+    app_id="myapp",              # v0.7.0+ identity; v0.9.0 hard-filters plugins without target_application
+    app_version=__version__,     # v0.6.0+ host version, compared against plugin.min_app_version
 )
 manager.register_hookspecs(MyAppHookSpec)
 manager.discover_plugins()

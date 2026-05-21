@@ -7,7 +7,7 @@ Diese Seite ist eine destillierte Sicht von außen auf die Struktur von MyApp. D
 ```
 1. Frontend        React 19 + TypeScript + TipTap + Vite 8 (Rolldown)
 2. Backend         FastAPI + SQLAlchemy + SQLite + Pydantic v2
-3. PluginForge     Externes PyPI-Paket (pluginforge ^0.5.0), basiert auf pluggy
+3. PluginForge     Externes PyPI-Paket (pluginforge ^0.9.0), basiert auf pluggy
 4. Plugins         Eigenständige Python-Pakete, registriert über Entry Points
 ```
 
@@ -18,7 +18,7 @@ Neue Funktionen kommen in ein Plugin, außer sie betreffen Book-/Chapter-CRUD, d
 | Repository | Zweck | Lizenz |
 |------------|-------|--------|
 | [astrapi69/pluginforge](https://github.com/astrapi69/pluginforge) | Anwendungs-agnostisches Plugin-Framework auf Basis von pluggy. Eigener Release-Zyklus. | MIT |
-| [astrapi69/myapp](https://github.com/astrapi69/pluginforge-app-template) | Dieses Repo. Buch- und Artikel-Autorenplattform. Pinnt `pluginforge ^0.5.0`. | MIT |
+| [astrapi69/myapp](https://github.com/astrapi69/pluginforge-app-template) | Dieses Repo. Buch- und Artikel-Autorenplattform. Pinnt `pluginforge ^0.9.0`. | MIT |
 
 PluginForge-Änderungen sind eine eigene Codebase und ein eigener Release. PluginForge **nicht** aus MyApp heraus editieren — PR gegen das PluginForge-Repo öffnen, nach dem Release den Pin hier hochziehen.
 

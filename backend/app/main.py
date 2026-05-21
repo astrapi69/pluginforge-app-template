@@ -298,6 +298,8 @@ manager = PluginManager(
     config_path=str(CONFIG_PATH),
     pre_activate=_check_license,
     api_version="1",
+    app_id="myapp",
+    app_version=__version__,
 )
 manager.register_hookspecs(MyAppHookSpec)
 
