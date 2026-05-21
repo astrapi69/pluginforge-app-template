@@ -23,5 +23,3 @@ def test_sanitize_import_markdown_passthrough_when_clean():
 
 def test_sanitize_import_markdown_handles_empty():
     assert sanitize_import_markdown("", "de") == ""
-
-
