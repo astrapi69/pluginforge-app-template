@@ -64,7 +64,8 @@ def _make_plugin_zip(
                 "from pluginforge import BasePlugin\n\n"
                 f"class TestPlugin(BasePlugin):\n"
                 f"    name = '{plugin_name}'\n"
-                f"    version = '{version}'\n",
+                f"    version = '{version}'\n"
+                f"    target_application = 'myapp'\n",
             )
 
         if extra_files:
@@ -239,7 +240,11 @@ def test_install_invalid_plugin_name_rejected(client):
         zf.writestr("myapp-plugin-bad/bad_pkg/__init__.py", "")
         zf.writestr(
             "myapp-plugin-bad/bad_pkg/plugin.py",
-            "from pluginforge import BasePlugin\nclass P(BasePlugin):\n  name='bad'\n  version='1'\n",
+            "from pluginforge import BasePlugin\n"
+            "class P(BasePlugin):\n"
+            "  target_application = 'myapp'\n"
+            "  name='bad'\n"
+            "  version='1'\n",
         )
     buf.seek(0)
 
