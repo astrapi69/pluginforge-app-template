@@ -1727,7 +1727,7 @@ version = "26.2"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
-groups = ["dev"]
+groups = ["main", "dev"]
 files = [
     {file = "packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e"},
     {file = "packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661"},
@@ -1999,19 +1999,20 @@ testing = ["coverage", "pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pluginforge"
-version = "0.5.0"
+version = "0.9.0"
 description = "Application-agnostic plugin framework built on pluggy"
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "pluginforge-0.5.0-py3-none-any.whl", hash = "sha256:e120818bfbb93e915f494383a4b17a3c67ba4af8a4e4453a816fa1d752d3d8f2"},
-    {file = "pluginforge-0.5.0.tar.gz", hash = "sha256:65ae7d4bb2f5fe69757224553d43f356260fe863bf1e1c3eaca6c202e0a2e01f"},
+    {file = "pluginforge-0.9.0-py3-none-any.whl", hash = "sha256:5c755e6011396799a9270f08e28ac63e0be6379816d78baec0e729192a8a8758"},
+    {file = "pluginforge-0.9.0.tar.gz", hash = "sha256:6efaa0749ed0b626a3ef5f679f16cd010b0e406bad46070205b7dc0b0a2251e6"},
 ]
 
 [package.dependencies]
+packaging = ">=21.0"
 pluggy = ">=1.5.0,<2.0.0"
-pyyaml = ">=6.0,<7.0"
+pyyaml = ">=6.0,<7.0.0"
 
 [[package]]
 name = "pre-commit"
@@ -7030,4 +7031,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "b2711c81dface4ae6998b207ad619d3b56b7a666b9a2edc8092f6281310c9e1a"
+content-hash = "1cfe3743839f0f38c5334d70be0afbce5cdd3f8d760c6d834c6d7ca19119fdf5"
