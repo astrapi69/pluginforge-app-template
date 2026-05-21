@@ -50,7 +50,7 @@ packages = [{include = "myapp_meinplugin"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pluginforge = "^0.9.0"
+pluginforge = "^0.10.0"
 fastapi = "^0.135.0"
 
 [tool.poetry.plugins."myapp.plugins"]

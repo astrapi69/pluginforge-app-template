@@ -78,7 +78,7 @@ make dev                  # Backend auf :8000, Frontend auf :5173
 |---------|-------|
 | Backend | Python 3.11+, FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, Poetry |
 | Frontend | React 18+, TypeScript (strict), Vite, Radix UI, @dnd-kit, Lucide, react-toastify |
-| Plugins | pluginforge ^0.9.0 (PyPI) |
+| Plugins | pluginforge ^0.10.0 (PyPI) |
 | Launcher | PyInstaller |
 | Tests | pytest, Vitest, Playwright, mutmut, Stryker |
 | Werkzeuge | Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit |

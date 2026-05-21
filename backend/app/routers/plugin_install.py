@@ -221,7 +221,7 @@ def _enable_plugin_in_config(plugin_name: str) -> None:
     if plugin_name in disabled:
         disabled.remove(plugin_name)
     config_overlay.write_user_app_config(app_config)
-    _refresh_manager_app_config()
+    config_overlay.refresh_manager_overlay(_manager)
 
 
 @router.delete("/install/{plugin_name}")
@@ -250,7 +250,7 @@ def uninstall_plugin(plugin_name: str) -> dict[str, str]:
     if plugin_name in enabled:
         enabled.remove(plugin_name)
     config_overlay.write_user_app_config(app_config)
-    _refresh_manager_app_config()
+    config_overlay.refresh_manager_overlay(_manager)
 
     # Remove plugin config from the user overlay.
     config_overlay.delete_user_plugin_config(plugin_name)
@@ -307,25 +307,6 @@ def list_installed_plugins() -> list[dict[str, Any]]:
 # --- Helpers ---
 
 
-def _refresh_manager_app_config() -> None:
-    """Reload + re-merge the plugin manager's app-config snapshot.
-
-    Mirrors ``settings._refresh_manager_app_config`` so plugin
-    install / uninstall updates take effect without a restart.
-    Best-effort: reload failures + manager-API drift log a warning
-    but never raise.
-    """
-    if not _manager:
-        return
-    try:
-        _manager.reload_config()
-    except Exception:  # noqa: BLE001 - reload best-effort
-        logger.exception("Plugin manager reload_config() failed; continuing.")
-    merged = config_overlay.read_app_config_merged()
-    try:
-        _manager._app_config = merged  # type: ignore[attr-defined]
-    except Exception:  # noqa: BLE001 - manager API change protection
-        logger.warning(
-            "Could not patch _manager._app_config after overlay write; "
-            "the manager's view may be stale until the next restart."
-        )
+# _refresh_manager_app_config used to live here; replaced in v0.10.0 by
+# the shared config_overlay.refresh_manager_overlay() helper which uses
+# PluginForge's public merge_app_config entry point.

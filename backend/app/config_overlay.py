@@ -36,10 +36,13 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from app.paths import get_data_dir
 from app.yaml_io import read_yaml_roundtrip, write_yaml_roundtrip
+
+if TYPE_CHECKING:
+    from pluginforge import PluginError, PluginManager
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +139,69 @@ def read_app_config_merged() -> dict[str, Any]:
     project = _read_yaml(_project_app_path())
     user = _read_yaml(_user_app_path())
     return deep_merge(project, user)
+
+
+def read_user_overlay() -> dict[str, Any]:
+    """Return the user-overlay app.yaml layer alone, no project baseline.
+
+    For consumers that already hold the project YAML as their baseline
+    and want only the user-overlay additions to merge on top. Returns
+    ``{}`` when the user-overlay file is missing.
+
+    Canonical consumer: ``PluginManager.merge_app_config(read_user_overlay())``.
+    The manager's ``__init__`` already loads the project app.yaml; passing
+    only the user-overlay layer to ``merge_app_config`` produces the same
+    final view as the legacy ``manager._app_config = read_app_config_merged()``
+    pattern, but through PluginForge v0.10.0's public API.
+    """
+    return _read_yaml(_user_app_path())
+
+
+def refresh_manager_overlay(
+    manager: PluginManager | None, *, notify: bool = True
+) -> list[PluginError]:
+    """Reload project app.yaml from disk and re-overlay the user layer.
+
+    Replaces the v0.9.0-era ``manager._app_config = ...`` private-attribute
+    write that previously lived (with the same shape) in three places:
+    ``app.main._sync_manager_with_overlay``,
+    ``app.routers.settings._refresh_manager_app_config``, and
+    ``app.routers.plugin_install._refresh_manager_app_config``. PluginForge
+    v0.10.0 ships ``PluginManager.merge_app_config`` as the public entry
+    point for the overlay semantic; this function adapts it to the
+    template's "reload project + overlay user" sequence.
+
+    The reload-then-merge ordering preserves the prior behaviour exactly:
+    project YAML can change between calls (rare; explicit edit or
+    deployment), ``reload_config()`` picks that up, then
+    ``merge_app_config(read_user_overlay())`` layers the user overlay on
+    top.
+
+    Args:
+        manager: The PluginManager whose snapshot should be refreshed.
+            ``None`` is tolerated (returns ``[]``) so router-level callers
+            with a ``_manager: PluginManager | None`` module global can
+            invoke unconditionally without a local None guard.
+        notify: Forwarded to ``merge_app_config``. ``False`` at startup
+            before ``discover_plugins()`` runs (no active plugins to
+            notify); ``True`` after Settings UI or plugin-install writes
+            (active plugins react via ``on_config_changed``).
+
+    Returns:
+        ``PluginError`` entries from any active plugin whose
+        ``on_config_changed`` raised. Always ``[]`` when manager is None,
+        under ``notify=False``, when no plugins are active, or when all
+        hooks succeeded.
+    """
+    if manager is None:
+        return []
+    try:
+        manager.reload_config()
+    except Exception:  # noqa: BLE001 - reload best-effort, do not block overlay
+        logger.exception(
+            "PluginManager.reload_config() failed; continuing with cached project config."
+        )
+    return manager.merge_app_config(read_user_overlay(), notify=notify)
 
 
 def load_app_config_for_edit() -> dict[str, Any]:
