@@ -305,27 +305,23 @@ manager.register_hookspecs(MyAppHookSpec)
 
 
 def _sync_manager_with_overlay() -> None:
-    """Overwrite ``manager._app_config`` with the merged overlay view.
+    """Apply the user-overlay layer to the manager's app-config snapshot.
 
-    Pluginforge's ``PluginManager`` reads its app config snapshot
-    directly from ``_config_path`` (project app.yaml). MyApp
-    layers a user-overlay on top of that (see
-    ``app.config_overlay``), so the manager's snapshot would be
-    stale right after import. Call this once at startup before
-    ``discover_plugins`` runs so the enabled / disabled lists
-    reflect Settings-UI changes made on a previous run, and again
-    after any reload to keep state coherent.
+    PluginForge's ``PluginManager.__init__`` loads the project app.yaml
+    into its internal snapshot. MyApp's runtime config additionally
+    layers a user-overlay on top (see ``app.config_overlay``); without
+    this call the snapshot is stale relative to Settings-UI writes made
+    on a previous run. Pre-discovery (no active plugins to notify), so
+    ``notify=False``.
+
+    Uses PluginForge v0.10.0's public ``merge_app_config`` entry point
+    via the shared ``config_overlay.refresh_manager_overlay`` helper.
+    The previous ``manager._app_config = ...`` private-attribute write
+    that this function used in v0.9.0 era is no longer needed.
     """
     from app import config_overlay
 
-    merged = config_overlay.read_app_config_merged()
-    try:
-        manager._app_config = merged  # type: ignore[attr-defined]
-    except Exception:  # noqa: BLE001 - pluginforge API change protection
-        logger.warning(
-            "Could not patch PluginManager._app_config with overlay view; "
-            "Settings-UI changes will not take effect until next restart."
-        )
+    config_overlay.refresh_manager_overlay(manager, notify=False)
 
 
 _sync_manager_with_overlay()

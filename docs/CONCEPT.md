@@ -9,7 +9,7 @@ conventions) is reusable; the specifics are not.
 
 **Repository:** [github.com/astrapi69/pluginforge-app-template](https://github.com/astrapi69/pluginforge-app-template)
 **Related project:** [github.com/astrapi69/write-book-template](https://github.com/astrapi69/write-book-template)
-**PluginForge:** [github.com/astrapi69/pluginforge](https://github.com/astrapi69/pluginforge) (PyPI: pluginforge ^0.9.0)
+**PluginForge:** [github.com/astrapi69/pluginforge](https://github.com/astrapi69/pluginforge) (PyPI: pluginforge ^0.10.0)
 
 This document describes the architecture and the concept. For version history see `docs/CHANGELOG.md`, for current and planned work see `docs/ROADMAP.md`.
 
@@ -67,7 +67,7 @@ PluginForge is a standalone PyPI package:
 ```toml
 # myapp/backend/pyproject.toml
 [tool.poetry.dependencies]
-pluginforge = "^0.9.0"
+pluginforge = "^0.10.0"
 ```
 
 Another developer can use PluginForge independently:
@@ -75,7 +75,7 @@ Another developer can use PluginForge independently:
 ```toml
 # podcast-tool/pyproject.toml
 [tool.poetry.dependencies]
-pluginforge = "^0.9.0"
+pluginforge = "^0.10.0"
 ```
 
 ### 2.3 Tech stack
@@ -263,7 +263,7 @@ pluggy is the de-facto standard for Python plugin systems. pytest, tox, datasett
 
 PluginForge does not reinvent the wheel, it adds the layers pluggy is missing: configuration, lifecycle, web integration.
 
-### 3.4 Plugin interface (v0.9.0)
+### 3.4 Plugin interface (v0.10.0)
 
 ```python
 # pluginforge/base.py (PyPI package, not local)
@@ -292,7 +292,7 @@ class BasePlugin(ABC):
 ```
 
 ```python
-# MyApp main.py - integration with PluginForge v0.9.0
+# MyApp main.py - integration with PluginForge v0.10.0
 from pluginforge import PluginManager
 
 manager = PluginManager(
@@ -311,7 +311,8 @@ manager.get_active_plugins()     # list of active plugins
 manager.get_plugin("export")     # plugin instance by name
 manager.deactivate_plugin("x")   # deactivate + hook unregister
 manager.reload_plugin("x")       # hot reload
-manager.refresh_config()         # reload merged app config (v0.6.0+)
+manager.refresh_config(notify=...) # reload from disk + replace snapshot (v0.6.0; notify kwarg v0.10.0)
+manager.merge_app_config(overlay, notify=...) # deep-merge overlay onto snapshot (v0.10.0)
 manager.health_check()           # health of all plugins
 manager.get_load_errors()        # errors during loading (legacy dict API; still supported)
 manager.get_last_discovery_result()  # v0.6.0+ DiscoveryResult with PluginError + severity
@@ -434,7 +435,7 @@ UserBackup (v0.4.0 - now replaced by the .bgb backup)
   path: str
 ```
 
-### 4.2 Integration with PluginForge v0.9.0
+### 4.2 Integration with PluginForge v0.10.0
 
 ```python
 # myapp/backend/app/main.py
@@ -449,6 +450,13 @@ manager = PluginManager(
     app_version=__version__,     # v0.6.0+ host version, compared against plugin.min_app_version
 )
 manager.register_hookspecs(MyAppHookSpec)
+
+# Apply user-overlay BEFORE discovery (v0.10.0 merge_app_config; no
+# active plugins yet, so notify=False). See config_overlay.refresh_manager_overlay
+# for the shared helper that wraps merge_app_config plus reload_config.
+from app import config_overlay
+config_overlay.refresh_manager_overlay(manager, notify=False)
+
 manager.discover_plugins()
 manager.mount_routes(app)  # mount FastAPI routers
 

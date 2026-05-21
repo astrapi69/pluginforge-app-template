@@ -144,7 +144,7 @@ def add_pen_name(body: AddPenNameRequest) -> dict[str, Any]:
         author["pen_names"] = pen_names
 
     config_overlay.write_user_app_config(current)
-    _refresh_manager_app_config()
+    config_overlay.refresh_manager_overlay(_manager)
 
     return {
         "name": author.get("name", "") or "",
@@ -206,7 +206,7 @@ def update_app_settings(body: AppSettingsUpdate) -> dict[str, Any]:
     config_overlay.write_user_app_config(current)
 
     # Reload config in the manager so changes take effect
-    _refresh_manager_app_config()
+    config_overlay.refresh_manager_overlay(_manager)
 
     # Invalidate the plugin-status cache so the editor sees fresh state
     from app.main import invalidate_plugin_status_cache
@@ -389,7 +389,7 @@ def delete_plugin_config(plugin_name: str) -> dict[str, str]:
     if plugin_name in enabled:
         enabled.remove(plugin_name)
         config_overlay.write_user_app_config(app_config)
-        _refresh_manager_app_config()
+        config_overlay.refresh_manager_overlay(_manager)
 
     config_overlay.delete_user_plugin_config(plugin_name)
     return {"plugin": plugin_name, "status": "removed"}
@@ -449,7 +449,7 @@ def enable_plugin(plugin_name: str) -> dict[str, str]:
         disabled.remove(plugin_name)
 
     config_overlay.write_user_app_config(config)
-    _refresh_manager_app_config()
+    config_overlay.refresh_manager_overlay(_manager)
     return {"plugin": plugin_name, "status": "enabled"}
 
 
@@ -467,7 +467,7 @@ def disable_plugin(plugin_name: str) -> dict[str, str]:
         disabled.append(plugin_name)
 
     config_overlay.write_user_app_config(config)
-    _refresh_manager_app_config()
+    config_overlay.refresh_manager_overlay(_manager)
 
     # Deactivate the plugin if currently active
     if _manager and plugin_name in _active_plugin_names():
@@ -479,26 +479,6 @@ def disable_plugin(plugin_name: str) -> dict[str, str]:
 # --- Helpers ---
 
 
-def _refresh_manager_app_config() -> None:
-    """Reload the plugin manager's app-config snapshot.
-
-    The manager's ``reload_config()`` reads from its own
-    ``_config_path`` (project app.yaml); after a write to the user
-    overlay we then overwrite the in-memory snapshot with the merged
-    view so subsequent ``manager.get_app_config()`` callers see the
-    user's changes without a backend restart.
-    """
-    if not _manager:
-        return
-    try:
-        _manager.reload_config()
-    except Exception:  # noqa: BLE001 - diagnostic only; reload best-effort
-        logger.exception("Plugin manager reload_config() failed; continuing.")
-    merged = config_overlay.read_app_config_merged()
-    try:
-        _manager._app_config = merged  # type: ignore[attr-defined]
-    except Exception:  # noqa: BLE001 - manager API change protection
-        logger.warning(
-            "Could not patch _manager._app_config after overlay write; "
-            "the manager's view may be stale until the next restart."
-        )
+# _refresh_manager_app_config used to live here; replaced in v0.10.0 by
+# the shared config_overlay.refresh_manager_overlay() helper which uses
+# PluginForge's public merge_app_config entry point.
