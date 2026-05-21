@@ -151,5 +151,3 @@ def test_backup_export_and_import():
     assert len(r.json()["chapters"]) == 2
 
     _cleanup_book(book_id)
-
-
