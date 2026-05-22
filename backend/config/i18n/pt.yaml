@@ -978,7 +978,7 @@ ui:
     hint: 'Dica: Pressione Ctrl+/ para abrir esta visao a qualquer momento.'
   error_report:
     title: Criar relatorio de erro
-    intro: O Adaptive Learner detetou um erro e pode preparar um relatorio para o
+    intro: O MyApp detetou um erro e pode preparar um relatorio para o
       programador.
     include_error: Mensagem de erro e stacktrace
     include_env: Informacao do ambiente (versao, navegador, SO)

@@ -929,7 +929,7 @@ ui:
     hint: 'ヒント: Ctrl+/ でいつでもこの一覧を開けます。'
   error_report:
     title: エラーレポートを作成
-    intro: Adaptive Learnerがエラーを検出しました。開発者向けのバグレポートを作成できます。
+    intro: MyAppがエラーを検出しました。開発者向けのバグレポートを作成できます。
     include_error: エラーメッセージとスタックトレース
     include_env: 環境情報（バージョン、ブラウザ、OS）
     include_history: 操作履歴

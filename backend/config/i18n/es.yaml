@@ -216,7 +216,7 @@ ui:
     git_sync: Sincronizar al Repo
   error_report:
     title: Crear informe de error
-    intro: Adaptive Learner detecto un error y puede preparar un informe para el desarrollador.
+    intro: MyApp detecto un error y puede preparar un informe para el desarrollador.
     include_error: Mensaje de error y stacktrace
     include_env: Informacion del entorno (version, navegador, SO)
     include_history: Historial de acciones

@@ -873,7 +873,7 @@ ui:
     kdp_warning: 'Empfohlen für KDP: 1600x2560 Pixel (aktuell: {w}x{h})'
   error_report:
     title: Issue-Report erstellen
-    intro: Adaptive Learner hat einen Fehler erkannt und kann einen Bug-Report für
+    intro: MyApp hat einen Fehler erkannt und kann einen Bug-Report für
       den Entwickler vorbereiten.
     include_error: Fehlermeldung und Stacktrace
     include_env: Umgebungsinformationen (Version, Browser, OS)
