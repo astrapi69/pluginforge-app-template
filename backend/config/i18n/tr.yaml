@@ -215,7 +215,7 @@ ui:
     git_sync: Repo'ya Senkronize
   error_report:
     title: Hata raporu olustur
-    intro: Adaptive Learner bir hata tespit etti ve gelistirici icin bir rapor hazirlayabilir.
+    intro: MyApp bir hata tespit etti ve gelistirici icin bir rapor hazirlayabilir.
     include_error: Hata mesaji ve stacktrace
     include_env: Ortam bilgisi (surum, tarayici, isletim sistemi)
     include_history: Islem gecmisi

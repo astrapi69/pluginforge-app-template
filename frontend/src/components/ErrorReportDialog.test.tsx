@@ -110,6 +110,21 @@ describe("ErrorReportDialog", () => {
     expect(url).toContain("labels=bug")
   })
 
+  it("URL stays under GitHub's 8KB limit when the error message is huge", () => {
+    // Regression pin for the trim loop in ErrorReportDialog.handleSubmit:
+    // GitHub rejects URLs over ~8192 chars. The dialog truncates the body
+    // until the encoded URL fits MAX_ENCODED_URL=7800.
+    ;(window.open as ReturnType<typeof vi.fn>).mockClear()
+    const hugeMessage = "X".repeat(10_000)
+    renderDialog({errorMessage: hugeMessage})
+    fireEvent.click(screen.getByText("Issue auf GitHub erstellen"))
+
+    const url = (window.open as ReturnType<typeof vi.fn>).mock.calls[0][0] as string
+    expect(url.length).toBeLessThan(8000)
+    // The trim loop appends a truncation note in the raw body.
+    expect(decodeURIComponent(url)).toContain("Bericht gekürzt")
+  })
+
   it("submit calls onClose", () => {
     renderDialog()
     fireEvent.click(screen.getByText("Issue auf GitHub erstellen"))

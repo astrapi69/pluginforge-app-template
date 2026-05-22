@@ -10,6 +10,7 @@
  */
 
 import {describe, it, expect, vi, beforeEach} from 'vitest'
+import {render, fireEvent} from '@testing-library/react'
 
 vi.mock('react-toastify', () => ({
   toast: {
@@ -58,6 +59,34 @@ describe('notify.error', () => {
     expect(() => notify.error('oops', new Error('plain'))).not.toThrow()
     expect(() => notify.error('oops', 'string error')).not.toThrow()
     expect(() => notify.error('oops', undefined)).not.toThrow()
+  })
+})
+
+describe('error toast button -> custom event contract', () => {
+  // Pins the wiring: clicking the "Issue melden" button inside the
+  // error toast's ErrorContent must dispatch myapp:open-error-report
+  // on window with the message + apiError in detail. App.tsx's
+  // listener depends on this exact event name and shape.
+  it('clicking the toast button dispatches myapp:open-error-report', () => {
+    const apiErr = new ApiError(500, 'DB down', '/api/x', 'GET', 'trace')
+    notify.error('Boom happened', apiErr)
+    const element = vi.mocked(toast.error).mock.calls[0][0] as React.ReactElement
+
+    const received: CustomEvent[] = []
+    const handler = (e: Event) => received.push(e as CustomEvent)
+    window.addEventListener('myapp:open-error-report', handler)
+    try {
+      const {getByText} = render(element)
+      fireEvent.click(getByText('Issue melden'))
+    } finally {
+      window.removeEventListener('myapp:open-error-report', handler)
+    }
+
+    expect(received).toHaveLength(1)
+    expect(received[0].detail).toEqual({
+      message: 'Boom happened',
+      apiError: apiErr,
+    })
   })
 })
 
