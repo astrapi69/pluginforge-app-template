@@ -460,9 +460,11 @@ ui:
     ai_key_not_required: Not required
     ai_key_hint: The API key is stored locally and only sent to the service specified
       in 'Base URL'.
-    ai_api_key_external_note: API key is read from external configuration (~/.config/myapp/secrets.yaml
-      or MYAPP_AI_API_KEY environment variable). Edit the file directly
-      or set the variable to change the key.
+    api_key_source_file: 'Key from: secrets.yaml'
+    api_key_source_settings: 'Key from: Settings'
+    api_key_source_env: 'Key from: environment'
+    api_key_external_hint: This key is configured in {path}. Edit the file
+      to change it.
     ai_lmstudio_hint: Running locally, no API key required. Models are provided by
       the LM Studio server.
     ai_provider_anthropic: Anthropic (Claude)

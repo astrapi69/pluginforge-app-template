@@ -229,6 +229,92 @@ def test_lists_are_replaced_not_merged(project_yaml: Path) -> None:
     assert cfg["app"]["supported_languages"] == ["fr"]
 
 
+def test_ensure_secrets_template_creates_dir_and_file(tmp_path: Path) -> None:
+    """Auto-creates the parent dir + a commented-out template file
+    with chmod 0o600 on first invocation. Idempotent: subsequent
+    calls do not overwrite a user-edited file."""
+    import sys
+
+    path = tmp_path / "new-dir" / "secrets.yaml"
+    main_module._ensure_secrets_template(path)
+    assert path.parent.exists()
+    assert path.exists()
+    assert path.read_text(encoding="utf-8") == main_module._SECRETS_TEMPLATE_BODY
+    if sys.platform != "win32":
+        assert path.stat().st_mode & 0o777 == 0o600
+
+    # Idempotency: rewrite then call again, content stays.
+    path.write_text("# edited by user\n", encoding="utf-8")
+    main_module._ensure_secrets_template(path)
+    assert path.read_text(encoding="utf-8") == "# edited by user\n"
+
+
+def test_warn_if_secrets_perms_too_open_fires_on_644(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A 0o644 file logs a WARNING that names the actual mode."""
+    import sys
+
+    if sys.platform == "win32":
+        pytest.skip("POSIX permission check is no-op on Windows")
+
+    path = tmp_path / "secrets.yaml"
+    path.write_text("", encoding="utf-8")
+    os.chmod(path, 0o644)
+    main_module._perms_warned.discard(path)
+
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        main_module._warn_if_secrets_perms_too_open(path)
+
+    assert any(
+        "permissive mode" in record.getMessage() and "644" in record.getMessage()
+        for record in caplog.records
+    ), [r.getMessage() for r in caplog.records]
+
+
+def test_warn_if_secrets_perms_too_open_silent_on_600(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A 0o600 file produces no warning."""
+    import sys
+
+    if sys.platform == "win32":
+        pytest.skip("POSIX permission check is no-op on Windows")
+
+    path = tmp_path / "secrets.yaml"
+    path.write_text("", encoding="utf-8")
+    os.chmod(path, 0o600)
+    main_module._perms_warned.discard(path)
+
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        main_module._warn_if_secrets_perms_too_open(path)
+
+    assert all("permissive mode" not in r.getMessage() for r in caplog.records)
+
+
+def test_warn_if_secrets_perms_too_open_dedups_per_path(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Second call against the same permissive path stays silent
+    (warning recorded once, path added to ``_perms_warned`` set)."""
+    import sys
+
+    if sys.platform == "win32":
+        pytest.skip("POSIX permission check is no-op on Windows")
+
+    path = tmp_path / "secrets.yaml"
+    path.write_text("", encoding="utf-8")
+    os.chmod(path, 0o644)
+    main_module._perms_warned.discard(path)
+
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        main_module._warn_if_secrets_perms_too_open(path)
+        main_module._warn_if_secrets_perms_too_open(path)
+
+    perm_warnings = [r for r in caplog.records if "permissive mode" in r.getMessage()]
+    assert len(perm_warnings) == 1
+
+
 def test_deep_merge_helper_pure_function() -> None:
     """``_deep_merge`` is documented as non-mutating; verify."""
     base = {"a": 1, "nested": {"x": 1, "y": 2}}

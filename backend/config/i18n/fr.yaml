@@ -483,9 +483,11 @@ ui:
     ai_key_not_required: Non requise
     ai_key_hint: La cle est stockee localement et envoyee uniquement au service indique
       dans 'Base URL'.
-    ai_api_key_external_note: La cle API est lue depuis une configuration externe
-      (~/.config/myapp/secrets.yaml ou variable d'environnement MYAPP_AI_API_KEY).
-      Modifie le fichier directement ou definis la variable pour changer la cle.
+    api_key_source_file: 'Cle depuis : secrets.yaml'
+    api_key_source_settings: 'Cle depuis : Parametres'
+    api_key_source_env: "Cle depuis : variable d'environnement"
+    api_key_external_hint: Cette cle est configuree dans {path}. Modifiez
+      le fichier pour la changer.
     ai_lmstudio_hint: Fonctionne localement, pas de cle API necessaire. Les modeles
       sont fournis par le serveur LM Studio.
     ai_provider_anthropic: Anthropic (Claude)
