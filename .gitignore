@@ -5,6 +5,7 @@ __pycache__/
 dist/
 .venv/
 venv/
+.pytest_cache/
 
 # Mutation testing
 mutants/
@@ -40,9 +41,6 @@ backend/*.migrated-*
 # Production marker (written by FastAPI lifespan startup; see
 # backend/app/paths.py + backend/tests/conftest.py).
 .myapp-production
-
-# MkDocs build output
-site/
 
 # IDE
 .idea/
