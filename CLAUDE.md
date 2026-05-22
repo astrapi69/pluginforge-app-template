@@ -1,10 +1,9 @@
 # PluginForge App Template
 
-Reusable project scaffold for building plugin-driven, full-stack applications with [PluginForge](https://github.com/astrapi69/pluginforge). Ships a clean FastAPI + React + TypeScript skeleton with CRUD, settings, i18n, tests, CI, cross-OS launcher, and Docker deployment — domain models marked `EXAMPLE-DOMAIN` for the user to replace.
+Reusable project scaffold for building plugin-driven, full-stack applications with [PluginForge](https://github.com/astrapi69/pluginforge). Ships a clean FastAPI + React + TypeScript skeleton with CRUD, settings, i18n, tests, CI, cross-OS launcher, and Docker deployment - domain models marked `EXAMPLE-DOMAIN` for the user to replace.
 
 - **Repository:** https://github.com/astrapi69/pluginforge-app-template
-- **Concept:** [docs/CONCEPT.md](docs/CONCEPT.md)
-- **Customization guide:** [CUSTOMIZE.md](CUSTOMIZE.md) — read this first after cloning
+- **Customization guide:** [CUSTOMIZE.md](CUSTOMIZE.md) - read this first after cloning
 - **API reference:** FastAPI OpenAPI under `/docs` and `/openapi.json`
 
 ## Ecosystem
@@ -39,11 +38,10 @@ On a conflict between CLAUDE.md and the rules, the rules win.
 
 - **Backend:** Python 3.11+, FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, Poetry
 - **Frontend:** React 18+, TypeScript (strict), Vite, Radix UI, @dnd-kit, Lucide, react-toastify
-- **Plugins:** pluginforge ^0.10.0 (PyPI), entry points under group `myapp.plugins`. Host passes `app_id="myapp"` + `app_version`, so plugins must declare `target_application = "myapp"` or they are rejected with `missing_target_application`. The user-overlay layer is applied via `config_overlay.refresh_manager_overlay(manager)` which wraps PluginForge v0.10.0's `merge_app_config()` public API (replaces the prior `manager._app_config = ...` private-attribute write).
+- **Plugins:** pluginforge ^0.10.0 (PyPI), entry points under group `myapp.plugins`. Host passes `app_id="myapp"` + `app_version`, so plugins must declare `target_application = "myapp"` or they are rejected with `missing_target_application`. The user-overlay layer is applied via `config_overlay.refresh_manager_overlay(manager)` which wraps PluginForge v0.10.0's `merge_app_config()` public API.
 - **Launcher:** PyInstaller-based cross-OS desktop launcher (`launcher/`)
 - **Testing:** pytest, Vitest, Playwright, mutmut, Stryker
 - **Tooling:** Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit
-- **Docs site:** MkDocs (`mkdocs.yml`, `docs/pyproject.toml` carries the docs venv)
 
 ## Architecture (short)
 
@@ -79,7 +77,7 @@ E2E tests: `npx playwright test --project=smoke` or `--project=full`.
 
 The skeleton ships with a content-authoring example domain so the wiring (model → router → service → frontend → tests) is concrete. Replace each entity with your own domain concepts. See `CUSTOMIZE.md` Step 3.
 
-- **Book / Chapter / Article / ArticleComment / Author / Asset** — example entities demonstrating CRUD, soft-delete, parent/child, file uploads, and i18n
+- **Book / Chapter / Article / ArticleComment / Author / Asset** - example entities demonstrating CRUD, soft-delete, parent/child, file uploads, and i18n
 - **Settings:** layered config (project YAML < user override < env-vars)
 
 ## Plugins
@@ -94,7 +92,7 @@ Cross-OS desktop launcher under `launcher/`, packaged with PyInstaller. Produces
 - **Python package:** `launcher/myapp_launcher/`
 - **Per-OS build pipelines:** `.github/workflows/launcher-{linux,macos,windows}.yml` build artifacts on release tags
 - **Embedded version:** injected at PyInstaller build time from `backend/pyproject.toml` via the spec (no hardcoded literal)
-- **User-facing install scripts:** `install.sh` (Linux), `install.command` (macOS), `install.cmd` + `install.ps1` (Windows) — generated from `*.template` files at release time
+- **User-facing install scripts:** `install.sh` (Linux), `install.command` (macOS), `install.cmd` + `install.ps1` (Windows) - generated from `*.template` files at release time
 
 ## Directory structure (short)
 
@@ -111,9 +109,9 @@ pluginforge-app-template/
 │   └── styles/global.css  # CSS variables, themes
 ├── e2e/                   # Playwright specs (smoke + full)
 ├── launcher/              # cross-OS PyInstaller launcher
-├── docs/                  # MkDocs site (CONCEPT, ROADMAP, API, help/*, audits/*)
-├── scripts/               # ROADMAP archival, mkdocs nav generator, audits, version sync
-├── .github/workflows/     # CI/CD: ci, coverage, docs, launcher-{linux,macos,windows}, release-gate
+├── docs/                  # project documentation (configuration; add CONCEPT / ROADMAP as the project matures)
+├── scripts/               # ROADMAP archival, audits, version sync
+├── .github/workflows/     # CI/CD: ci, coverage, launcher-{linux,macos,windows}, release-gate
 └── Makefile, docker-compose.yml, docker-compose.prod.yml,
     install.{sh,cmd,ps1,command}, start.sh, stop.sh, .env.example
 ```
@@ -140,7 +138,7 @@ Tests run in a temporary data directory, never against production data. Two laye
 1. `MYAPP_TEST=1` + `TEST_DATABASE_URL=sqlite:///:memory:` set BEFORE any `app.*` import. `MYAPP_DATA_DIR` set to a process-scoped tmp dir.
 2. Production data directories carry a `.myapp-production` marker file. If any test ever sees this marker, the run aborts with `pytest.exit(returncode=2)`.
 
-Path conventions: `Path("uploads")` is forbidden (CWD-relative). Use `app.paths.get_upload_dir()`. Frozen module-level imports of paths are forbidden — use the helper functions.
+Path conventions: `Path("uploads")` is forbidden (CWD-relative). Use `app.paths.get_upload_dir()`. Frozen module-level imports of paths are forbidden - use the helper functions.
 
 ## Pre-commit hooks
 

@@ -3,18 +3,31 @@
 > **Static reference template.** Copy the relevant sections into
 > `changelog/releases/vX.Y.Z.md` before invoking
 > `gh release create --notes-file ...` (release-workflow.md Step 8).
-> No automation reads this file; it exists so every release reuses
-> the same prerequisites + verification block instead of being
-> rewritten from memory.
+> No automation reads this file; it exists so every release
+> reuses the same prerequisites + verification block instead of
+> being rewritten from memory.
+
+<!--
+TEMPLATE: customise per project. The "Before you install"
+section assumes a Docker-shipped app + cross-OS launcher
+binaries. If your deployment model differs (server-only, npm
+package, plain Docker image, etc.), rewrite that block. Keep
+"Download" + "Verifying downloads" + "What's new" as the
+load-bearing structure.
+-->
 
 ## Before you install
 
-MyApp runs in Docker. You need Docker Desktop installed and running before starting the launcher.
+MyApp ships as a self-contained launcher binary (per OS) that
+boots the backend, opens the frontend in your browser, and
+manages updates.
 
-- [Docker installation guide (English)](https://github.com/astrapi69/pluginforge-app-template/blob/main/docs/help/en/install/docker-desktop.md) - includes a "Is Docker safe to install?" section
-- [Docker-Installationsanleitung (Deutsch)](https://github.com/astrapi69/pluginforge-app-template/blob/main/docs/help/de/install/docker-desktop.md) - mit Abschnitt "Ist Docker sicher zu installieren?"
+<!-- TODO: if MyApp also requires Docker (or another external
+runtime), say so explicitly here and link to a per-OS install
+guide. -->
 
-The launcher detects Docker, downloads MyApp automatically, and opens it in your browser. The first launch takes 5-10 minutes (Docker images build, ~2 GB disk space).
+The first launch may take several minutes while initial assets
+are downloaded; subsequent launches start in seconds.
 
 ## Download
 
@@ -42,7 +55,9 @@ Get-Content .\myapp-launcher.exe.sha256
 
 The hashes must match.
 
-If your operating system warns about an unsigned binary, see the [MyApp installation overview](https://github.com/astrapi69/pluginforge-app-template/blob/main/docs/help/en/installation.md).
+If your operating system warns about an unsigned binary, see
+the project's installation overview (link it from the release
+once your installation doc exists).
 
 ## What's new
 

@@ -3,7 +3,7 @@
 ## Session start
 
 On the first message of a session:
-1. Read docs/ROADMAP.md (current state, open items).
+1. If the project keeps a ROADMAP, read it (current state, open items).
 2. Review recent changes: git log --oneline -10
 3. Run make test (establish a green baseline).
    Only then start on the task.
@@ -11,20 +11,20 @@ On the first message of a session:
 ## Interpreting "continue" / "next item"
 
 When the user says "continue", "next item", "go on" or similar:
-1. Read docs/ROADMAP.md, section "Next steps".
+1. Read the project's ROADMAP (e.g. docs/ROADMAP.md), section "Next steps".
 2. Name the first open item (unchecked checkbox).
 3. Wait for confirmation, do NOT start implementing immediately.
 
 ## Order for new features
 
 1. Check whether the feature belongs in a plugin or in the core.
-2. Look at existing patterns (e.g. how plugin-export is structured).
+2. Look at existing patterns (find the closest similar feature and mirror its shape).
 3. Schema/model first (Pydantic schema or TypeScript interface).
 4. Backend logic (service module, then route).
 5. Frontend (extend API client, then UI).
 6. Write unit and integration tests (pytest, Vitest).
-7. Playwright smoke tests for UI features: for every new UI feature write at least one spec under `e2e/smoke/`. Must cover: happy path, relevant viewport sizes (600/800/1080 for layout-critical features), data-testid selectors (no brittle CSS selectors). Claude Code WRITES the specs, Aster RUNS them. No feature counts as done without a smoke test.
-8. Add i18n strings in all 8 languages (DE, EN, ES, FR, EL, PT, TR, JA).
+7. Playwright smoke tests for UI features: for every new UI feature write at least one spec under `e2e/smoke/`. Must cover: happy path, relevant viewport sizes (600/800/1080 for layout-critical features), data-testid selectors (no brittle CSS selectors).
+8. Add i18n strings in every supported language (the directory listing of `backend/config/i18n/` is the canonical list).
 9. Conventional commit.
 
 ## Order for new plugins
@@ -52,26 +52,19 @@ For code-level prohibitions (fetch, console.log, Tailwind, etc.) see coding-stan
 
 Additionally for the AI:
 - Introduce new dependencies without asking first.
-- Change architectural decisions (e.g. replace SQLAlchemy, replace TipTap).
-- Change PluginForge code from inside MyApp (separate repo!).
+- Change architectural decisions (e.g. replace SQLAlchemy, swap the UI primitive library) without asking.
+- Change PluginForge code from inside this app (separate repo).
 - Change the plugin structure (BasePlugin, hook specs) without asking.
 - Generate code "for later". Only what is needed now.
 - Delete, comment out or weaken existing tests to make `make test` green.
-- Build custom TipTap extensions without first checking whether an official one exists.
 - Throw HTTPException from service functions. Services use MyAppError subclasses (see code-hygiene.md).
 - In autonomous mode, guess when something is unclear. Prefer to stop and document the uncertainty.
 
 ## Current state
 
-See architecture.md for architectural details. Additionally note:
-- Version: 0.17.0 (one-click launcher install/uninstall across Windows/macOS/Linux, auto-update check with opt-out, cleanup retry, activity log, manuscripta 0.9.0 + Pillow 12).
-- Tests: see `docs/audits/current-coverage.md` for current counts. `make test` covers backend+plugins+Vitest, E2E is separate.
-- 26 ChapterTypes (3 marketing types in audiobook-export skip list by default).
-- 15 official TipTap extensions + 1 community (@pentestpad/tiptap-extension-figure).
-- 24 toolbar buttons in the editor.
-- Deployment: Docker Compose, port 7880, install.sh one-liner.
-- IMPORTANT: Before writing custom code, ALWAYS check whether a TipTap extension or library already exists.
-- IMPORTANT: See lessons-learned.md for known pitfalls (TipTap, import, export).
+See architecture.md for architectural details and CLAUDE.md for the
+current project description, tech-stack snapshot, and active plugin
+inventory.
 
 ## Test coverage audits
 
@@ -123,18 +116,16 @@ only.
 
 - `make test` - default everyday command. Fast, no coverage.
   Stays green as the gate after every change.
-- `make test-coverage` - explicit opt-in. Runs backend, frontend
-  and the 5 in-CI plugins (export, grammar, kdp, kinderbuch,
-  ms-tools) with `pytest --cov` and `vitest --coverage`. Frontend
-  coverage requires Node 20+; lower versions fail with a
-  `node:inspector/promises` ImportError. CI uses Node 24 so this
-  is only a local concern.
+- `make test-coverage` - explicit opt-in. Runs backend + frontend
+  with `pytest --cov` and `vitest --coverage`. As you add plugins,
+  wire each into the coverage target alongside the existing
+  backend / frontend lines.
 - `.github/workflows/coverage.yml` - runs on every push to main
   and every PR. Uploads HTML reports + coverage.xml as
   GitHub Actions artifacts (14 day retention):
     - `backend-coverage`
-    - `myapp-plugin-{export,grammar,kdp,kinderbuch,ms-tools}-coverage`
     - `frontend-coverage`
+    - per-plugin coverage artifacts once plugins land
 
 To pull the latest coverage reports without running coverage
 locally:
@@ -142,13 +133,7 @@ locally:
 ```bash
 gh run download --name backend-coverage
 gh run download --name frontend-coverage
-gh run download --name myapp-plugin-export-coverage  # etc.
 ```
-
-`audiobook` and `translation` plugins are not yet in the coverage
-matrix - they are tested by `make test` but not by CI's
-`ci.yml` plugin matrix either, so adding them to coverage is
-paired with adding them to ci.yml in a follow-up.
 
 Codecov integration is intentionally not wired up. Adding it is
 a separate prompt: enable the repo on codecov.io, add
@@ -161,8 +146,8 @@ Numbers that change with every feature or test session live in ONE canonical loc
 
 | Statistic | Canonical location | Example reference |
 |-----------|-------------------|-------------------|
-| Test counts, coverage percentages, pyramid stats | `docs/audits/current-coverage.md` | "See docs/audits/current-coverage.md for test statistics." |
-| ChapterType list and count | `backend/app/models/__init__.py` (the `ChapterType` enum) | "See the ChapterType enum in models for the full list." |
+| Test counts, coverage percentages, pyramid stats | A per-project coverage audit doc (e.g. `docs/audits/current-coverage.md`) | "See docs/audits/current-coverage.md for test statistics." |
+| Domain enum lists and counts | The enum definition in `backend/app/models/` | "See the {EnumName} enum in models for the full list." |
 | Supported i18n languages | `backend/config/i18n/` (the directory listing) | "See config/i18n/ for supported languages." |
 | Plugin catalog | `CLAUDE.md` plugin table | Reference CLAUDE.md or `config/plugins/`. |
 
@@ -170,7 +155,7 @@ Numbers that change with every feature or test session live in ONE canonical loc
 
 **Rationale:** duplicated numbers drift out of sync within one session. A single source is always correct because there is only one place to update.
 
-**When writing documentation:** if you need to mention a count, write the principle or the reference, not the number. Example: "MyApp supports multiple languages (see config/i18n/)" instead of "MyApp supports 8 languages".
+**When writing documentation:** if you need to mention a count, write the principle or the reference, not the number. Example: "the app supports multiple languages (see config/i18n/)" instead of hardcoding the count.
 
 ## Numeric claims verification
 
@@ -225,18 +210,15 @@ the next session.
 - **Playwright smoke:** `cd frontend && npx playwright test e2e/smoke/ 2>&1 | tail -5`
 - **LOC (approximate):** `git ls-files | xargs wc -l | tail -1`
 
-### Incident record
+### Why this rule exists
 
-This rule exists because of two repeated incidents:
-
-1. v0.19.1 article session (2026-04-20): plugin test count
-   reported as 317, actual 409. Caught pre-publication.
-2. v0.20.0 release journal (2026-04-20): plugin test count
-   reported as 317 again, actual 409. Caught in internal docs.
-
-Both were grep-parse errors where `export` plugin (92 tests) was
-missed in the parse. Both would have been prevented by running
-the full per-plugin iteration.
+Grep-parsing pytest output to extract a count is unreliable: a
+single missed plugin or a paginated tail line silently drops
+test counts. Across two real release sessions, the same
+grep-parse error misreported a plugin test count off by ~100;
+both would have been prevented by running the full per-plugin
+iteration above and asserting on the actual number, not a
+remembered or inferred one.
 
 ### When the user provides a number
 
@@ -333,7 +315,8 @@ CLAUDE.md is loaded on EVERY prompt. It has to stay lean (target: under 8000 cha
 - Makefile targets
 - Session-start checklist
 - Data model in short form
-- Plugin table (name, tier, dependency, short description)
+- Plugin table (name, tier, dependency, short description) once
+  plugins land
 - Directory structure, top level only
 - Core conventions (max 10 bullets)
 - Overall test counts
@@ -343,7 +326,7 @@ Update when:
 - A new dependency joins the tech stack
 - Test counts have changed substantially
 - New Makefile targets
-- Data model changes (new fields, new ChapterTypes)
+- Data model changes (new fields, new enum values)
 - Version bumped
 
 NOT in CLAUDE.md:
@@ -406,7 +389,7 @@ It is NOT a duplicate definition store.
 
 - A task that lives in ROADMAP must NOT have its full body
   duplicated in backlog. Use a one-line pointer instead:
-  `- **DEP-02**: TipTap 2 -> 3 (BLOCKED) — see ROADMAP > Blocked / Upstream Wait.`
+  `- **DEP-02**: depA major bump (BLOCKED) - see ROADMAP > Blocked / Upstream Wait.`
 - A task that lives only in backlog (no ROADMAP entry) keeps its
   full body. The backlog is the queue for not-yet-promoted ideas.
 - When backlog and ROADMAP disagree, ROADMAP wins.
@@ -415,17 +398,13 @@ It is NOT a duplicate definition store.
 
 Completed tasks are archived to `docs/roadmap-archive/`:
 
-- `phase-1-complete.md` (v0.1.0..v0.14.0). One-time Phase 1 -> 2
-  transition snapshot.
-- `v0.25.0-cleanup-2026-05-02.md` (Phase 2 work shipped between
-  v0.15.0 and v0.25.0). One-time bulk extract.
-- `backlog-recently-closed-2026-05-02.md` (backlog "Recently
-  closed" prose). One-time bulk extract.
 - `YYYY-MM.md` (e.g. `2026-05.md`). Continuous-archival monthly
   bucket. One file per month, written by
   `scripts/archive_completed_task.py`. Each session's closures
   land here under a `## Archived YYYY-MM-DD` section, newest day
   first.
+- One-off snapshots for bulk extracts (e.g. a one-time release
+  cleanup) are fine; name them after what they captured.
 
 Active files (`ROADMAP.md` and `backlog.md`) contain ONLY open
 `- [ ]` items. Do not re-add closed tasks to the active files;
@@ -474,9 +453,9 @@ responsibility, not a CI gate.
 
 #### What NOT to do
 
-- Do NOT batch up `[x]` items across releases. The 2026-05-02
-  cleanup was a one-time recovery operation; the steady state is
-  one task per archival.
+- Do NOT batch up `[x]` items across releases. Bulk cleanups are
+  one-time recovery operations; the steady state is one task per
+  archival.
 - Do NOT archive items that are technically done but missing
   tests or docs. Finish them first.
 - Do NOT delete tasks from active files without archiving. The
@@ -500,8 +479,8 @@ responsibility, not a CI gate.
 
 - New pitfall discovered (bug caused by a wrong pattern)
 - Workaround found for a library limitation
-- Import/export edge case solved
-- CSS/TipTap specificity problem solved
+- Non-obvious edge case solved that future-you would otherwise re-debug
+- CSS specificity, framework-quirk, or build-pipeline trap solved
 
 ### End-of-session flow
 

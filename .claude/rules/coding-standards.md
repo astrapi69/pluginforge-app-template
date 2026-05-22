@@ -35,11 +35,13 @@
 - TypeScript: PascalCase (components, interfaces), camelCase (functions, variables).
 - Plugin folders: myapp-plugin-{name} (kebab-case).
 - Python package inside a plugin: myapp_{name} (snake_case).
-- Events/hooks: snake_case (chapter_pre_save, export_execute).
-- No I-prefix for interfaces. `Book`, not `IBook`.
-- File formats: .bgb (backup), .bgp (project). Not .zip.
+- Events/hooks: snake_case (entity_pre_save, plugin_action).
+- No I-prefix for interfaces. `Entity`, not `IEntity`.
+- File formats: pick a domain-specific extension for backups and
+  project archives once the domain is in place; document the
+  mapping in CLAUDE.md. Generic `.zip` is acceptable.
 - No generic names: data, info, result, temp, item, obj, val, tmp, x are forbidden.
-  Use instead: book_data, plugin_info, export_result, chapter_item.
+  Use instead: entity_data, plugin_info, parse_result, manifest_item.
   Exception: loop variables (i, j) and lambdas.
 
 ## Formatting
@@ -100,29 +102,27 @@
 ```python
 # WRONG: 150+ lines, 8 responsibilities
 @router.get("/{fmt}")
-def export(book_id, fmt, ...):
-    # load DB, load config, detect TOC, scaffold,
-    # build filename, ZIP/audiobook/Pandoc, find cover, ...
+def export(entity_id, fmt, ...):
+    # load DB, load config, validate format, scaffold,
+    # build filename, package, find assets, ...
 ```
 
 **Right (decomposed):**
 ```python
 # routes.py - ONLY routing
 @router.get("/{fmt}")
-def export(book_id, fmt, ...):
+def export(entity_id, fmt, ...):
     validate_format(fmt)
-    context = build_export_context(book_id, fmt, book_type, ...)
+    context = build_export_context(entity_id, fmt, ...)
     return EXPORTERS[fmt](context)
 
 # exporters.py - one function per format group
 def export_project(ctx: ExportContext) -> FileResponse: ...
-def export_audiobook(ctx: ExportContext) -> FileResponse: ...
 def export_document(ctx: ExportContext) -> FileResponse: ...
 
 # helpers.py - individually testable
 def validate_format(fmt: str) -> None: ...
-def detect_manual_toc(chapters: list[dict]) -> bool: ...
-def build_filename(slug: str, book_type: str, suffix: bool) -> str: ...
+def build_filename(slug: str, suffix: bool) -> str: ...
 def find_cover_image(project_dir: Path) -> str | None: ...
 ```
 
@@ -160,7 +160,7 @@ Chain: MyAppError -> API response (detail + traceback) -> ApiError -> toast with
 - Mutation testing: mutmut (Python).
 - New endpoints: at least one happy-path test.
 - Bug fixes: failing test FIRST, then fix.
-- Mocking: mock external services (LanguageTool, Pandoc), no real calls in tests.
+- Mocking: mock external services, no real network calls in tests.
 - `make test` must stay green after every change.
 - Surviving mutants in critical code: add tests. In trivial code: ignore.
 - See quality-checks.md for the full test strategy and mutmut configuration.
@@ -176,15 +176,14 @@ Chain: MyAppError -> API response (detail + traceback) -> ApiError -> toast with
 ## Performance
 
 - SQLite is single-writer. Minimize writes, batch where possible.
-- TipTap JSON can get large. Autosave with debounce (not on every keystroke).
 - Plugin loading at app startup. Lazy-load plugin UI where possible.
 
 ## Dependencies
 
 New dependencies only after asking. Existing stack:
 
-Backend: FastAPI, SQLAlchemy, Pydantic v2, pluginforge, manuscripta, PyYAML, markdown (MD->HTML)
-Frontend: React 18, TypeScript, TipTap (15+1 extensions), Vite, Radix UI, @dnd-kit, Lucide, react-toastify
+Backend: FastAPI, SQLAlchemy, Pydantic v2, pluginforge, PyYAML
+Frontend: React 18, TypeScript, Vite, Radix UI, @dnd-kit, Lucide, react-toastify
 Testing: pytest, Playwright, Vitest, mutmut (Python mutation testing)
 Linting/formatting: ruff (Python), ESLint + Prettier (TypeScript), pre-commit
 Tooling: Poetry, npm, Docker, Make

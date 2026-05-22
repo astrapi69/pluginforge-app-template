@@ -10,11 +10,6 @@ make test
 
 # Individually when targeted:
 make test-backend           # pytest backend
-make test-plugins           # all plugin tests
-make test-plugin-export     # export only
-make test-plugin-grammar    # grammar only
-make test-plugin-kdp        # KDP only
-make test-plugin-kinderbuch # kinderbuch only
 make test-frontend          # Vitest
 
 # E2E (needs a running app)
@@ -22,14 +17,18 @@ make dev                    # start the app
 npx playwright test         # E2E tests
 ```
 
+When the project adopts plugins, wire each one into a
+`test-plugin-<name>` target and aggregate via `test-plugins`
+(see the comment block in the Makefile for the pattern).
+
 ### 2. Type check
 
 ```bash
 # Frontend: TypeScript compiler
 cd frontend && npx tsc --noEmit
 
-# Backend: mypy (optional, not set up yet)
-# cd backend && poetry run mypy app/
+# Backend: mypy
+cd backend && poetry run mypy app/
 ```
 
 ### 3. Manually check the rules
@@ -40,7 +39,7 @@ Go through this checklist before committing:
 - [ ] No fetch() calls outside of api/client.ts
 - [ ] No browser dialogs (alert, confirm, prompt); use AppDialog
 - [ ] No hardcoded strings in the UI; use the i18n YAML
-- [ ] New UI elements work in all 6 theme variants (3 themes x light/dark)
+- [ ] New UI elements work in every theme variant
 - [ ] CSS uses variables, no hardcoded colors
 - [ ] No em-dash in code or text
 - [ ] Conventional Commit message (feat:, fix:, refactor:, ...)
@@ -62,7 +61,9 @@ Go through this checklist before committing:
  --------------------------  Verifies that tests actually catch bugs
 ```
 
-Current counts: see [docs/audits/current-coverage.md](docs/audits/current-coverage.md).
+Current counts: track in a per-project coverage doc (e.g.
+`docs/audits/current-coverage.md`) once your test surface is
+large enough to make the canonical-numbers rule pay off.
 
 ### Unit tests (Backend - pytest)
 
@@ -71,29 +72,22 @@ Current counts: see [docs/audits/current-coverage.md](docs/audits/current-covera
 
 **Where:** `backend/tests/` and `plugins/{name}/tests/`
 
-**Example - new service:**
+**Example shape (replace with your domain):**
 ```python
-# plugins/myapp-plugin-export/tests/test_tiptap_to_md.py
+# backend/tests/services/test_entity_service.py
 
-def test_heading_conversion():
-    """H2 node becomes ## in Markdown."""
-    tiptap_json = {
-        "type": "doc",
-        "content": [
-            {"type": "heading", "attrs": {"level": 2},
-             "content": [{"type": "text", "text": "Title"}]}
-        ]
-    }
-    result = tiptap_to_markdown(tiptap_json)
-    assert result.strip() == "## Title"
+def test_create_entity_persists_to_db(session):
+    """create_entity writes an Entity row with the right fields."""
+    entity_data = {"name": "Test", "external_id": 1}
+    result = create_entity(session, entity_data)
+    assert result.id is not None
+    assert result.name == "Test"
 
-def test_image_roundtrip():
-    """Image survives import -> export."""
-    md_input = "![Alt Text](assets/figures/image.png)"
-    html = markdown_to_html(md_input)
-    tiptap_json = html_to_tiptap(html)
-    md_output = tiptap_to_markdown(tiptap_json)
-    assert "image.png" in md_output
+def test_create_entity_rejects_duplicate_external_id(session):
+    """Duplicate external_id raises ConflictError (-> HTTP 409)."""
+    create_entity(session, {"name": "First", "external_id": 1})
+    with pytest.raises(ConflictError):
+        create_entity(session, {"name": "Second", "external_id": 1})
 ```
 
 **Naming convention:** `test_{what_is_tested}.py`, functions: `test_{scenario}()`
@@ -101,11 +95,12 @@ def test_image_roundtrip():
 **When to write new tests:**
 - New service or new function: at least a happy path + one error case.
 - Bug fix: failing test first, then fix.
-- Import/export logic: test roundtrips (input -> transformation -> output -> compare).
+- Roundtrip logic (import -> transformation -> output -> compare):
+  test the roundtrip, not just one direction.
 
 ### Unit tests (Frontend - Vitest)
 
-**Status:** set up (happy-dom, Node 18 compatible).
+**Status:** set up (happy-dom).
 
 **What to test:** API client functions, utility functions, complex hooks.
 **What NOT to test:** simple components that just render (E2E tests cover that).
@@ -122,17 +117,17 @@ cd frontend && npx vitest   # watch mode
 ```typescript
 // src/api/client.test.ts
 import { describe, it, expect, vi } from 'vitest'
-import { fetchBooks, createBook } from './client'
+import { fetchEntities } from './client'
 
 describe('API Client', () => {
-  it('fetchBooks returns book list', async () => {
+  it('fetchEntities returns a list', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve([{ id: '1', title: 'Test' }])
+      json: () => Promise.resolve([{ id: '1', name: 'Test' }])
     })
-    const books = await fetchBooks()
-    expect(books).toHaveLength(1)
-    expect(books[0].title).toBe('Test')
+    const entities = await fetchEntities()
+    expect(entities).toHaveLength(1)
+    expect(entities[0].name).toBe('Test')
   })
 })
 ```
@@ -142,50 +137,42 @@ describe('API Client', () => {
 **What to test:** API endpoints with real DB state, plugin interaction.
 **Difference from unit tests:** here FastAPI runs via TestClient with a real SQLite DB (in-memory).
 
-**Where:** `backend/tests/test_api.py`, `backend/tests/test_phase4.py` (already exist)
+**Where:** `backend/tests/test_api.py`, `backend/tests/test_<router>.py`
 
-**Example:**
+**Example shape (replace with your domain):**
 ```python
-# backend/tests/test_api.py
 from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app)
 
-def test_create_and_export_book():
-    """Create a book, add a chapter, export it."""
-    # Create book
-    resp = client.post("/api/books", json={"title": "Test", "author": "A"})
+def test_entity_crud_roundtrip():
+    """Create, read, update, delete an entity end to end."""
+    resp = client.post("/api/entities", json={"name": "Test"})
     assert resp.status_code == 200
-    book_id = resp.json()["id"]
+    entity_id = resp.json()["id"]
 
-    # Add chapter
-    resp = client.post(f"/api/books/{book_id}/chapters",
-                       json={"title": "Chapter 1", "content": "{}"})
+    resp = client.get(f"/api/entities/{entity_id}")
     assert resp.status_code == 200
+    assert resp.json()["name"] == "Test"
 
-    # Trigger export
-    resp = client.get(f"/api/books/{book_id}/export/epub")
+    resp = client.patch(f"/api/entities/{entity_id}", json={"name": "Renamed"})
     assert resp.status_code == 200
-    assert resp.headers["content-type"] == "application/epub+zip"
+    assert resp.json()["name"] == "Renamed"
+
+    resp = client.delete(f"/api/entities/{entity_id}")
+    assert resp.status_code == 204
 ```
 
 **When to write new integration tests:**
 - New API endpoint: happy path + error case (404, 422).
 - Plugin installation: ZIP upload -> plugin active -> endpoint reachable.
-- Import: a real write-book-template project -> all chapters, assets, metadata correct.
+- File-format import: a real input file -> all rows + assets imported correctly.
 
 ### E2E tests (Playwright)
 
-**What to test:** critical user flows from the author's perspective.
-**Where:** `frontend/tests/` or `e2e/`
-
-**Existing coverage:**
-- Dashboard: create, delete, backup/import a book
-- Editor: create, edit, sort chapters, metadata
-- Export: pick a format, export, download the file
-- Settings: plugins, licenses, language, theme
-- Navigation: every page reachable, links work
+**What to test:** critical user flows from the end-user's perspective.
+**Where:** `e2e/smoke/` (fast happy-paths) and `e2e/full/` (longer journeys).
 
 **When to write new E2E tests:**
 - New plugin with UI: at least one flow (enable plugin -> use feature).
@@ -194,32 +181,21 @@ def test_create_and_export_book():
 
 **Example:**
 ```typescript
-// e2e/export.spec.ts
+// e2e/smoke/create-entity.spec.ts
 import { test, expect } from '@playwright/test'
 
-test('export book as EPUB with manual TOC', async ({ page }) => {
-  await page.goto('/books/test-book-id')
-
-  // Open the export dialog
-  await page.click('[data-testid="export-button"]')
-  await expect(page.locator('.export-dialog')).toBeVisible()
-
-  // Pick EPUB, enable manual TOC
-  await page.click('[data-testid="format-epub"]')
-  await page.check('[data-testid="use-manual-toc"]')
-  await page.click('[data-testid="export-start"]')
-
-  // Verify the download
-  const download = await page.waitForEvent('download')
-  expect(download.suggestedFilename()).toContain('.epub')
+test('user can create an entity from the dashboard', async ({ page }) => {
+  await page.goto('/')
+  await page.click('[data-testid="create-entity"]')
+  await page.fill('[data-testid="entity-name"]', 'My Entity')
+  await page.click('[data-testid="entity-submit"]')
+  await expect(page.getByTestId('entity-row-my-entity')).toBeVisible()
 })
 ```
 
 ### Coverage targets per module type
 
 These are target coverage levels, not hard gates. They guide where to invest test effort and flag when a module is under-tested relative to its risk.
-
-**Project-wide target: 85-95% of modules at MEDIUM or above.** Currently at ~70% (2026-04-12 audit). The gap is mostly on the frontend side.
 
 **Principle: frontend coverage is not subordinate to backend coverage.** A 95% backend with a 32% frontend is not "good enough". The frontend is the user's interface - bugs there are visible immediately. Both sides of the pyramid must reach their targets independently.
 
@@ -231,13 +207,13 @@ These are target coverage levels, not hard gates. They guide where to invest tes
 | Routers (`app/routers/`) | MEDIUM-HIGH (>= 70%) | Integration tests covering happy path + error cases |
 | Models (`app/models/`) | LOW-MEDIUM | Tested indirectly via integration tests; direct tests only for custom methods |
 | Schemas (`app/schemas/`) | MEDIUM | Validators and field transformations need explicit tests |
-| Utilities (`app/utils/`, `licensing.py`, `job_store.py`) | HIGH (>= 80%) | Pure functions, easy to test, often security-relevant |
+| Utilities (`app/utils/`, `app/licensing.py`, etc.) | HIGH (>= 80%) | Pure functions, easy to test, often security-relevant |
 
 #### Plugins (Python)
 
 | Module Type | Target | Rationale |
 |-------------|--------|-----------|
-| Core logic (converters, generators, checkers) | HIGH (>= 80%) | The plugin's reason to exist |
+| Core logic (the modules that do the plugin's work) | HIGH (>= 80%) | The plugin's reason to exist |
 | `plugin.py` (hook implementations) | MEDIUM | Tested indirectly through integration; explicit tests for non-trivial hooks |
 | `routes.py` | MEDIUM | At least happy-path integration test per endpoint |
 
@@ -248,8 +224,8 @@ These are target coverage levels, not hard gates. They guide where to invest tes
 | `api/client.ts` | HIGH (>= 90%) | Every API call, error path, and interceptor |
 | Hooks (`hooks/`) | HIGH (>= 80%) | State logic, side effects, computed values |
 | Utility functions (`utils/`) | HIGH (>= 90%) | Pure functions, trivial to test |
-| Complex form components (ExportDialog, CreateBookModal, BookMetadataEditor) | MEDIUM (>= 60%) | Validate form logic, conditional fields, submission |
-| Simple display components (BookCard, Tooltip, ThemeToggle) | LOW | E2E covers rendering; unit tests only for non-trivial logic |
+| Complex form components | MEDIUM (>= 60%) | Validate form logic, conditional fields, submission |
+| Simple display components | LOW | E2E covers rendering; unit tests only for non-trivial logic |
 | Page components | LOW | E2E covers navigation and layout |
 | Contexts/Providers | MEDIUM | Test the provider logic, not the React tree |
 
@@ -258,15 +234,13 @@ These are target coverage levels, not hard gates. They guide where to invest tes
 | Flow Type | Target | Rationale |
 |-----------|--------|-----------|
 | Data-critical flows (backup, import, export, trash) | MUST HAVE | Silent data corruption is the worst bug class |
-| Core user journeys (create book, edit, navigate) | MUST HAVE | Happy path must always work |
+| Core user journeys (create, edit, navigate) | MUST HAVE | Happy path must always work |
 | Plugin UI flows | SHOULD HAVE (one smoke per plugin) | Verify plugin UI mounts and basic interaction |
-| Edge cases (long titles, empty states, error recovery) | NICE TO HAVE | Fill as bugs surface |
+| Edge cases (long inputs, empty states, error recovery) | NICE TO HAVE | Fill as bugs surface |
 
 ### Mutation testing (Backend - mutmut)
 
 **Purpose:** checks whether the tests actually catch real bugs. mutmut changes the source code (mutants) and checks whether at least one test fails. Surviving mutants reveal gaps in test quality.
-
-**Status:** to be set up. Dev dependency via Poetry.
 
 **Setup:**
 ```bash
@@ -285,9 +259,9 @@ dict_synonyms = "Struct,NamedStruct"
 
 **For plugins separately:**
 ```toml
-# plugins/myapp-plugin-export/pyproject.toml
+# plugins/myapp-plugin-<name>/pyproject.toml
 [tool.mutmut]
-paths_to_mutate = "myapp_export/"
+paths_to_mutate = "myapp_<name>/"
 tests_dir = "tests/"
 runner = "python -m pytest"
 ```
@@ -299,9 +273,6 @@ cd backend && poetry run mutmut run
 
 # Just one module (faster, targeted)
 cd backend && poetry run mutmut run --paths-to-mutate app/services/
-
-# Just one plugin
-cd plugins/myapp-plugin-export && poetry run mutmut run
 
 # Show results
 poetry run mutmut results
@@ -322,34 +293,22 @@ poetry run mutmut html
 **How to act on the results:**
 - Surviving mutants in critical code (services, conversions): add tests.
 - Surviving mutants in trivial code (logging, formatting): ignore, no test bloat.
-- Mutation score as a guideline: >= 60% for core modules (app/services/, plugin logic), no hard gate.
+- Mutation score as a guideline: >= 60% for core modules, no hard gate.
 - Include `mutmut results` in the session summary when it was run.
 
 **Test the critical modules first:**
-1. `plugins/myapp-plugin-export/myapp_export/tiptap_to_md.py` - conversion logic
-2. `plugins/myapp-plugin-export/myapp_export/scaffolder.py` - project structure
-3. `backend/app/services/` - core business logic
-4. `backend/app/licensing.py` - security-critical
 
-**Reference prompt for Claude Code:**
-```
-I want to integrate mutmut (mutation testing) into this project.
+Pick the modules whose silent failure would corrupt the
+library's promise. For a CRUD-shaped backend, that is typically:
 
-Steps:
-1. Analyze the existing pyproject.toml and the current test structure
-2. Add mutmut as a dev dependency via Poetry
-3. Configure mutmut in pyproject.toml (paths_to_mutate, tests_dir, runner)
-4. Run a first mutmut run and show me the results
-5. If tests are missing or mutants survive, propose concrete improvements
-
-Important: use Poetry for everything, no pip calls.
-```
+1. Services that perform writes or transformations
+2. Anything security-relevant (auth, licensing, signed payloads)
+3. Plugin loader / hook dispatch
+4. Format converters (if the app has any)
 
 ### Mutation testing (Frontend - Stryker Mutator)
 
 **Purpose:** same principle as mutmut, but for TypeScript/React. Stryker Mutator is the equivalent for the JS/TS ecosystem.
-
-**Status:** to be set up (Vitest is already running, Stryker can build on it).
 
 **Setup:**
 ```bash
@@ -402,17 +361,6 @@ cd frontend && npx stryker run --mutate "src/api/client.ts"
 3. `src/hooks/useTheme.ts` - theme logic
 4. Utility functions
 
-**Reference prompt for Claude Code:**
-```
-I want to integrate Stryker Mutator (mutation testing) on the frontend.
-
-Steps:
-1. Vitest is already running. Install @stryker-mutator/core, @stryker-mutator/vitest-runner, @stryker-mutator/typescript-checker
-2. Create stryker.config.json (mutate: src/api/, src/hooks/, src/components/, checkers: typescript, testRunner: vitest)
-3. Run a first stryker run on src/api/client.ts and show the results
-4. If mutants survive, propose concrete tests
-```
-
 ---
 
 ## Automation (still to build)
@@ -427,9 +375,6 @@ check-types:
 # Backend mutation testing (nightly/manual)
 mutmut-backend:
 	cd backend && poetry run mutmut run
-
-mutmut-export:
-	cd plugins/myapp-plugin-export && poetry run mutmut run
 
 mutmut-results:
 	cd backend && poetry run mutmut results
@@ -467,20 +412,10 @@ test-all: test test-frontend
 
 Nightly (separate, slower):
 8. make mutmut-backend     # mutation testing backend (Python)
-9. make mutmut-export      # mutation testing export plugin (Python)
-10. make stryker           # mutation testing frontend (TypeScript)
+9. make stryker            # mutation testing frontend (TypeScript)
 ```
 
 ---
-
-## Priority for the next improvements
-
-1. **Set up mutmut** - mutation testing for backend and export plugin
-2. **Set up Stryker** - mutation testing for the frontend (Vitest is already running)
-3. **make check-all** - a single command for everything before push
-4. **Roundtrip tests** - import -> editor -> export -> epubcheck for every book format
-5. **Set up mypy** - type checking for the Python backend
-6. **CI pipeline** - GitHub Actions with all checks + nightly mutmut/Stryker
 
 ## Coverage Targets per Module Type
 

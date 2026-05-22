@@ -1,6 +1,6 @@
-# Contributing to Adaptive Learner
+# Contributing to MyApp
 
-Thank you for considering a contribution. Adaptive Learner is a
+Thank you for considering a contribution. MyApp is a
 project skeleton template built on PluginForge. The skeleton
 ships with a working full-stack foundation; most non-trivial
 features should land as plugins, not core changes.
@@ -8,10 +8,10 @@ features should land as plugins, not core changes.
 ## Project Layout
 
 - `backend/` - FastAPI app, SQLAlchemy models, Alembic migrations
-- `frontend/` - React + TypeScript + Vite, TipTap editor
+- `frontend/` - React + TypeScript + Vite
 - `plugins/` - empty placeholder + plugin loader (zero plugins ship)
 - `launcher/` - Cross-platform launcher (PyInstaller)
-- `docs/` - Architecture overview, MkDocs site, in-app help structure
+- `docs/` - Project documentation (CONCEPT, ROADMAP, configuration)
 - `.claude/rules/` - Project rules read on demand
 - `e2e/` - Playwright smoke + full suites
 
@@ -48,22 +48,24 @@ in the same change.
 make test                     # all tests (backend + plugins + frontend)
 make test-backend             # backend only
 make test-frontend            # Vitest only
-make test-plugin-{name}       # single plugin (export, kdp, audiobook, ...)
 make check-types              # mypy + tsc --noEmit
 ```
 
+When you add plugins, wire each into a `test-plugin-<name>`
+target and aggregate via `test-plugins` (see the comment block
+in the Makefile for the pattern).
+
 ## Plugin Development
 
-Adaptive Learner plugins are standalone Poetry packages that register
-through PluginForge ^0.10.0 entry points. New format-specific or
-workflow-specific features generally belong in a plugin, not in
-core.
+MyApp plugins are standalone Poetry packages that register
+through PluginForge ^0.10.0 entry points. New format-specific
+or workflow-specific features generally belong in a plugin, not
+in core.
 
 ### Quickstart
 
-The smallest existing plugin to copy is
-[`plugins/myapp-plugin-getstarted/`](plugins/myapp-plugin-getstarted/).
-Mirror its shape:
+The template ships zero plugins; copy [`plugins/README.md`](plugins/README.md)
+for the minimal skeleton.
 
 ```
 plugins/myapp-plugin-yourname/
@@ -78,28 +80,23 @@ plugins/myapp-plugin-yourname/
 
 Steps:
 
-1. Copy the directory; rename `myapp-plugin-getstarted` and
-   `myapp_getstarted` to your plugin name.
+1. Create the directory at `plugins/myapp-plugin-yourname/`.
 2. Edit `pyproject.toml`: package name, description, the
    `[tool.poetry.plugins."myapp.plugins"]` entry point.
 3. Implement `plugin.py` extending `BasePlugin` with `name`,
-   `version`, `api_version = "1"`, `license_tier = "core"`.
-   Override `activate()`, `get_routes()`,
-   `get_frontend_manifest()` as needed.
-4. Add a path-dep in `backend/pyproject.toml` mirroring the
-   existing entries.
-5. Add the plugin slug to `backend/config/app.yaml.example`
-   under `plugins.enabled`.
+   `version`, `api_version = "1"`, `license_tier = "core"`, and
+   `target_application = "myapp"`. Override `activate()`,
+   `get_routes()`, `get_frontend_manifest()` as needed.
+4. Add a path-dep in `backend/pyproject.toml` for the new
+   plugin.
+5. Add the plugin slug to `backend/config/app.yaml` under
+   `plugins.enabled`.
 6. If your plugin has runtime settings, drop them at
    `backend/config/plugins/{slug}.yaml` (PluginForge reads from
    there, not from inside the plugin's own dir).
 7. `cd backend && poetry lock && poetry install`, then
-   `make test-plugin-{yourname}`.
-
-The plugin development guide at
-[docs/help/en/developers/plugins.md](docs/help/en/developers/plugins.md)
-covers the hook spec catalogue, frontend manifest slots, and
-ZIP-distribution layout in more depth.
+   `make test-plugin-{yourname}` (after adding the Makefile
+   target).
 
 ### Plugin licensing
 
@@ -124,7 +121,7 @@ read on demand:
 - [quality-checks.md](.claude/rules/quality-checks.md) - test
   pyramid, coverage targets, mutation testing
 - [lessons-learned.md](.claude/rules/lessons-learned.md) - known
-  pitfalls (TipTap, import, export, Alembic logging)
+  pitfalls (testing, Alembic, plugin lockfiles, etc.)
 - [ai-workflow.md](.claude/rules/ai-workflow.md) - session
   workflow, documentation protocol
 - [release-workflow.md](.claude/rules/release-workflow.md) -
@@ -137,21 +134,19 @@ end-of-file, YAML/JSON validation) run automatically on
 
 ### Internationalization
 
-Adaptive Learner ships in 8 languages: DE, EN, ES, FR, EL, PT, TR, JA.
-Every user-facing change must add or update keys in all 8
-catalogs under `backend/config/i18n/{lang}.yaml`. Parity tests
-fail the build if a key is missing in any language.
+MyApp ships catalogs under `backend/config/i18n/{lang}.yaml`.
+The directory listing is the canonical list of supported
+languages. Every user-facing change must add or update keys in
+every catalog. Parity tests fail the build if a key is missing
+in any language.
 
 German content (i18n catalogs, help docs, README-de) uses real
 UTF-8 umlauts. ASCII transliterations like `fuer`, `ueber`,
-`oeffentlich` are forbidden. The
-`scripts/find_umlaut_candidates.py` and
-`scripts/replace_umlauts.py` tooling enforces this with a
-whitelist.
+`oeffentlich` are forbidden in German user-facing text.
 
 ## Commit Conventions
 
-Adaptive Learner uses [Conventional Commits](https://www.conventionalcommits.org/).
+MyApp uses [Conventional Commits](https://www.conventionalcommits.org/).
 There is no commit-msg-time tool enforcing this; the convention
 is documentation-only and reinforced through code review.
 
@@ -182,9 +177,10 @@ template.
 
 ## Code of Conduct
 
-Adaptive Learner follows
-[Contributor Covenant 2.1](CODE_OF_CONDUCT.md). Reports go to
-asterios.raptis@web.de.
+MyApp follows
+[Contributor Covenant 2.1](CODE_OF_CONDUCT.md). The contact
+email for reports is listed in CODE_OF_CONDUCT.md; update it
+when you fork.
 
 ## Security
 

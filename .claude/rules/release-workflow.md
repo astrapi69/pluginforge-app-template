@@ -132,7 +132,7 @@ This single command updates:
 - `launcher/myapp_launcher/__init__.py` (`__version__` literal)
 - `launcher/myapp-launcher.spec` (CFBundleVersion +
   CFBundleShortVersionString, both same value)
-- All 10 `plugins/*/pyproject.toml`
+- Every `plugins/*/pyproject.toml`
 - `install.sh` (regenerated from `install.sh.template` via
   `scripts/generate_install_sh.sh`)
 
@@ -177,7 +177,6 @@ git push origin main --tags
 | `launcher/myapp-launcher.spec` CFBundle plist fields | `backend/pyproject.toml` | `make sync-versions` literal substitution |
 | `launcher/pyproject.toml:version` | `backend/pyproject.toml` | `make sync-versions` |
 | `plugins/*/pyproject.toml:version` | `backend/pyproject.toml` | `make sync-versions` (lock-step; per-plugin independent versions deferred to a future Core-vs-Third-Party decision) |
-| `plugins/myapp-plugin-git-sync/myapp_git_sync/__init__.py:__version__` | own pyproject | `importlib.metadata.version` |
 | `frontend/src/components/*` `__APP_VERSION__` | `frontend/package.json` | Vite `define` build-time literal |
 
 If a hardcoded version literal appears anywhere in the "DO NOT
@@ -187,51 +186,39 @@ new literals.
 
 ### Conditional documentation updates (manual, only when needed)
 
-- [ ] `docs/CONCEPT.md` (if the version is mentioned in prose)
 - [ ] `README.md` (if the version is mentioned in prose)
 
 ### External MyApp-owned dependencies
 
-Two libraries that the MyApp project also maintains are
-pinned via the standard Poetry mechanism, NOT under
-`make sync-versions` automation. They have independent release
-lifecycles:
+`pluginforge` is the one external dependency the MyApp project
+also maintains. It is pinned via the standard Poetry mechanism,
+NOT under `make sync-versions` automation, because it has an
+independent release lifecycle.
 
-- `manuscripta` (book-rendering pipeline)
-- `pluginforge` (plugin framework)
+At each MyApp release, manually verify the pin:
 
-At each MyApp release, manually verify both:
-
-- [ ] `manuscripta` pin in `backend/pyproject.toml` and every
-      `plugins/*/pyproject.toml` matches the latest released
-      `manuscripta` on PyPI (or whichever version you intend
-      to ship with this MyApp release)
 - [ ] `pluginforge` pin in `backend/pyproject.toml` and every
       `plugins/*/pyproject.toml` matches the latest released
-      `pluginforge`
+      `pluginforge` on PyPI (or whichever version you intend
+      to ship with this MyApp release)
+
+Add other externally-maintained dependencies to this checklist
+when the project adopts them.
 
 Quick check:
 
 ```bash
-pip index versions manuscripta
 pip index versions pluginforge
-grep -rn "manuscripta\|pluginforge" \
+grep -rn "pluginforge" \
   backend/pyproject.toml plugins/*/pyproject.toml \
   | grep "version\|\^"
 ```
 
 The current deferral from `make sync-versions` rests on an
-assumption of low drift (verified 2026-05-04: both pinned at
-their latest PyPI release). If you find these drifting more
-than once between MyApp releases, bring them under
-`sync-versions` automation. Concrete repeated drift overrides
-the deferral.
-
-### Other release-time considerations
-
-The `make sync-versions` step covers all MyApp-internal
-versions. The external-dep block above is the only manual
-checkpoint at release time.
+assumption of low drift. If you find an externally-maintained
+dep drifting more than once between MyApp releases, bring it
+under `sync-versions` automation. Concrete repeated drift
+overrides the deferral.
 
 ---
 
@@ -284,20 +271,6 @@ cd backend && poetry run ruff check app/ && poetry run mypy app/
 # is still mandatory because the hook fails the push, not the tag
 # creation - skipping the pre-tag step makes a half-tagged repo.
 cd backend && poetry run pre-commit run --all-files
-
-# Docs discipline (MANDATORY since v0.30.0+ MKDOCS-DISCIPLINE-01).
-# Two checks aggregated by `make verify-docs-discipline`:
-#   1. verify-mkdocs-nav: mkdocs.yml is in sync with
-#      docs/help/_meta.yaml (single source of truth for help-page
-#      nav). Drift is the failure mode that produced the v0.30.0
-#      docs+i18n drift audit findings.
-#   2. check-mkdocs-orphans: adversarial grep on `mkdocs build
-#      --strict` output for the INFO-level "not included in the
-#      'nav' configuration" message that --strict ignores by
-#      default. The two pages that sat orphan for two release
-#      cycles (articles/bulk-export, install/docker-desktop)
-#      would now be caught here.
-make verify-docs-discipline
 
 # Launcher build smoke (MANDATORY for any release that touches
 # launcher/ or its embedded version - catches PyInstaller spec
@@ -391,15 +364,10 @@ If not active: skip this step and note it in the release log.
 
 ## Step 10: Deploy the documentation site
 
-When the help system with MkDocs is set up:
-
-- A GitHub Action triggers automatically on push to main
-- No manual step
-- Verify: https://astrapi69.github.io/myapp/ shows the new content
-- Check the action status: `gh run list --workflow=docs.yml --limit=1`
-
-On a failed deploy: pull the error from the action logs and fix it,
-but the release is still out.
+The template ships without a docs site. If a downstream app
+wires one up (MkDocs, Docusaurus, plain GitHub Pages, etc.),
+document its deploy mechanism here and the per-release
+verification step.
 
 ---
 
@@ -445,7 +413,6 @@ as "done". Missing items block the release.
 - [ ] `ruff check` clean
 - [ ] `mypy app/` clean (MANDATORY since v0.26.x; not "if active")
 - [ ] `poetry run pre-commit run --all-files` clean (MANDATORY)
-- [ ] `make verify-docs-discipline` clean (MANDATORY since v0.30.0+: aggregates `verify-mkdocs-nav` + `check-mkdocs-orphans`; addresses the v0.30.0 docs+i18n drift audit findings)
 - [ ] Backend `poetry build` successful (skipped iff `package-mode = false`)
 - [ ] Frontend `npm run build` successful
 - [ ] `cd launcher && poetry run pyinstaller myapp-launcher.spec --clean --noconfirm` succeeds (MANDATORY for any release touching launcher/ or its embedded version)
@@ -453,7 +420,6 @@ as "done". Missing items block the release.
 - [ ] Git tag created and pushed
 - [ ] GitHub release published
 - [ ] Docker image pushed (if active)
-- [ ] MkDocs site deployed and verified
 - [ ] Chat journal release entry
 - [ ] ROADMAP done items marked
 - [ ] CLAUDE.md updated (if needed)
@@ -474,11 +440,6 @@ for this release".
 `poetry lock --no-update` and `npm install` in both projects, then
 rebuild. On persistent errors: abort the release, solve the problem
 in its own commit.
-
-### GitHub Action for the docs failed
-
-The release tag stays valid. The docs deploy is a separate problem
-that can be fixed after the release. Note it in the chat journal.
 
 ### Docker push fails
 
