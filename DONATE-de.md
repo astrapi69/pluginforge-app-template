@@ -1,139 +1,74 @@
-# Adaptive Learner unterstuetzen
+<!--
+TEMPLATE: Skelett der Spendenseite aus dem Template. Ersetze die
+Platzhalter-URLs durch deine eigenen Spenden-Links und schreibe
+den Fließtext für deine App neu. Lösche die Datei komplett, wenn
+das Projekt keine Spenden sammelt.
+-->
 
-Adaptive Learner ist ein Open-Source-Projekt, das von einer einzelnen Person
-entwickelt wird. Keine Cloud, kein Tracking, keine Werbung - alles
-bleibt auf deinem Geraet.
+# MyApp unterstützen
 
-Die Entwicklung findet neben der Erziehung von drei Kindern statt, eines
-davon mit dauerhaftem medizinischem und pflegerischem Betreuungsbedarf.
-Spenden helfen dabei, trotz dichter Wochen verlaessliche Entwicklungszeit
-zu sichern. Sie fliessen direkt in die Arbeit an Adaptive Learner, nicht in
-private Ausgaben.
+MyApp ist ein Open-Source-Projekt. Wenn es dir hilft und du die
+Entwicklung unterstützen möchtest, sind Spenden willkommen.
 
-Wenn Adaptive Learner dir hilft und du die Entwicklung unterstuetzen moechtest,
-sind Spenden sehr willkommen. Mehrere Wege stehen zur Verfuegung:
+<!-- TODO: ersetze durch deinen eigenen Projekt-Pitch in einem Absatz. -->
 
 ---
 
 ## Liberapay (empfohlen)
 
-Privacy-freundliche Plattform aus der FOSS-Community. Einmalig oder
-wiederkehrend, ohne Plattformgebuehren, kein Account erforderlich fuer
-den Spender.
+Datenschutzfreundliche Plattform aus der FOSS-Community. Einmal
+oder regelmäßig, keine Plattformgebühren, kein Konto für Spender
+nötig.
 
-[![Donate using Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/astrapi69/donate)
-
-**Link:** https://liberapay.com/astrapi69/donate
+<!-- TODO: ersetze durch deine Liberapay-URL. -->
+**Link:** https://liberapay.com/YOUR_HANDLE/donate
 
 ---
 
 ## GitHub Sponsors
 
-Ideal fuer Entwickler und langfristige monatliche Unterstuetzung. GitHub
-matcht neue Sponsoren im ersten Jahr.
+Ideal für Entwickler und langfristige monatliche Unterstützung.
 
-[![Sponsor astrapi69](https://img.shields.io/badge/Sponsor-astrapi69-EA4AAA?logo=github-sponsors&style=flat-square)](https://github.com/sponsors/astrapi69)
-
-**Link:** https://github.com/sponsors/astrapi69
-
----
-
-## Flattr
-
-Microdonation-Plattform, bei der Unterstuetzer ein monatliches Budget
-festlegen und es auf Creator verteilen, die sie schaetzen. FOSS-freundlich,
-in der Open-Source-Community etabliert.
-
-**Link:** https://flattr.com/@astrapi69
+<!-- TODO: ersetze durch deine GitHub-Sponsors-URL. -->
+**Link:** https://github.com/sponsors/YOUR_HANDLE
 
 ---
 
 ## Ko-fi
 
-Fuer einmalige Unterstuetzung ohne Account-Anforderung. "Buy me a coffee"
-fuer die Entwicklungsarbeit.
+Für einmalige Unterstützung ohne Kontoanforderung.
 
-[![ko-fi](https://storage.ko-fi.com/cdn/kofi1.png?v=3)](https://ko-fi.com/astrapi69)
-
-**Link:** https://ko-fi.com/astrapi69
+<!-- TODO: ersetze durch deine Ko-fi-URL. -->
+**Link:** https://ko-fi.com/YOUR_HANDLE
 
 ---
 
 ## PayPal
 
-Fuer einmalige Spenden mit der breitesten Reichweite. Auf Spender-Seite
-kein PayPal-Account erforderlich, Kreditkarte funktioniert ebenfalls.
+Für einmalige Spenden mit weitester Reichweite.
 
-**Link:** https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=MJ7V43GU2H386
+<!-- TODO: ersetze durch deine PayPal-Button-URL oder entferne diesen Abschnitt. -->
+**Link:** https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID
 
 ---
 
-## Haeufig gestellte Fragen
+## Häufige Fragen
 
-### Wofuer werden Spenden verwendet?
-
-Adaptive Learner wird von einer einzelnen Person entwickelt, parallel zu
-Vollzeit-Verantwortung in der Familie inklusive Pflege fuer ein Kind
-mit chronischen medizinischen Anforderungen. Spenden decken:
-
-- Entwicklungszeit, die sonst mit Pflegeaufgaben und anderen Verpflichtungen konkurriert
-- Domain-Kosten und Hosting fuer Dokumentation
-- Rechtliche Beratung zu Datenschutzfragen
-- Tools und Lizenzen (z.B. Code-Signing-Zertifikate fuer Desktop-Launcher-Distribution)
-
-Wiederkehrende Spenden sind besonders wertvoll, weil sie sich in
-planbare Entwicklungs-Bloecke uebersetzen lassen. Einmalige Spenden
-helfen bei spezifischen Features und Infrastruktur-Kosten.
-
-### Bekomme ich eine Spendenquittung?
-
-Ueber die jeweilige Plattform erhaelst du eine Zahlungsbestaetigung. Da
-Adaptive Learner kein eingetragener Verein ist, sind Spenden nicht steuerlich
-absetzbar.
-
-### Was ist der Unterschied zwischen wiederkehrenden und einmaligen Spenden?
-
-Wiederkehrende Spenden (ueber Liberapay, GitHub Sponsors oder Flattr)
-helfen, Entwicklungszeit langfristig zu planen. Einmalige Spenden (ueber
-Ko-fi oder PayPal) sind genauso willkommen, besonders wenn ein
-bestimmtes Feature dir geholfen hat.
-
-### Kann ich meine wiederkehrende Spende aendern oder kuendigen?
-
-Ja, jederzeit ueber die jeweilige Plattform. Alle vier Plattformen fuer
-wiederkehrende Spenden haben Account-Einstellungen zum Verwalten von
-Abonnements.
-
-### Sind Spenden anonym?
-
-Auf allen Plattformen kannst du waehlen, ob dein Name oeffentlich
-angezeigt wird. Adaptive Learner selbst erhaelt keine Spenderdaten ueber das
-hinaus, was du aktiv teilst.
-
-### Warum keine direkte Bankueberweisung?
-
-Aus Gruenden der Einfachheit und des Datenschutzes. Die obigen
-Plattformen decken alle wichtigen Zahlungsmethoden ab und uebernehmen
-die professionelle Zahlungsabwicklung.
-
-### Welche Plattform soll ich waehlen?
-
-- **Datenschutz-fokussiert:** Liberapay oder Flattr
-- **Entwickler-Community:** GitHub Sponsors
-- **Schnelle einmalige Unterstuetzung:** Ko-fi
-- **Breiteste Reichweite:** PayPal
-
-Alle Kanaele unterstuetzen letztlich dasselbe Projekt. Waehle den, der
-am besten zu dir passt.
+<!-- TODO: ersetze durch deine eigene FAQ. Übliche Einträge:
+     - Wofür werden Spenden verwendet?
+     - Gibt es eine Spendenquittung? (in der Regel nicht, außer als gemeinnützig anerkannt)
+     - Regelmäßig oder einmalig?
+     - Wie kündige ich eine regelmäßige Spende?
+     - Sind Spenden anonym?
+     - Welche Plattform soll ich wählen?
+-->
 
 ---
 
 ## Kontakt
 
-Fragen zu Spenden oder zur Projektentwicklung? Eroeffne ein GitHub Issue
-oder kontaktiere mich per E-Mail (siehe Projekt-Profil).
+<!-- TODO: ersetze durch deinen Kontaktkanal. -->
 
 ---
 
-_Danke fuer deine Unterstuetzung. Jede Spende, egal wie klein, haelft
-Adaptive Learner am Leben._
+_Vielen Dank für deine Unterstützung._

@@ -1,6 +1,6 @@
 # PluginForge App Template
 
-Produktionsfähiges Projektgerüst zum Bauen plugin-getriebener Full-Stack-Anwendungen auf Basis von [PluginForge](https://github.com/astrapi69/pluginforge). Liefert ein sauberes FastAPI + React + TypeScript-Skelett mit CRUD, Einstellungen, i18n, Tests, CI, plattformübergreifendem Launcher und Docker-Deployment. Domänenmodelle werden als `EXAMPLE-DOMAIN` ausgeliefert — pro Projekt zu ersetzen.
+Produktionsfähiges Projektgerüst zum Bauen plugin-getriebener Full-Stack-Anwendungen auf Basis von [PluginForge](https://github.com/astrapi69/pluginforge). Liefert ein sauberes FastAPI + React + TypeScript-Skelett mit CRUD, Einstellungen, i18n, Tests, CI, plattformübergreifendem Launcher und Docker-Deployment. Domänenmodelle werden als `EXAMPLE-DOMAIN` ausgeliefert - pro Projekt zu ersetzen.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -47,7 +47,7 @@ make dev                  # Backend auf :8000, Frontend auf :5173
 - **i18n-Hook** (`useI18n`), liest die Backend-YAML-Kataloge
 
 ### Plugin-System
-- **Keine Plugins enthalten** — der Loader ist verdrahtet und einsatzbereit
+- **Keine Plugins enthalten** - der Loader ist verdrahtet und einsatzbereit
 - `plugins/README.md` dokumentiert das minimale Plugin-Layout
 - Hook-Specs in `backend/app/hookspecs.py`; Entry-Point-Gruppe `myapp.plugins`
 
@@ -58,14 +58,14 @@ make dev                  # Backend auf :8000, Frontend auf :5173
 - Single-Source-of-Truth für die Version (nur `backend/pyproject.toml` wird per Hand editiert; alle anderen Versionsfelder leiten sich via `make sync-versions` ab)
 
 ### CI/CD
-- **GitHub Actions**: `ci.yml`, `coverage.yml`, `docs.yml`, `launcher-{linux,macos,windows}.yml`, `release-gate.yml`, `mutation-import.yml`
+- **GitHub Actions**: `ci.yml`, `coverage.yml`, `launcher-{linux,macos,windows}.yml`, `release-gate.yml`, `mutation-import.yml`
 - **Pre-Commit-Hooks**: ruff (Lint + Format), check-yaml/json, trailing-whitespace, end-of-file-fixer
 - **Release-Gate**-Erzwingung (Versionspins synchron; Subsystem-Lockstep; install.sh-Template-Aktualität)
 
 ### Docs
-- **MkDocs Material** mit i18n (`mkdocs.yml`, `docs/pyproject.toml` enthält das Docs-Venv)
-- `docs/CONCEPT.md`, `docs/ROADMAP.md`, `docs/API.md`, `docs/help/{en,de}/...`
-- Generator-Skripte für ROADMAP-Archivierung, MkDocs-Nav, Audit-Reports
+- `docs/configuration.md` dokumentiert die vierschichtige Config + Secrets-Kette
+- Das Template liefert standardmäßig keine statische Docs-Site aus. Füge MkDocs / Docusaurus / einen eigenen Generator gezielt hinzu, sobald die Help-Content-Oberfläche es rechtfertigt.
+- `scripts/archive_completed_task.py` für die ROADMAP-Archivierung, sobald du eine startest
 
 ### Deployment
 - **Docker Compose** (Dev + Prod)
@@ -82,7 +82,6 @@ make dev                  # Backend auf :8000, Frontend auf :5173
 | Launcher | PyInstaller |
 | Tests | pytest, Vitest, Playwright, mutmut, Stryker |
 | Werkzeuge | Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit |
-| Docs | MkDocs Material |
 
 ## Repository-Struktur
 
@@ -95,7 +94,7 @@ pluginforge-app-template/
 ├── frontend/src/          # React-App (api, components, pages, styles)
 ├── e2e/                   # Playwright-Specs (smoke + full)
 ├── launcher/              # PyInstaller plattformübergreifender Launcher
-├── docs/                  # MkDocs-Site + CONCEPT/ROADMAP/API
+├── docs/                  # Projektdokumentation (configuration; CONCEPT / ROADMAP ergänzen, wenn das Projekt reift)
 ├── scripts/               # Versions-Sync, ROADMAP-Archiv, Audits
 ├── .github/workflows/     # CI/CD-Pipelines
 └── Makefile, docker-compose*.yml, install.{sh,cmd,ps1,command}, .env.example
@@ -141,12 +140,11 @@ Das Template folgt Semantic Versioning. Die aktuelle Minor-Version (`v0.x`) spie
 
 ## Lizenz
 
-MIT — siehe [LICENSE](LICENSE).
+MIT - siehe [LICENSE](LICENSE).
 
 ## Dokumentation
 
-- [CUSTOMIZE.md](CUSTOMIZE.md) — erste Lektüre nach dem Clone
-- [CLAUDE.md](CLAUDE.md) — Anleitung für die Arbeit mit Claude Code an diesem Codebase
-- [docs/CONCEPT.md](docs/CONCEPT.md) — Architektur-Konzept
-- [docs/help/de/](docs/help/de/) — In-App-Hilfe (auch via MkDocs ausgeliefert)
-- [.claude/rules/](.claude/rules/) — Entwicklungsregeln (Architektur, Coding-Standards, Hygiene, Lessons Learned, Quality Checks, Release-Workflow)
+- [CUSTOMIZE.md](CUSTOMIZE.md) - erste Lektüre nach dem Clone
+- [CLAUDE.md](CLAUDE.md) - Anleitung für die Arbeit mit Claude Code an diesem Codebase
+- [docs/configuration.md](docs/configuration.md) - geschichtete Config + Secrets-Kette
+- [.claude/rules/](.claude/rules/) - Entwicklungsregeln (Architektur, Coding-Standards, Hygiene, Lessons Learned, Quality Checks, Release-Workflow)

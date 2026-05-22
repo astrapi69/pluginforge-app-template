@@ -2,7 +2,7 @@
 
 You just cloned **pluginforge-app-template**. This is the user-facing guide to turning it into your own application.
 
-> **Read this before running `make install`.** The steps below rename placeholders that `make install` would otherwise bake into a Poetry virtualenv / npm `node_modules` tree — easier to do *before* the install.
+> **Read this before running `make install`.** The steps below rename placeholders that `make install` would otherwise bake into a Poetry virtualenv / npm `node_modules` tree - easier to do *before* the install.
 
 ## Step 1: Clone and rename the working tree
 
@@ -23,10 +23,10 @@ Replace the placeholder `myapp` with your app name everywhere. The template uses
 
 | Variant | Where it appears | Replace with |
 |---------|------------------|--------------|
-| `myapp` | snake/kebab — env vars, paths, configs, package roots | `yourapp` |
-| `MyApp` | PascalCase — class names, UI strings | `YourApp` |
-| `MYAPP` | UPPER — env var names, constants | `YOURAPP` |
-| (none) | `pluginforge-app-template` in `backend/pyproject.toml` & `frontend/package.json` `name` fields — your PyPI/npm publish name | `yourapp` (or `@scope/yourapp`) |
+| `myapp` | snake/kebab - env vars, paths, configs, package roots | `yourapp` |
+| `MyApp` | PascalCase - class names, UI strings | `YourApp` |
+| `MYAPP` | UPPER - env var names, constants | `YOURAPP` |
+| (none) | `pluginforge-app-template` in `backend/pyproject.toml` & `frontend/package.json` `name` fields - your PyPI/npm publish name | `yourapp` (or `@scope/yourapp`) |
 
 Recommended sweep:
 
@@ -66,7 +66,7 @@ mv backend/.myapp-production backend/.yourapp-production 2>/dev/null || true
 
 > The sed sweep also rewrites `app_id="myapp"` in `backend/app/main.py` and any `target_application = "myapp"` declarations on your plugin classes; no separate step needed. PluginForge v0.9.0 runs the host in hard-filter mode: plugins without a `target_application` matching the host's `app_id` are rejected at registration.
 
-Finally update the package-metadata names (these are NOT `myapp`-prefixed — they identify the template on PyPI/npm):
+Finally update the package-metadata names (these are NOT `myapp`-prefixed - they identify the template on PyPI/npm):
 
 - `backend/pyproject.toml` → `name = "yourapp"`, description, authors
 - `frontend/package.json` → `"name": "yourapp-frontend"`, description, author
@@ -115,10 +115,25 @@ Every plugin class must declare `target_application = "yourapp"` (matching the `
 
 ## Step 6: Configuration
 
-- `backend/config/app.yaml` — app name, default language, DB path, plugin enable list
-- `.env.example` — copy to `.env` for local dev; sets `YOURAPP_SECRET_KEY`, ports, debug flag
-- `frontend/vite.config.ts` — dev server ports, PWA manifest, base path (for GitHub Pages)
-- `mkdocs.yml` — docs site config (theme, nav, deploy URL)
+- `backend/config/app.yaml` - app name, default language, DB path, plugin enable list
+- `.env.example` - copy to `.env` for local dev; sets `YOURAPP_SECRET_KEY`, ports, debug flag
+- `frontend/vite.config.ts` - dev server ports, PWA manifest, base path (for GitHub Pages)
+
+### Understand the secrets chain
+
+Read [docs/configuration.md](docs/configuration.md) end-to-end before you ship. The template uses a four-layer config chain so secrets never live in the project tree:
+
+```
+project app.yaml < user-overlay app.yaml < ~/.config/yourapp/secrets.yaml < YOURAPP_* env vars
+```
+
+The user-overlay file is the Settings UI's writeback path. The secrets file is auto-created on first start (chmod 0600 on POSIX). Env vars override both, which is how Docker / CI inject keys.
+
+`GET /api/settings/app` returns `_secret_sources` + `_secrets_file_path` so the Settings UI labels per-key origin (`"settings"` / `"file"` / `"env"`) and disables inputs that an env var or file already owns.
+
+### Version sync
+
+The template ships in lock-step: only `backend/pyproject.toml` is hand-edited at release. Run `make sync-versions` to propagate the new version to `frontend/package.json`, `launcher/pyproject.toml`, every `plugins/*/pyproject.toml`, the launcher spec / `__init__.py` literals, and `install.sh` (regenerated from `install.sh.template`). The `release-gate.yml` workflow blocks artifact attachment if the propagated state ever drifts from the canonical pin.
 
 ## Step 7: Branding
 
@@ -139,7 +154,19 @@ Open http://localhost:5173 and confirm the dashboard loads. Browse the API docs 
 
 ## Step 9: Customize the rules
 
-`.claude/rules/*.md` carries opinions from `adaptive-learner` and `bibliogon` development. Some are universally applicable (architecture layering, test isolation discipline, Conventional Commits); others are domain-specific incidents that won't apply to your app. Prune `.claude/rules/lessons-learned.md` accordingly — it's a starting point, not gospel.
+`.claude/rules/*.md` carries opinions earned through real
+incidents on prior apps. The template's lineage prune already
+dropped the domain-specific bibliogon / adaptive-learner
+entries; what survives is a set of universal patterns
+(architecture layering, test-isolation discipline, version
+single-source-of-truth, atomic-commit semantics, CI-vs-local
+drift, parallel-surface asymmetry, etc.).
+
+As your app accumulates its own incidents, add new entries to
+`.claude/rules/lessons-learned.md` following the format at the
+top of that file. Prune any rule that turns out to be
+domain-specific to YOUR app once you have the experience to
+judge.
 
 ## Step 10: Ship
 
@@ -158,9 +185,9 @@ Then trigger your first GitHub release. The launcher build workflows fire automa
 
 ## Cheat sheet: the four files you almost always need to touch first
 
-1. `backend/app/models/__init__.py` — replace EXAMPLE-DOMAIN entities
-2. `backend/config/i18n/en.yaml` — replace English UI strings (then copy to other languages)
-3. `frontend/src/pages/Dashboard.tsx` — your main list view
-4. `CLAUDE.md` — tell Claude Code what your app actually is
+1. `backend/app/models/__init__.py` - replace EXAMPLE-DOMAIN entities
+2. `backend/config/i18n/en.yaml` - replace English UI strings (then copy to other languages)
+3. `frontend/src/pages/Dashboard.tsx` - your main list view
+4. `CLAUDE.md` - tell Claude Code what your app actually is
 
-Everything else (CRUD routes, schemas, services, tests, launcher, CI, Docker, MkDocs site) can stay as-is until you have a concrete need to change it.
+Everything else (CRUD routes, schemas, services, tests, launcher, CI, Docker) can stay as-is until you have a concrete need to change it.

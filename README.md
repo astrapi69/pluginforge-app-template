@@ -1,6 +1,6 @@
 # PluginForge App Template
 
-Production-ready project scaffold for building plugin-driven, full-stack applications on top of [PluginForge](https://github.com/astrapi69/pluginforge). Ships a clean FastAPI + React + TypeScript skeleton with CRUD, settings, i18n, tests, CI, cross-OS launcher, and Docker deployment. Domain models ship as `EXAMPLE-DOMAIN` — replace per project.
+Production-ready project scaffold for building plugin-driven, full-stack applications on top of [PluginForge](https://github.com/astrapi69/pluginforge). Ships a clean FastAPI + React + TypeScript skeleton with CRUD, settings, i18n, tests, CI, cross-OS launcher, and Docker deployment. Domain models ship as `EXAMPLE-DOMAIN` - replace per project.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -47,7 +47,7 @@ make dev                  # backend on :8000, frontend on :5173
 - **i18n hook** (`useI18n`) reading the backend YAML catalogs
 
 ### Plugin system
-- **Zero plugins ship** — the loader is wired and ready
+- **Zero plugins ship** - the loader is wired and ready
 - `plugins/README.md` documents the minimal plugin layout
 - Hook specs at `backend/app/hookspecs.py`; entry-point group `myapp.plugins`
 
@@ -63,9 +63,9 @@ make dev                  # backend on :8000, frontend on :5173
 - **Release-gate** enforcement (version pins in sync; subsystem lock-step; install.sh template freshness)
 
 ### Docs
-- **MkDocs Material** with i18n (`mkdocs.yml`, `docs/pyproject.toml` carries the docs venv)
-- `docs/CONCEPT.md`, `docs/ROADMAP.md`, `docs/API.md`, `docs/help/{en,de}/...`
-- Generator scripts for ROADMAP archival, mkdocs nav, audit reports
+- `docs/configuration.md` documents the four-layer config + secrets chain
+- The template ships no static docs site by default. Add MkDocs / Docusaurus / your own generator deliberately when your help-content surface justifies it.
+- `scripts/archive_completed_task.py` for ROADMAP archival once you start one
 
 ### Deployment
 - **Docker Compose** (dev + prod variants)
@@ -82,7 +82,6 @@ make dev                  # backend on :8000, frontend on :5173
 | Launcher | PyInstaller |
 | Testing | pytest, Vitest, Playwright, mutmut, Stryker |
 | Tooling | Poetry, npm, Docker, Make, ruff, ESLint, Prettier, pre-commit |
-| Docs | MkDocs Material |
 
 ## Repository layout
 
@@ -141,12 +140,11 @@ The template follows Semantic Versioning. The current minor (`v0.x`) reflects an
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 ## Documentation
 
-- [CUSTOMIZE.md](CUSTOMIZE.md) — first read after cloning
-- [CLAUDE.md](CLAUDE.md) — guidance for working with Claude Code on this codebase
-- [docs/CONCEPT.md](docs/CONCEPT.md) — architectural concept
-- [docs/help/en/](docs/help/en/) — in-app help (also served via MkDocs)
-- [.claude/rules/](.claude/rules/) — development rules (architecture, coding standards, hygiene, lessons learned, quality checks, release workflow)
+- [CUSTOMIZE.md](CUSTOMIZE.md) - first read after cloning
+- [CLAUDE.md](CLAUDE.md) - guidance for working with Claude Code on this codebase
+- [docs/configuration.md](docs/configuration.md) - layered config + secrets chain
+- [.claude/rules/](.claude/rules/) - development rules (architecture, coding standards, hygiene, lessons learned, quality checks, release workflow)
