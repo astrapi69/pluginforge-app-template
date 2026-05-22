@@ -126,7 +126,7 @@ pluginforge-app-template/
 - CSS: custom properties, dark mode via `[data-theme="dark"]`
 - Commits: English, conventional (feat/fix/refactor/docs)
 - E2E: `data-testid` selectors only
-- Secrets NEVER in committed config files. Three-layer chain: project `backend/config/app.yaml` (defaults) < `~/.config/myapp/secrets.yaml` (user override, gitignored) < env-vars (`MYAPP_*`).
+- Secrets NEVER in committed config files. Four-layer chain (per `docs/configuration.md`): project `backend/config/app.yaml` < user-overlay `<data_dir>/config/app.yaml` (Settings UI) < `~/.config/myapp/secrets.yaml` (auto-created chmod 0600 on first start) < env-vars (`MYAPP_SECRET_KEY`, `MYAPP_AI_API_KEY`, `MYAPP_ANTHROPIC_API_KEY`, `MYAPP_OPENAI_API_KEY`, `MYAPP_GEMINI_API_KEY`). `GET /api/settings/app` returns `_secret_sources` (per-key `"settings"`/`"file"`/`"env"`) + `_secrets_file_path` so the Settings UI can label and disable per-provider key inputs.
 
 ## Tests
 

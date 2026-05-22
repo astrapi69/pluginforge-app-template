@@ -25,22 +25,61 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 # When an override file exists OR an env-var is set for that secret,
 # the field is stripped from PATCH bodies before write so the UI
 # cannot accidentally clobber the externally-managed value.
-# Initial scope mirrors _ENV_SECRET_OVERRIDES in app.main: ai.api_key.
-_SECRET_FIELDS: tuple[tuple[str, str], ...] = (("ai", "api_key"),)
+# Scope mirrors _ENV_SECRET_OVERRIDES in app.main: top-level
+# secret_key plus the AI key paths (legacy ai.api_key + per-provider).
+_SECRET_FIELDS: tuple[tuple[str, ...], ...] = (
+    ("secret_key",),
+    ("ai", "api_key"),
+    ("ai", "anthropic", "api_key"),
+    ("ai", "openai", "api_key"),
+    ("ai", "gemini", "api_key"),
+)
 
 
-def _secrets_managed_externally() -> bool:
-    """True when the user has migrated secrets to the override file
-    OR set the MYAPP_AI_API_KEY env-var. Frontend reads this
-    flag to hide the API-key input; backend uses it to defensively
-    strip the same field from PATCH bodies."""
-    from app.main import _get_user_override_path
+def _walk_path(d: dict[str, Any], path: tuple[str, ...]) -> Any:
+    """Walk a dotted path through nested dicts; return None on miss."""
+    cursor: Any = d
+    for segment in path:
+        if not isinstance(cursor, dict):
+            return None
+        cursor = cursor.get(segment)
+    return cursor
 
-    if _get_user_override_path().exists():
-        return True
-    if os.environ.get("MYAPP_AI_API_KEY"):
-        return True
-    return False
+
+def _resolve_secret_sources() -> dict[str, str]:
+    """For every secret path in ``_SECRET_FIELDS``, report which layer
+    of the config chain currently owns the value.
+
+    Returns a dict keyed by dotted-path string. Always contains every
+    path so the frontend can rely on a deterministic shape:
+
+    - ``"env"``     - a matching env-var is set (highest precedence).
+    - ``"file"``    - the override file has a non-empty value at that
+                      path.
+    - ``"settings"``- neither, so the Settings UI is the source.
+
+    Precedence mirrors ``_load_app_config``: env > file > settings.
+    """
+    from app.main import _ENV_SECRET_OVERRIDES, _get_user_override_path, _load_override_file
+
+    overrides = _load_override_file(_get_user_override_path())
+    env_var_by_path: dict[tuple[str, ...], str] = {
+        path: name for name, path in _ENV_SECRET_OVERRIDES.items()
+    }
+
+    sources: dict[str, str] = {}
+    for path in _SECRET_FIELDS:
+        dotted = ".".join(path)
+        env_name = env_var_by_path.get(path)
+        if env_name and os.environ.get(env_name):
+            sources[dotted] = "env"
+            continue
+        file_value = _walk_path(overrides, path)
+        if isinstance(file_value, str) and file_value.strip():
+            sources[dotted] = "file"
+            continue
+        sources[dotted] = "settings"
+    return sources
 
 
 _base_dir: Path = Path(".")
@@ -71,15 +110,26 @@ def _active_plugin_names() -> set[str]:
 
 @router.get("/app")
 def get_app_settings() -> dict[str, Any]:
-    """Get the full app configuration plus the
-    ``_secrets_managed_externally`` flag the frontend reads to gate
-    secret inputs (Settings tab + AiSetupWizard).
+    """Get the full app configuration plus two meta-fields the
+    frontend uses to gate secret inputs:
 
-    Underscore prefix on the flag marks it as a meta-field that the
-    PATCH endpoint does NOT round-trip back into ``app.yaml``.
+    - ``_secret_sources``    - per-key dict (dotted-path -> "env" /
+                               "file" / "settings"). Frontend renders
+                               source labels per provider and
+                               disables the save button when source
+                               is "file" or "env".
+    - ``_secrets_file_path`` - resolved override-file path as a
+                               string. Used in the hint text
+                               ("This key is configured in {path}").
+
+    Underscore prefix marks them as meta-fields the PATCH endpoint
+    does NOT round-trip back into ``app.yaml``.
     """
+    from app.main import _get_user_override_path
+
     config = config_overlay.read_app_config_merged()
-    config["_secrets_managed_externally"] = _secrets_managed_externally()
+    config["_secret_sources"] = _resolve_secret_sources()
+    config["_secrets_file_path"] = str(_get_user_override_path())
     return config
 
 
@@ -156,28 +206,47 @@ def add_pen_name(body: AddPenNameRequest) -> dict[str, Any]:
 def update_app_settings(body: AppSettingsUpdate) -> dict[str, Any]:
     """Update app configuration (merges with existing).
 
-    Defense-in-depth: when secrets are managed externally (override
-    file or env-var present), strip secret fields from the incoming
-    body before writing. The UI is supposed to hide those inputs,
-    but a stale tab or misbehaving plugin could still POST them.
-    Stripping prevents the project ``app.yaml`` from clobbering an
-    externally-managed value.
+    Defense-in-depth: for each secret path whose source is "file" or
+    "env" (per ``_resolve_secret_sources``), strip that key from the
+    incoming body before writing. The UI is supposed to hide / disable
+    the corresponding inputs, but a stale tab or misbehaving plugin
+    could still POST them. Stripping prevents the user-overlay
+    ``app.yaml`` from clobbering an externally-managed value.
+
+    Unlike the previous all-or-nothing behavior, the per-key check
+    leaves Settings-sourced keys writable even when a sibling key in
+    the same body is externally managed.
     """
     current = config_overlay.load_app_config_for_edit()
 
-    if _secrets_managed_externally():
-        for parent_key, child_key in _SECRET_FIELDS:
-            section = getattr(body, parent_key, None)
-            if isinstance(section, dict) and child_key in section:
-                del section[child_key]
-                logger.warning(
-                    "Stripped %r.%r from Settings PATCH because secrets are "
-                    "managed externally (override file or env-var active). "
-                    "Frontend should hide this field; check Settings.tsx and "
-                    "AiSetupWizard.tsx.",
-                    parent_key,
-                    child_key,
-                )
+    sources = _resolve_secret_sources()
+    for path in _SECRET_FIELDS:
+        if sources.get(".".join(path)) not in ("file", "env"):
+            continue
+        top = getattr(body, path[0], None)
+        if len(path) == 1 or not isinstance(top, dict):
+            # Top-level secret fields are not declared on
+            # AppSettingsUpdate today, so there is nothing to strip
+            # for length-1 paths. Non-dict sections also have
+            # nothing to descend into.
+            continue
+        cursor: dict[str, Any] | None = top
+        for segment in path[1:-1]:
+            child = cursor.get(segment) if cursor is not None else None
+            cursor = child if isinstance(child, dict) else None
+            if cursor is None:
+                break
+        last = path[-1]
+        if cursor is not None and last in cursor:
+            del cursor[last]
+            logger.warning(
+                "Stripped %s from Settings PATCH because that secret is "
+                "managed externally (source=%s). Frontend should disable "
+                "this input; check AiAssistantSettings.tsx and "
+                "AiSetupWizard.tsx.",
+                ".".join(path),
+                sources[".".join(path)],
+            )
 
     if body.app is not None:
         current.setdefault("app", {}).update(body.app)

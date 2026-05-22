@@ -115,14 +115,19 @@ def test_get_app_settings(client):
 
 
 def test_get_app_settings_missing_file(client, temp_base):
-    """Returns the flag-only payload when app.yaml does not exist."""
+    """Returns the meta-fields-only payload when app.yaml does not exist."""
     (temp_base / "config" / "app.yaml").unlink()
 
     resp = client.get("/api/settings/app")
     assert resp.status_code == 200
-    # _secrets_managed_externally meta-field is always emitted by the
-    # endpoint so the frontend has a deterministic flag to read.
-    assert resp.json() == {"_secrets_managed_externally": False}
+    body = resp.json()
+    # _secret_sources + _secrets_file_path meta-fields are always
+    # emitted by the endpoint so the frontend has a deterministic
+    # shape to read.
+    assert set(body.keys()) == {"_secret_sources", "_secrets_file_path"}
+    # Without an env-var or override file, every secret path defaults
+    # to "settings" (Settings UI is the source of truth).
+    assert all(source == "settings" for source in body["_secret_sources"].values())
 
 
 # --- PATCH /api/settings/app ---
@@ -177,19 +182,45 @@ def test_update_empty_body(client):
     assert resp.json()["app"]["language"] == "de"
 
 
-def test_get_app_settings_externally_managed_flag_false_by_default(client):
-    """Without override file or env-var, the flag is False."""
+def test_get_app_settings_secret_sources_all_settings_by_default(client):
+    """Without override file or env-var, every secret path reports
+    source="settings" (the Settings UI is the source of truth)."""
     resp = client.get("/api/settings/app")
     assert resp.status_code == 200
-    assert resp.json()["_secrets_managed_externally"] is False
+    sources = resp.json()["_secret_sources"]
+    # Every path declared in _SECRET_FIELDS shows up.
+    for dotted in (
+        "secret_key",
+        "ai.api_key",
+        "ai.anthropic.api_key",
+        "ai.openai.api_key",
+        "ai.gemini.api_key",
+    ):
+        assert sources[dotted] == "settings", (dotted, sources)
 
 
-def test_get_app_settings_externally_managed_flag_true_with_env(client, monkeypatch):
-    """Setting MYAPP_AI_API_KEY flips the flag to True."""
-    monkeypatch.setenv("MYAPP_AI_API_KEY", "from-env")
+def test_get_app_settings_secret_sources_env_wins_per_key(client, monkeypatch):
+    """Setting MYAPP_ANTHROPIC_API_KEY marks ONLY that path as
+    source="env"; sibling secret paths stay at "settings"."""
+    monkeypatch.setenv("MYAPP_ANTHROPIC_API_KEY", "from-env")
     resp = client.get("/api/settings/app")
     assert resp.status_code == 200
-    assert resp.json()["_secrets_managed_externally"] is True
+    sources = resp.json()["_secret_sources"]
+    assert sources["ai.anthropic.api_key"] == "env"
+    # Other secret paths remain Settings-sourced.
+    assert sources["ai.openai.api_key"] == "settings"
+    assert sources["ai.gemini.api_key"] == "settings"
+    assert sources["ai.api_key"] == "settings"
+    assert sources["secret_key"] == "settings"
+
+
+def test_get_app_settings_secrets_file_path_is_emitted(client):
+    """The resolved override-file path is always returned so the
+    frontend can render the "configured in {path}" hint."""
+    resp = client.get("/api/settings/app")
+    assert resp.status_code == 200
+    file_path = resp.json()["_secrets_file_path"]
+    assert isinstance(file_path, str) and file_path.endswith("secrets-not-present.yaml")
 
 
 def test_patch_strips_ai_api_key_when_externally_managed(client, temp_base, monkeypatch):
@@ -232,6 +263,35 @@ def test_patch_strips_ai_api_key_when_externally_managed(client, temp_base, monk
     # Warning logged with the parent.child path so the dev sees
     # which UI surface still ships the field.
     assert any("ai" in m and "api_key" in m and "Stripped" in m for m in captured), captured
+
+
+def test_patch_strip_is_per_key_not_all_or_nothing(client, temp_base, monkeypatch):
+    """When ONE secret path is externally managed (env-var for
+    ai.anthropic.api_key here), sibling secret paths in the same
+    PATCH body still flow through. This pins the per-key strip
+    contract introduced when ``_secrets_managed_externally`` (a
+    single bool) was replaced by ``_resolve_secret_sources``.
+    """
+    monkeypatch.setenv("MYAPP_ANTHROPIC_API_KEY", "from-env")
+
+    resp = client.patch(
+        "/api/settings/app",
+        json={
+            "ai": {
+                "anthropic": {"api_key": "externally-managed-stripped"},
+                "openai": {"api_key": "settings-sourced-keep"},
+            },
+        },
+    )
+    assert resp.status_code == 200
+
+    with open(temp_base / "config" / "app.yaml") as f:
+        on_disk = yaml.safe_load(f)
+    assert (
+        on_disk.get("ai", {}).get("anthropic", {}).get("api_key", "")
+        != "externally-managed-stripped"
+    )
+    assert on_disk["ai"]["openai"]["api_key"] == "settings-sourced-keep"
 
 
 def test_patch_preserves_api_key_when_not_externally_managed(client):

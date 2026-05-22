@@ -4,9 +4,9 @@
 """Tests for the three-layer config loader.
 
 Layer chain: project app.yaml < user override file < env-vars.
-Covers XDG path, Windows path, deep merge precedence, env-var
-overrides, deprecation warning, and graceful corrupt-override
-handling.
+Covers XDG path, MYAPP_CONFIG_DIR redirect, deep merge precedence,
+env-var overrides, deprecation warning, and graceful
+corrupt-override handling.
 
 The loader lives in :mod:`app.main`; we import the helpers
 directly and monkeypatch CONFIG_PATH + override-path resolution
@@ -16,6 +16,7 @@ per test so each case is hermetic.
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 import pytest
@@ -140,13 +141,21 @@ def test_xdg_config_home_respected(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     assert path == tmp_path / "xdg" / "myapp" / "secrets.yaml"
 
 
-def test_windows_appdata_branch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """On Windows, %APPDATA%/myapp/secrets.yaml is the override
-    location."""
-    monkeypatch.setattr("sys.platform", "win32")
-    monkeypatch.setenv("APPDATA", str(tmp_path / "AppData" / "Roaming"))
+def test_myapp_config_dir_env_redirects(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """MYAPP_CONFIG_DIR env-var (the explicit override consumed by
+    ``app.paths.get_config_dir``) redirects the secrets path.
+
+    Replaces the prior platform-branch tests (Windows ``%APPDATA%``)
+    after ``_get_user_override_path`` was refactored to delegate to
+    ``app.paths.get_config_dir`` (which uses ``platformdirs``).
+    Platform-specific branches now live inside platformdirs and are
+    covered by its own suite; the contract we own is the
+    ``MYAPP_CONFIG_DIR`` redirect.
+    """
+    custom = tmp_path / "custom_config"
+    monkeypatch.setenv("MYAPP_CONFIG_DIR", str(custom))
     path = main_module._get_user_override_path()
-    assert path == tmp_path / "AppData" / "Roaming" / "myapp" / "secrets.yaml"
+    assert path == (custom / "secrets.yaml").resolve()
 
 
 def test_corrupt_override_file_does_not_crash(
@@ -179,8 +188,16 @@ def test_corrupt_override_file_does_not_crash(
 
     monkeypatch.setattr(main_module.logger, "warning", spy)
 
+    # Match production usage: a chmod 0o600 file does not trip the
+    # "permissive mode" warning that _load_override_file emits
+    # separately. The corruption assertions below are about YAML-parse
+    # warnings, not permission warnings.
+    def _write_override(content: str) -> None:
+        override.write_text(content, encoding="utf-8")
+        os.chmod(override, 0o600)
+
     # Invalid YAML syntax.
-    override.write_text("this is: : : not valid yaml :\n  - broken", encoding="utf-8")
+    _write_override("this is: : : not valid yaml :\n  - broken")
     cfg = main_module._load_app_config()
     assert cfg["ai"]["provider"] == "anthropic"
     assert cfg["ai"]["api_key"] == "from-project"
@@ -188,14 +205,14 @@ def test_corrupt_override_file_does_not_crash(
 
     # Top-level non-dict.
     captured.clear()
-    override.write_text("- one\n- two\n", encoding="utf-8")
+    _write_override("- one\n- two\n")
     cfg = main_module._load_app_config()
     assert cfg["ai"]["api_key"] == "from-project"
     assert any("expected mapping" in m for m in captured), captured
 
     # Empty file -> silently treated as empty override (no warning).
     captured.clear()
-    override.write_text("", encoding="utf-8")
+    _write_override("")
     cfg = main_module._load_app_config()
     assert cfg["ai"]["api_key"] == "from-project"
     assert captured == []
@@ -210,6 +227,92 @@ def test_lists_are_replaced_not_merged(project_yaml: Path) -> None:
     _write(override, {"app": {"supported_languages": ["fr"]}})
     cfg = main_module._load_app_config()
     assert cfg["app"]["supported_languages"] == ["fr"]
+
+
+def test_ensure_secrets_template_creates_dir_and_file(tmp_path: Path) -> None:
+    """Auto-creates the parent dir + a commented-out template file
+    with chmod 0o600 on first invocation. Idempotent: subsequent
+    calls do not overwrite a user-edited file."""
+    import sys
+
+    path = tmp_path / "new-dir" / "secrets.yaml"
+    main_module._ensure_secrets_template(path)
+    assert path.parent.exists()
+    assert path.exists()
+    assert path.read_text(encoding="utf-8") == main_module._SECRETS_TEMPLATE_BODY
+    if sys.platform != "win32":
+        assert path.stat().st_mode & 0o777 == 0o600
+
+    # Idempotency: rewrite then call again, content stays.
+    path.write_text("# edited by user\n", encoding="utf-8")
+    main_module._ensure_secrets_template(path)
+    assert path.read_text(encoding="utf-8") == "# edited by user\n"
+
+
+def test_warn_if_secrets_perms_too_open_fires_on_644(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A 0o644 file logs a WARNING that names the actual mode."""
+    import sys
+
+    if sys.platform == "win32":
+        pytest.skip("POSIX permission check is no-op on Windows")
+
+    path = tmp_path / "secrets.yaml"
+    path.write_text("", encoding="utf-8")
+    os.chmod(path, 0o644)
+    main_module._perms_warned.discard(path)
+
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        main_module._warn_if_secrets_perms_too_open(path)
+
+    assert any(
+        "permissive mode" in record.getMessage() and "644" in record.getMessage()
+        for record in caplog.records
+    ), [r.getMessage() for r in caplog.records]
+
+
+def test_warn_if_secrets_perms_too_open_silent_on_600(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A 0o600 file produces no warning."""
+    import sys
+
+    if sys.platform == "win32":
+        pytest.skip("POSIX permission check is no-op on Windows")
+
+    path = tmp_path / "secrets.yaml"
+    path.write_text("", encoding="utf-8")
+    os.chmod(path, 0o600)
+    main_module._perms_warned.discard(path)
+
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        main_module._warn_if_secrets_perms_too_open(path)
+
+    assert all("permissive mode" not in r.getMessage() for r in caplog.records)
+
+
+def test_warn_if_secrets_perms_too_open_dedups_per_path(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Second call against the same permissive path stays silent
+    (warning recorded once, path added to ``_perms_warned`` set)."""
+    import sys
+
+    if sys.platform == "win32":
+        pytest.skip("POSIX permission check is no-op on Windows")
+
+    path = tmp_path / "secrets.yaml"
+    path.write_text("", encoding="utf-8")
+    os.chmod(path, 0o644)
+    main_module._perms_warned.discard(path)
+
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        main_module._warn_if_secrets_perms_too_open(path)
+        main_module._warn_if_secrets_perms_too_open(path)
+
+    perm_warnings = [r for r in caplog.records if "permissive mode" in r.getMessage()]
+    assert len(perm_warnings) == 1
 
 
 def test_deep_merge_helper_pure_function() -> None:

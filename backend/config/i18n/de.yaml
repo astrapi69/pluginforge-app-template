@@ -466,10 +466,11 @@ ui:
     ai_key_not_required: Nicht erforderlich
     ai_key_hint: Der API-Schlüssel wird nur lokal gespeichert und nur an den in 'Base
       URL' angegebenen Dienst übertragen.
-    ai_api_key_external_note: API-Schlüssel wird aus externer Konfiguration gelesen
-      (~/.config/myapp/secrets.yaml oder Umgebungsvariable MYAPP_AI_API_KEY).
-      Editiere die Datei direkt oder setze die Umgebungsvariable, um den Schlüssel
-      zu ändern.
+    api_key_source_file: 'Schlüssel aus: secrets.yaml'
+    api_key_source_settings: 'Schlüssel aus: Einstellungen'
+    api_key_source_env: 'Schlüssel aus: Umgebungsvariable'
+    api_key_external_hint: Dieser Schlüssel wird in {path} verwaltet. Bearbeite
+      die Datei, um ihn zu ändern.
     ai_lmstudio_hint: Lokal laufend, kein API-Schlüssel nötig. Modelle werden vom
       LM Studio Server bereitgestellt.
     ai_provider_anthropic: Anthropic (Claude)

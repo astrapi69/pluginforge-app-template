@@ -454,7 +454,10 @@ ui:
     ai_api_key: APIキー
     ai_key_not_required: 不要
     ai_key_hint: APIキーはローカルに保存され、Base URLで指定したサービスにのみ送信されます。
-    ai_api_key_external_note: APIキーは外部設定（~/.config/myapp/secrets.yamlまたは環境変数MYAPP_AI_API_KEY）から読み込まれます。キーを変更するにはファイルを直接編集するか環境変数を設定してください。
+    api_key_source_file: 'キーの取得元: secrets.yaml'
+    api_key_source_settings: 'キーの取得元: 設定'
+    api_key_source_env: 'キーの取得元: 環境変数'
+    api_key_external_hint: このキーは {path} で設定されています。変更するにはファイルを編集してください。
     ai_lmstudio_hint: ローカルで実行中、APIキー不要。モデルはLM Studioサーバーから提供されます。
     ai_provider_anthropic: Anthropic (Claude)
     ai_provider_openai: OpenAI (GPT)

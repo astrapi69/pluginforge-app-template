@@ -88,3 +88,33 @@ export const AI_PROVIDER_IDS = Object.keys(AI_PROVIDER_PRESETS)
 export function getProviderPreset(providerId: string): ProviderPreset | undefined {
   return AI_PROVIDER_PRESETS[providerId]
 }
+
+// Source of an API key as reported by GET /api/settings/app's
+// _secret_sources meta-field. "settings" means the key is editable
+// in the UI; "file" / "env" mean it is owned by ~/.config/myapp/
+// secrets.yaml or an environment variable and the input must be
+// disabled.
+export type SecretSource = 'settings' | 'file' | 'env'
+
+// Per-provider dotted-path mapping into the merged app-config dict.
+// Providers not in the map fall back to the legacy ai.api_key slot
+// (still consumed by app/main.py:735 and app/ai/routes.py:120 until
+// the AI-routes migration that retires it).
+const PER_PROVIDER_KEY_PATH: Record<string, string> = {
+  anthropic: 'ai.anthropic.api_key',
+  openai: 'ai.openai.api_key',
+  gemini: 'ai.gemini.api_key',
+}
+
+export function activeKeyPath(provider: string): string {
+  return PER_PROVIDER_KEY_PATH[provider] ?? 'ai.api_key'
+}
+
+export function activeKeySource(
+  provider: string,
+  sources?: Record<string, string>,
+): SecretSource {
+  if (!sources) return 'settings'
+  const raw = sources[activeKeyPath(provider)] ?? 'settings'
+  return raw === 'file' || raw === 'env' ? raw : 'settings'
+}

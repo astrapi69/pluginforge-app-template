@@ -78,19 +78,84 @@ def _get_user_override_path() -> Path:
     defaults, this file (gitignored, outside the project tree)
     overlays user secrets, env-vars override both.
 
-    XDG-conformant on Linux/macOS, ``%APPDATA%`` on Windows. Set
-    ``XDG_CONFIG_HOME`` to relocate; otherwise defaults to
-    ``~/.config/myapp/secrets.yaml``.
+    Resolves via ``app.paths.get_config_dir()`` so the location can be
+    redirected via the ``MYAPP_CONFIG_DIR`` env var and stays in sync
+    with the rest of the platformdirs-driven path helpers. Defaults to
+    ``~/.config/myapp/secrets.yaml`` on Linux/macOS and
+    ``%APPDATA%\\myapp\\secrets.yaml`` on Windows.
+    """
+    from app.paths import get_config_dir
+
+    return get_config_dir() / "secrets.yaml"
+
+
+_SECRETS_TEMPLATE_BODY = """\
+# MyApp - API Keys
+# Uncomment and fill in your keys below.
+# These take precedence over keys configured in the Settings UI.
+# Environment variables override this file.
+
+# secret_key: "generate-with-python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
+
+# ai:
+#   anthropic:
+#     api_key: "sk-ant-..."
+#   openai:
+#     api_key: "sk-..."
+#   gemini:
+#     api_key: "AIza..."
+"""
+
+
+def _ensure_secrets_template(path: Path) -> None:
+    """Create the parent config dir and a commented-out secrets template
+    at ``path`` if neither exists yet.
+
+    Idempotent. On Linux/macOS the file is chmod 0o600 on creation so
+    only the owning user can read it. Logs at INFO level so the user
+    sees the path on first startup; never logs key values.
+    """
+    parent = path.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        return
+    path.write_text(_SECRETS_TEMPLATE_BODY, encoding="utf-8")
+    try:
+        os.chmod(path, 0o600)
+    except OSError as exc:
+        # chmod is best-effort: irrelevant on Windows, harmless when
+        # the umask already restricts. A failure here is not a reason
+        # to abort startup.
+        logger.warning("Could not chmod 0o600 on %s: %s", path, exc)
+    logger.info("Config directory: %s", parent)
+    logger.info("Secrets template created at %s", path)
+
+
+_perms_warned: set[Path] = set()
+
+
+def _warn_if_secrets_perms_too_open(path: Path) -> None:
+    """Emit a WARNING when ``path`` is readable by group or other on
+    POSIX. No-op on Windows (different ACL model).
+
+    Deduplicated per path per process: ``_load_app_config`` is called
+    per-request so without the dedup the warning would spam the log.
     """
     if sys.platform == "win32":
-        appdata = os.environ.get("APPDATA")
-        if appdata:
-            return Path(appdata) / "myapp" / "secrets.yaml"
-        return Path.home() / "AppData" / "Roaming" / "myapp" / "secrets.yaml"
-    xdg_config = os.environ.get("XDG_CONFIG_HOME")
-    if xdg_config:
-        return Path(xdg_config) / "myapp" / "secrets.yaml"
-    return Path.home() / ".config" / "myapp" / "secrets.yaml"
+        return
+    if path in _perms_warned:
+        return
+    try:
+        mode = path.stat().st_mode
+    except OSError:
+        return
+    if mode & 0o077:
+        logger.warning(
+            "Secrets file %s has permissive mode %o; recommend chmod 600.",
+            path,
+            mode & 0o777,
+        )
+        _perms_warned.add(path)
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
@@ -112,11 +177,17 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 
 
 # Mapping of env-var name -> dotted-path inside the merged config dict.
-# Initial scope: app.yaml ``ai.api_key`` only. Plugin yaml secrets follow
-# in a separate refactor (PluginManager loader has its own config path
-# and reload machinery).
+# Top-level ``secret_key`` plus per-provider AI keys. ``ai.api_key`` is
+# retained as a legacy slot consumed by the current Settings UI and
+# the AI router; the per-provider Settings UI in a follow-up will
+# supersede it. Plugin yaml secrets follow in a separate refactor
+# (PluginManager loader has its own config path and reload machinery).
 _ENV_SECRET_OVERRIDES: dict[str, tuple[str, ...]] = {
+    "MYAPP_SECRET_KEY": ("secret_key",),
     "MYAPP_AI_API_KEY": ("ai", "api_key"),
+    "MYAPP_ANTHROPIC_API_KEY": ("ai", "anthropic", "api_key"),
+    "MYAPP_OPENAI_API_KEY": ("ai", "openai", "api_key"),
+    "MYAPP_GEMINI_API_KEY": ("ai", "gemini", "api_key"),
 }
 
 
@@ -154,6 +225,7 @@ def _load_override_file(path: Path) -> dict[str, Any]:
     """
     if not path.exists():
         return {}
+    _warn_if_secrets_perms_too_open(path)
     try:
         with path.open(encoding="utf-8") as f:
             data = yaml.safe_load(f)
@@ -192,9 +264,22 @@ def _load_app_config() -> dict[str, Any]:
     1. Project ``app.yaml`` (defaults shipped with the app).
     2. User-overlay ``<data_dir>/config/app.yaml`` (Settings UI
        writes; see ``app.config_overlay``).
-    3. Secrets override ``~/.config/myapp/secrets.yaml``
-       (long-standing user-home secrets file).
-    4. Environment variables (``MYAPP_AI_API_KEY`` etc.).
+    3. Secrets override ``~/.config/myapp/secrets.yaml`` (user-
+       home secrets file). Expected shape::
+
+           secret_key: "..."
+           ai:
+             api_key: "..."         # legacy single-provider slot
+             anthropic:
+               api_key: "..."
+             openai:
+               api_key: "..."
+             gemini:
+               api_key: "..."
+
+    4. Environment variables (``MYAPP_SECRET_KEY``,
+       ``MYAPP_AI_API_KEY``, ``MYAPP_ANTHROPIC_API_KEY``,
+       ``MYAPP_OPENAI_API_KEY``, ``MYAPP_GEMINI_API_KEY``).
 
     Higher layers win. Lists REPLACE; dicts deep-merge. Called
     per-request where freshness matters; cheap (small yaml files,
@@ -458,6 +543,12 @@ async def lifespan(app: FastAPI):
     from app.paths import mark_data_dir_as_production
 
     mark_data_dir_as_production()
+    # Auto-create ~/.config/myapp/ and a commented-out secrets.yaml
+    # template on first startup. Skipped under MYAPP_TEST=1 so the
+    # test suite never touches the user's real config dir (defense in
+    # depth alongside conftest's MYAPP_DATA_DIR isolation).
+    if os.environ.get("MYAPP_TEST") != "1":
+        _ensure_secrets_template(_get_user_override_path())
     init_db()
     # Auto-delete expired trash items on startup
     from app.routers.articles import cleanup_expired_article_trash
