@@ -198,10 +198,6 @@ class ConflictError(MyAppError):
     """Resource already exists (-> HTTP 409)."""
     pass
 
-class ExportError(MyAppError):
-    """Export failed: Pandoc, scaffolding, conversion (-> HTTP 500)."""
-    pass
-
 class PluginError(MyAppError):
     """Plugin could not load, activate, or run (-> HTTP 500)."""
     def __init__(self, plugin_name: str, message: str):
@@ -224,7 +220,6 @@ ERROR_STATUS_MAP = {
     NotFoundError: 404,
     ValidationError: 400,
     ConflictError: 409,
-    ExportError: 500,
     PluginError: 500,
     ExternalServiceError: 502,
 }
@@ -246,22 +241,22 @@ async def myapp_error_handler(request, exc: MyAppError):
 
 ```python
 # RIGHT
-def get_book(book_id: str, db: Session) -> Book:
-    book = db.query(Book).filter(Book.id == book_id).first()
-    if not book:
-        raise NotFoundError(f"Book {book_id} not found")
-    return book
+def get_entity(entity_id: str, db: Session) -> Entity:
+    entity = db.query(Entity).filter(Entity.id == entity_id).first()
+    if not entity:
+        raise NotFoundError(f"Entity {entity_id} not found")
+    return entity
 
-def export_book(book_id: str, fmt: str, ...) -> Path:
-    if fmt not in SUPPORTED_FORMATS:
-        raise ValidationError(f"Unsupported format: {fmt}")
+def import_archive(path: Path) -> ImportResult:
+    if not path.exists():
+        raise ValidationError(f"Archive not found: {path}")
     try:
-        return run_pandoc(project_dir, fmt, config)
+        return _run_importer(path)
     except subprocess.CalledProcessError as e:
-        raise ExportError(f"Pandoc failed: {e.stderr}")
+        raise ExternalServiceError("importer", f"exit {e.returncode}: {e.stderr}")
 
 # WRONG: HTTPException in a service
-def get_book(book_id: str, db: Session) -> Book:
+def get_entity(entity_id: str, db: Session) -> Entity:
     ...
     raise HTTPException(status_code=404, ...)  # NOT in services
 ```
@@ -270,37 +265,37 @@ def get_book(book_id: str, db: Session) -> Book:
 
 ```python
 # RIGHT
-@router.get("/{book_id}")
-def get_book_endpoint(book_id: str, db: Session = Depends(get_db)):
-    return book_service.get_book(book_id, db)
+@router.get("/{entity_id}")
+def get_entity_endpoint(entity_id: str, db: Session = Depends(get_db)):
+    return entity_service.get_entity(entity_id, db)
     # NotFoundError -> exception handler -> 404 automatically
 ```
 
 **Plugins** throw PluginError:
 
 ```python
-class AudiobookPlugin(BasePlugin):
-    def generate(self, book_data, chapters):
+class ExamplePlugin(BasePlugin):
+    def run(self, payload):
         try:
-            result = edge_tts.synthesize(...)
+            result = external_call(...)
         except ConnectionError as e:
-            raise ExternalServiceError("edge-TTS", str(e))
-        if not result.files:
-            raise PluginError(self.name, "No audio generated")
+            raise ExternalServiceError("external-api", str(e))
+        if not result:
+            raise PluginError(self.name, "No output produced")
 ```
 
 **External tools** are wrapped:
 
 ```python
-def check_grammar(text: str, lang: str) -> list[dict]:
+def fetch_remote(query: str) -> list[dict]:
     try:
-        response = httpx.post(LANGUAGETOOL_URL, ...)
+        response = httpx.post(REMOTE_URL, ...)
         response.raise_for_status()
         return response.json()["matches"]
     except httpx.ConnectError:
-        raise ExternalServiceError("LanguageTool", "Service not reachable")
+        raise ExternalServiceError("remote-api", "Service not reachable")
     except httpx.HTTPStatusError as e:
-        raise ExternalServiceError("LanguageTool", f"HTTP {e.response.status_code}")
+        raise ExternalServiceError("remote-api", f"HTTP {e.response.status_code}")
 ```
 
 ### Backend: rules
@@ -364,15 +359,15 @@ async function apiCall<T>(url: string, options?: RequestInit): Promise<T> {
 
 ```typescript
 // RIGHT: specific + i18n + loading + issue button on 5xx
-async function handleExport() {
+async function handleSubmit() {
   setLoading(true)
   try {
-    await exportBook(bookId, format)
-    toast.success(t('export_success'))
+    await api.entities.create(payload)
+    toast.success(t('create_success'))
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.isNotFound) {
-        toast.error(t('book_not_found'))
+        toast.error(t('entity_not_found'))
       } else if (error.isServerError) {
         // Toast with a "Report issue" link for GitHub
         const issueUrl = error.toGitHubIssueUrl('astrapi69/myapp', APP_VERSION)
@@ -389,7 +384,7 @@ async function handleExport() {
 }
 
 // WRONG: ignore the error
-await exportBook(bookId, format)  // no catch
+await api.entities.create(payload)  // no catch
 
 // WRONG: generic, no context
 catch (error) {
@@ -418,31 +413,31 @@ Uniform REST design so humans and AI immediately understand how endpoints behave
 ### URL schema
 
 ```
-GET    /api/books                    # list
-GET    /api/books/{id}               # single
-POST   /api/books                    # create
-PUT    /api/books/{id}               # full update
-PATCH  /api/books/{id}               # partial update
-DELETE /api/books/{id}               # delete
+GET    /api/entities                  # list
+GET    /api/entities/{id}             # single
+POST   /api/entities                  # create
+PUT    /api/entities/{id}             # full update
+PATCH  /api/entities/{id}             # partial update
+DELETE /api/entities/{id}             # delete
 
-GET    /api/books/{id}/chapters      # subresource list
-POST   /api/books/{id}/chapters      # subresource create
+GET    /api/entities/{id}/children    # subresource list
+POST   /api/entities/{id}/children    # subresource create
 ```
 
 ### Response format
 
 ```json
 // Success (single)
-{ "id": "abc", "title": "My Book", "author": "Asterios" }
+{ "id": "abc", "name": "My Entity" }
 
 // Success (list)
-[{ "id": "abc", "title": "My Book" }, ...]
+[{ "id": "abc", "name": "My Entity" }, ...]
 
 // Error (automatically from FastAPI/Pydantic)
-{ "detail": "Book abc not found" }
+{ "detail": "Entity abc not found" }
 
 // Validation error (automatically from Pydantic)
-{ "detail": [{ "loc": ["body", "title"], "msg": "field required", "type": "value_error.missing" }] }
+{ "detail": [{ "loc": ["body", "name"], "msg": "field required", "type": "value_error.missing" }] }
 ```
 
 **Rules:**
@@ -450,7 +445,7 @@ POST   /api/books/{id}/chapters      # subresource create
 - IDs are UUIDs as strings.
 - Timestamps as ISO 8601 (UTC).
 - Lists are NOT paginated. Pagination only when needed.
-- Plugin endpoints under /api/{plugin-name}/... (e.g. /api/grammar/check).
+- Plugin endpoints under /api/{plugin-name}/... (e.g. /api/example/check).
 
 ---
 
@@ -464,20 +459,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 # RIGHT: structured, with context
-logger.info("Book exported", extra={"book_id": book.id, "format": fmt})
+logger.info("Entity created", extra={"entity_id": entity.id})
 logger.warning("Plugin load failed", extra={"plugin": name, "error": str(e)})
-logger.error("Export failed", extra={"book_id": book.id}, exc_info=True)
+logger.error("Operation failed", extra={"entity_id": entity.id}, exc_info=True)
 
 # WRONG:
-print("export done")           # no print
-logger.info(f"Exported {book}")  # no objects inside messages, use extra
+print("done")                       # no print
+logger.info(f"Created {entity}")    # no objects inside messages, use extra
 ```
 
 **Log levels:**
 - DEBUG: detailed developer info (only with MYAPP_DEBUG=true).
-- INFO: important actions (export started, plugin loaded, backup created).
+- INFO: important actions (entity created, plugin loaded, backup created).
 - WARNING: unexpected behavior that is not critical (plugin not found, fallback used).
-- ERROR: errors that affect the user (export failed, DB error).
+- ERROR: errors that affect the user (operation failed, DB error).
 
 ### Frontend
 
@@ -493,42 +488,42 @@ logger.info(f"Exported {book}")  # no objects inside messages, use extra
 
 ```python
 # RIGHT: the why, not the what
-# TipTap uses 4-space indent, write-book-template uses 2-space.
-# Double the indentation before conversion.
-content = re.sub(r'^( +)', lambda m: m.group(1) * 2, content, flags=re.MULTILINE)
+# pluggy's hook resolution does not preserve insertion order
+# across plugin removal / re-add, so we re-sort by priority on
+# every dispatch.
+hooks = sorted(hooks, key=lambda h: h.priority)
 
 # WRONG: commenting the obvious
-# Create a new book
-book = Book(title=title, author=author)
+# Create a new entity
+entity = Entity(name=name)
 ```
 
 **Rules:**
 - Comments explain WHY, not WHAT.
 - Docstrings for every public Python function (Google style).
 - TypeScript: JSDoc only for exported functions with non-obvious parameters.
-- TODOs only with context: `# TODO(phase-8): audiobook plugin needs ffmpeg check`
+- TODOs only with context: `# TODO(phase-2): wire async hook support`
 - No commented-out code blocks. Git is the versioning.
 
 ### Docstring format (Python)
 
 ```python
-def export_book(book_id: str, fmt: str, options: ExportOptions) -> Path:
-    """Export a book in the given format.
+def import_archive(archive_path: Path, options: ImportOptions) -> ImportResult:
+    """Import an archive of entities into the database.
 
-    Converts TipTap JSON to Markdown, scaffolds the write-book-template
-    structure and calls manuscripta for the final conversion.
+    Parses the archive, validates each row against the schema,
+    and persists in a single transaction.
 
     Args:
-        book_id: UUID of the book.
-        fmt: target format (epub, pdf, project).
-        options: export options (toc_depth, use_manual_toc, book_type).
+        archive_path: filesystem path to the archive.
+        options: import options (overwrite policy, default status, ...).
 
     Returns:
-        Path to the exported file.
+        An ImportResult with per-row outcomes (imported / skipped / errored).
 
     Raises:
-        HTTPException: 404 when the book is not found.
-        ExportError: when Pandoc/manuscripta fails.
+        ValidationError: when the archive is structurally invalid.
+        ExternalServiceError: when a subprocess invoked during import fails.
     """
 ```
 
