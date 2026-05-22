@@ -4,9 +4,9 @@
 """Tests for the three-layer config loader.
 
 Layer chain: project app.yaml < user override file < env-vars.
-Covers XDG path, Windows path, deep merge precedence, env-var
-overrides, deprecation warning, and graceful corrupt-override
-handling.
+Covers XDG path, MYAPP_CONFIG_DIR redirect, deep merge precedence,
+env-var overrides, deprecation warning, and graceful
+corrupt-override handling.
 
 The loader lives in :mod:`app.main`; we import the helpers
 directly and monkeypatch CONFIG_PATH + override-path resolution
@@ -16,6 +16,7 @@ per test so each case is hermetic.
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 import pytest
@@ -140,13 +141,21 @@ def test_xdg_config_home_respected(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     assert path == tmp_path / "xdg" / "myapp" / "secrets.yaml"
 
 
-def test_windows_appdata_branch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """On Windows, %APPDATA%/myapp/secrets.yaml is the override
-    location."""
-    monkeypatch.setattr("sys.platform", "win32")
-    monkeypatch.setenv("APPDATA", str(tmp_path / "AppData" / "Roaming"))
+def test_myapp_config_dir_env_redirects(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """MYAPP_CONFIG_DIR env-var (the explicit override consumed by
+    ``app.paths.get_config_dir``) redirects the secrets path.
+
+    Replaces the prior platform-branch tests (Windows ``%APPDATA%``)
+    after ``_get_user_override_path`` was refactored to delegate to
+    ``app.paths.get_config_dir`` (which uses ``platformdirs``).
+    Platform-specific branches now live inside platformdirs and are
+    covered by its own suite; the contract we own is the
+    ``MYAPP_CONFIG_DIR`` redirect.
+    """
+    custom = tmp_path / "custom_config"
+    monkeypatch.setenv("MYAPP_CONFIG_DIR", str(custom))
     path = main_module._get_user_override_path()
-    assert path == tmp_path / "AppData" / "Roaming" / "myapp" / "secrets.yaml"
+    assert path == (custom / "secrets.yaml").resolve()
 
 
 def test_corrupt_override_file_does_not_crash(
@@ -179,8 +188,16 @@ def test_corrupt_override_file_does_not_crash(
 
     monkeypatch.setattr(main_module.logger, "warning", spy)
 
+    # Match production usage: a chmod 0o600 file does not trip the
+    # "permissive mode" warning that _load_override_file emits
+    # separately. The corruption assertions below are about YAML-parse
+    # warnings, not permission warnings.
+    def _write_override(content: str) -> None:
+        override.write_text(content, encoding="utf-8")
+        os.chmod(override, 0o600)
+
     # Invalid YAML syntax.
-    override.write_text("this is: : : not valid yaml :\n  - broken", encoding="utf-8")
+    _write_override("this is: : : not valid yaml :\n  - broken")
     cfg = main_module._load_app_config()
     assert cfg["ai"]["provider"] == "anthropic"
     assert cfg["ai"]["api_key"] == "from-project"
@@ -188,14 +205,14 @@ def test_corrupt_override_file_does_not_crash(
 
     # Top-level non-dict.
     captured.clear()
-    override.write_text("- one\n- two\n", encoding="utf-8")
+    _write_override("- one\n- two\n")
     cfg = main_module._load_app_config()
     assert cfg["ai"]["api_key"] == "from-project"
     assert any("expected mapping" in m for m in captured), captured
 
     # Empty file -> silently treated as empty override (no warning).
     captured.clear()
-    override.write_text("", encoding="utf-8")
+    _write_override("")
     cfg = main_module._load_app_config()
     assert cfg["ai"]["api_key"] == "from-project"
     assert captured == []
