@@ -5,13 +5,14 @@
  * Tests for the AiSetupWizard externally-managed-secrets branch
  * (T-XX secrets refactor, addendum 3).
  *
- * When ``secretsManagedExternally`` is true the wizard must:
+ * When ``secretSources`` reports the active provider's key as
+ * "file" or "env", the wizard must:
  * - Hide the API-key input on step 1
- * - Render the info-note instead
+ * - Render the source-label note instead
  * - NOT block "Continue" on missing api-key
  *
- * When false: existing behavior (input visible, Continue gated on
- * non-empty key).
+ * When the source is "settings" (or sources are absent): existing
+ * behavior (input visible, Continue gated on non-empty key).
  */
 
 import {describe, it, expect, vi, beforeEach} from "vitest";
@@ -60,13 +61,14 @@ beforeEach(() => {
     localStorage.clear();
 });
 
-describe("AiSetupWizard secretsManagedExternally branch", () => {
+describe("AiSetupWizard externally-managed-key branch", () => {
     it("shows info-note + hides input on step 1 when externally managed", () => {
         render(
             <AiSetupWizard
                 open
                 onClose={vi.fn()}
-                secretsManagedExternally
+                secretSources={{"ai.anthropic.api_key": "file"}}
+                secretsFilePath="/home/test/.config/myapp/secrets.yaml"
             />,
         );
         // Advance from step 0 (provider pick) to step 1 (api-key).
@@ -85,7 +87,8 @@ describe("AiSetupWizard secretsManagedExternally branch", () => {
             <AiSetupWizard
                 open
                 onClose={vi.fn()}
-                secretsManagedExternally
+                secretSources={{"ai.anthropic.api_key": "file"}}
+                secretsFilePath="/home/test/.config/myapp/secrets.yaml"
             />,
         );
         fireEvent.click(screen.getByText(/Weiter|Next/));
@@ -120,7 +123,8 @@ describe("AiSetupWizard test-connection step", () => {
             <AiSetupWizard
                 open
                 onClose={vi.fn()}
-                secretsManagedExternally
+                secretSources={{"ai.anthropic.api_key": "file"}}
+                secretsFilePath="/home/test/.config/myapp/secrets.yaml"
             />,
         );
         // Step 0 (provider) -> step 1 (api-key, externally managed

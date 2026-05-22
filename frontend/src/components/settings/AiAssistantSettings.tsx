@@ -2,7 +2,12 @@ import {useEffect, useState} from "react";
 import {Save, Eye, EyeOff} from "lucide-react";
 import {api} from "../../api/client";
 import {useI18n} from "../../hooks/useI18n";
-import {AI_PROVIDER_PRESETS, AI_PROVIDER_IDS, getProviderPreset} from "../../utils/aiProviders";
+import {
+    AI_PROVIDER_PRESETS,
+    AI_PROVIDER_IDS,
+    activeKeySource,
+    getProviderPreset,
+} from "../../utils/aiProviders";
 import {notify} from "../../utils/notify";
 import styles from "../../pages/Settings.module.css";
 import {RadixSelect} from "./RadixSelect";
@@ -36,13 +41,17 @@ export function AiAssistantSettings({config, onSave, saving}: {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [config]);
 
-    // True when secrets are managed via ~/.config/myapp/secrets.yaml
-    // or MYAPP_AI_API_KEY env-var. Backend strips api_key from
-    // PATCH bodies in this case as defense-in-depth; we drop it here
-    // so the frontend never sends it in the first place.
-    const secretsExternal = Boolean(
-        (config as Record<string, unknown>)._secrets_managed_externally,
-    );
+    // Per-key source detection: backend's _secret_sources dict +
+    // resolved secrets-file path. Computed per active provider, so
+    // switching from anthropic to openai re-evaluates the visible
+    // source label and editability. "file"/"env" means the key is
+    // owned by ~/.config/myapp/secrets.yaml or an env-var; the input
+    // is disabled and the save button hides for that provider.
+    const cfg = config as Record<string, unknown>;
+    const secretSources = cfg._secret_sources as Record<string, string> | undefined;
+    const secretsFilePath = typeof cfg._secrets_file_path === "string" ? cfg._secrets_file_path : undefined;
+    const keySource = activeKeySource(aiProvider, secretSources);
+    const isExternallyManaged = keySource === "file" || keySource === "env";
 
     const buildSaveData = () => {
         const aiPayload: Record<string, unknown> = {
@@ -53,7 +62,7 @@ export function AiAssistantSettings({config, onSave, saving}: {
             temperature: parseFloat(aiTemp) || 0.7,
             max_tokens: parseInt(aiMaxTokens) || 4096,
         };
-        if (!secretsExternal) {
+        if (!isExternallyManaged) {
             aiPayload.api_key = aiApiKey;
         }
         return {ai: aiPayload};
@@ -143,7 +152,7 @@ export function AiAssistantSettings({config, onSave, saving}: {
                                     value={aiMaxTokens} onChange={(e) => setAiMaxTokens(e.target.value)}/>
                             </div>
                         </div>
-                        {secretsExternal ? (
+                        {isExternallyManaged ? (
                             <div className="field" data-testid="ai-api-key-external-note">
                                 <label className="label">{t("ui.settings.ai_api_key", "API Key")}</label>
                                 <div style={{
@@ -154,9 +163,18 @@ export function AiAssistantSettings({config, onSave, saving}: {
                                     color: "var(--text-muted)",
                                     fontSize: "0.8125rem",
                                 }}>
-                                    {t(
-                                        "ui.settings.ai_api_key_external_note",
-                                        "API-Schlüssel wird aus externer Konfiguration gelesen (~/.config/myapp/secrets.yaml oder Umgebungsvariable MYAPP_AI_API_KEY). Editiere die Datei direkt oder setze die Umgebungsvariable, um den Schlüssel zu ändern.",
+                                    <strong data-testid="ai-api-key-source-label">
+                                        {keySource === "file"
+                                            ? t("ui.settings.api_key_source_file", "Key from: secrets.yaml")
+                                            : t("ui.settings.api_key_source_env", "Key from: environment")}
+                                    </strong>
+                                    {keySource === "file" && secretsFilePath && (
+                                        <div style={{marginTop: 4}} data-testid="ai-api-key-external-hint">
+                                            {t(
+                                                "ui.settings.api_key_external_hint",
+                                                "This key is configured in {path}. Edit the file to change it.",
+                                            ).replace("{path}", secretsFilePath)}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -188,9 +206,17 @@ export function AiAssistantSettings({config, onSave, saving}: {
                         <div style={{display: "flex", gap: 8, alignItems: "center", marginTop: 8}}>
                             <button
                                 className="btn btn-primary"
-                                disabled={saving}
+                                disabled={saving || isExternallyManaged}
                                 onClick={() => onSave(buildSaveData())}
                                 data-testid="ai-save"
+                                title={
+                                    isExternallyManaged
+                                        ? t(
+                                              "ui.settings.api_key_external_hint",
+                                              "This key is configured in {path}. Edit the file to change it.",
+                                          ).replace("{path}", secretsFilePath ?? "")
+                                        : undefined
+                                }
                             >
                                 <Save size={14}/> {t("ui.common.save", "Speichern")}
                             </button>

@@ -17,22 +17,32 @@ import {Sparkles, X, ChevronRight, ChevronLeft, Check, Eye, EyeOff} from "lucide
 import {useI18n} from "../hooks/useI18n"
 import {notify} from "../utils/notify"
 import {api} from "../api/client"
-import {AI_PROVIDER_PRESETS, AI_PROVIDER_IDS, getProviderPreset} from "../utils/aiProviders"
+import {
+  AI_PROVIDER_PRESETS,
+  AI_PROVIDER_IDS,
+  activeKeySource,
+  getProviderPreset,
+} from "../utils/aiProviders"
 
 const DISMISSED_KEY = "myapp-ai-setup-dismissed"
 
 interface Props {
   open: boolean
   onClose: () => void
-  /** True when the backend reports ai.api_key comes from
-   *  ~/.config/myapp/secrets.yaml or MYAPP_AI_API_KEY.
-   *  Wizard hides the API-key input + skips its validation; the
-   *  user has already configured the key out-of-band, the wizard
-   *  must not block them from completing setup. */
-  secretsManagedExternally?: boolean
+  /** Per-key source map from GET /api/settings/app's
+   *  ``_secret_sources``. When the active provider's key reports
+   *  "file" or "env" the wizard hides the API-key input and skips
+   *  its validation - the user has already configured the key
+   *  out-of-band and the wizard must not block them from
+   *  completing setup. */
+  secretSources?: Record<string, string>
+  /** Resolved override-file path (from ``_secrets_file_path``).
+   *  Surfaced in the hint text when the active key source is
+   *  "file". */
+  secretsFilePath?: string
 }
 
-export default function AiSetupWizard({open, onClose, secretsManagedExternally = false}: Props) {
+export default function AiSetupWizard({open, onClose, secretSources, secretsFilePath}: Props) {
   const {t} = useI18n()
   const [step, setStep] = useState(0)
   const [provider, setProvider] = useState("anthropic")
@@ -45,9 +55,14 @@ export default function AiSetupWizard({open, onClose, secretsManagedExternally =
   const [saving, setSaving] = useState(false)
 
   const preset = getProviderPreset(provider)
+  // Active provider's key source. "file" / "env" mean the key is
+  // owned out-of-band; the wizard must not block setup or surface
+  // an editable input.
+  const keySource = activeKeySource(provider, secretSources)
+  const isExternallyManaged = keySource === "file" || keySource === "env"
   // Externally-managed key already exists; no input needed even for
   // providers that nominally require one.
-  const needsKey = preset?.requires_api_key !== false && !secretsManagedExternally
+  const needsKey = preset?.requires_api_key !== false && !isExternallyManaged
 
   const handleProviderChange = (pid: string) => {
     setProvider(pid)
@@ -69,10 +84,11 @@ export default function AiSetupWizard({open, onClose, secretsManagedExternally =
       temperature: 0.7,
       max_tokens: 2048,
     }
-    // Skip api_key when managed externally; backend would strip it
-    // anyway with a defensive WARNING log, but stripping client-side
-    // keeps logs quiet and avoids the round-trip.
-    if (!secretsManagedExternally) {
+    // Skip api_key when the active provider's key is externally
+    // managed; backend would strip it anyway with a defensive
+    // WARNING log, but stripping client-side keeps logs quiet and
+    // avoids the round-trip.
+    if (!isExternallyManaged) {
       ai.api_key = apiKey
     }
     return ai
@@ -166,7 +182,7 @@ export default function AiSetupWizard({open, onClose, secretsManagedExternally =
           {/* Step 1: API key + model */}
           {step === 1 && (
             <div style={styles.stepContent}>
-              {secretsManagedExternally ? (
+              {isExternallyManaged ? (
                 <div className="field" data-testid="wizard-api-key-external-note">
                   <label className="label">{t("ui.settings.ai_api_key", "API Key")}</label>
                   <div style={{
@@ -177,9 +193,18 @@ export default function AiSetupWizard({open, onClose, secretsManagedExternally =
                     color: "var(--text-muted)",
                     fontSize: "0.8125rem",
                   }}>
-                    {t(
-                      "ui.settings.ai_api_key_external_note",
-                      "API-Schlüssel wird aus externer Konfiguration gelesen (~/.config/myapp/secrets.yaml oder Umgebungsvariable MYAPP_AI_API_KEY). Editiere die Datei direkt oder setze die Umgebungsvariable, um den Schlüssel zu ändern.",
+                    <strong>
+                      {keySource === "file"
+                        ? t("ui.settings.api_key_source_file", "Key from: secrets.yaml")
+                        : t("ui.settings.api_key_source_env", "Key from: environment")}
+                    </strong>
+                    {keySource === "file" && secretsFilePath && (
+                      <div style={{marginTop: 4}}>
+                        {t(
+                          "ui.settings.api_key_external_hint",
+                          "This key is configured in {path}. Edit the file to change it.",
+                        ).replace("{path}", secretsFilePath)}
+                      </div>
                     )}
                   </div>
                 </div>

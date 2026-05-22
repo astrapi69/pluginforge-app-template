@@ -28,23 +28,22 @@ import "react-toastify/dist/ReactToastify.css";
 export default function App() {
     useTheme();
 
-    // AI setup wizard state — shows on first run when AI is not configured
+    // AI setup wizard state — shows on first run when AI is not configured.
     const [showAiWizard, setShowAiWizard] = useState(false);
-    // True when ai.api_key comes from ~/.config/myapp/secrets.yaml or
-    // MYAPP_AI_API_KEY env-var. Backend reports this via the
-    // ``_secrets_managed_externally`` meta-flag on the app-config payload.
-    // Wizard hides the API-key input + skips its validation in that case.
-    const [secretsExternal, setSecretsExternal] = useState(false);
+    // Per-key source detection: backend's _secret_sources dict (dotted
+    // path -> "settings" / "file" / "env") plus the resolved secrets
+    // file path. Wizard + Settings UI use both to disable inputs and
+    // render hint text when a key is owned by the file or an env-var.
+    const [secretSources, setSecretSources] = useState<Record<string, string> | undefined>(undefined);
+    const [secretsFilePath, setSecretsFilePath] = useState<string | undefined>(undefined);
     useEffect(() => {
         ensureFirstUseDate();
         api.settings.getApp()
             .then((config) => {
                 if (shouldShowAiWizard(config)) setShowAiWizard(true);
-                setSecretsExternal(
-                    Boolean(
-                        (config as Record<string, unknown>)._secrets_managed_externally,
-                    ),
-                );
+                const c = config as Record<string, unknown>;
+                setSecretSources(c._secret_sources as Record<string, string> | undefined);
+                setSecretsFilePath(typeof c._secrets_file_path === "string" ? c._secrets_file_path : undefined);
             })
             .catch(() => {}); // Config load failure is not critical for the wizard
     }, []);
@@ -100,7 +99,8 @@ export default function App() {
             <AiSetupWizard
                 open={showAiWizard}
                 onClose={() => setShowAiWizard(false)}
-                secretsManagedExternally={secretsExternal}
+                secretSources={secretSources}
+                secretsFilePath={secretsFilePath}
             />
             <ShortcutCheatsheet open={showShortcuts} onClose={() => setShowShortcuts(false)}/>
             <ToastContainer

@@ -131,11 +131,19 @@ def _ensure_secrets_template(path: Path) -> None:
     logger.info("Secrets template created at %s", path)
 
 
+_perms_warned: set[Path] = set()
+
+
 def _warn_if_secrets_perms_too_open(path: Path) -> None:
     """Emit a WARNING when ``path`` is readable by group or other on
     POSIX. No-op on Windows (different ACL model).
+
+    Deduplicated per path per process: ``_load_app_config`` is called
+    per-request so without the dedup the warning would spam the log.
     """
     if sys.platform == "win32":
+        return
+    if path in _perms_warned:
         return
     try:
         mode = path.stat().st_mode
@@ -147,6 +155,7 @@ def _warn_if_secrets_perms_too_open(path: Path) -> None:
             path,
             mode & 0o777,
         )
+        _perms_warned.add(path)
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
