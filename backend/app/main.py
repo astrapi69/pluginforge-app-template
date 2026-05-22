@@ -112,11 +112,17 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 
 
 # Mapping of env-var name -> dotted-path inside the merged config dict.
-# Initial scope: app.yaml ``ai.api_key`` only. Plugin yaml secrets follow
-# in a separate refactor (PluginManager loader has its own config path
-# and reload machinery).
+# Top-level ``secret_key`` plus per-provider AI keys. ``ai.api_key`` is
+# retained as a legacy slot consumed by the current Settings UI and
+# the AI router; the per-provider Settings UI in a follow-up will
+# supersede it. Plugin yaml secrets follow in a separate refactor
+# (PluginManager loader has its own config path and reload machinery).
 _ENV_SECRET_OVERRIDES: dict[str, tuple[str, ...]] = {
+    "MYAPP_SECRET_KEY": ("secret_key",),
     "MYAPP_AI_API_KEY": ("ai", "api_key"),
+    "MYAPP_ANTHROPIC_API_KEY": ("ai", "anthropic", "api_key"),
+    "MYAPP_OPENAI_API_KEY": ("ai", "openai", "api_key"),
+    "MYAPP_GEMINI_API_KEY": ("ai", "gemini", "api_key"),
 }
 
 
@@ -192,9 +198,22 @@ def _load_app_config() -> dict[str, Any]:
     1. Project ``app.yaml`` (defaults shipped with the app).
     2. User-overlay ``<data_dir>/config/app.yaml`` (Settings UI
        writes; see ``app.config_overlay``).
-    3. Secrets override ``~/.config/myapp/secrets.yaml``
-       (long-standing user-home secrets file).
-    4. Environment variables (``MYAPP_AI_API_KEY`` etc.).
+    3. Secrets override ``~/.config/myapp/secrets.yaml`` (user-
+       home secrets file). Expected shape::
+
+           secret_key: "..."
+           ai:
+             api_key: "..."         # legacy single-provider slot
+             anthropic:
+               api_key: "..."
+             openai:
+               api_key: "..."
+             gemini:
+               api_key: "..."
+
+    4. Environment variables (``MYAPP_SECRET_KEY``,
+       ``MYAPP_AI_API_KEY``, ``MYAPP_ANTHROPIC_API_KEY``,
+       ``MYAPP_OPENAI_API_KEY``, ``MYAPP_GEMINI_API_KEY``).
 
     Higher layers win. Lists REPLACE; dicts deep-merge. Called
     per-request where freshness matters; cheap (small yaml files,

@@ -25,8 +25,15 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 # When an override file exists OR an env-var is set for that secret,
 # the field is stripped from PATCH bodies before write so the UI
 # cannot accidentally clobber the externally-managed value.
-# Initial scope mirrors _ENV_SECRET_OVERRIDES in app.main: ai.api_key.
-_SECRET_FIELDS: tuple[tuple[str, str], ...] = (("ai", "api_key"),)
+# Scope mirrors _ENV_SECRET_OVERRIDES in app.main: top-level
+# secret_key plus the AI key paths (legacy ai.api_key + per-provider).
+_SECRET_FIELDS: tuple[tuple[str, ...], ...] = (
+    ("secret_key",),
+    ("ai", "api_key"),
+    ("ai", "anthropic", "api_key"),
+    ("ai", "openai", "api_key"),
+    ("ai", "gemini", "api_key"),
+)
 
 
 def _secrets_managed_externally() -> bool:
@@ -166,17 +173,29 @@ def update_app_settings(body: AppSettingsUpdate) -> dict[str, Any]:
     current = config_overlay.load_app_config_for_edit()
 
     if _secrets_managed_externally():
-        for parent_key, child_key in _SECRET_FIELDS:
-            section = getattr(body, parent_key, None)
-            if isinstance(section, dict) and child_key in section:
-                del section[child_key]
+        for path in _SECRET_FIELDS:
+            top = getattr(body, path[0], None)
+            if len(path) == 1 or not isinstance(top, dict):
+                # Top-level secret fields are not declared on
+                # AppSettingsUpdate today, so there is nothing to strip
+                # for length-1 paths. Non-dict sections also have
+                # nothing to descend into.
+                continue
+            cursor: dict[str, Any] | None = top
+            for segment in path[1:-1]:
+                child = cursor.get(segment) if cursor is not None else None
+                cursor = child if isinstance(child, dict) else None
+                if cursor is None:
+                    break
+            last = path[-1]
+            if cursor is not None and last in cursor:
+                del cursor[last]
                 logger.warning(
-                    "Stripped %r.%r from Settings PATCH because secrets are "
+                    "Stripped %s from Settings PATCH because secrets are "
                     "managed externally (override file or env-var active). "
                     "Frontend should hide this field; check Settings.tsx and "
                     "AiSetupWizard.tsx.",
-                    parent_key,
-                    child_key,
+                    ".".join(path),
                 )
 
     if body.app is not None:
