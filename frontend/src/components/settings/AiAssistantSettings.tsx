@@ -206,17 +206,9 @@ export function AiAssistantSettings({config, onSave, saving}: {
                         <div style={{display: "flex", gap: 8, alignItems: "center", marginTop: 8}}>
                             <button
                                 className="btn btn-primary"
-                                disabled={saving || isExternallyManaged}
+                                disabled={saving}
                                 onClick={() => onSave(buildSaveData())}
                                 data-testid="ai-save"
-                                title={
-                                    isExternallyManaged
-                                        ? t(
-                                              "ui.settings.api_key_external_hint",
-                                              "This key is configured in {path}. Edit the file to change it.",
-                                          ).replace("{path}", secretsFilePath ?? "")
-                                        : undefined
-                                }
                             >
                                 <Save size={14}/> {t("ui.common.save", "Speichern")}
                             </button>
