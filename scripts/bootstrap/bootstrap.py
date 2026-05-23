@@ -2484,7 +2484,7 @@ def phase8_sanity_sweep(ctx: BootstrapContext) -> None:
     boot_env[env_test] = "1"
     boot_env["TEST_DATABASE_URL"] = "sqlite:///:memory:"
     boot_check = subprocess.run(
-        ["poetry", "run", "python", "-c",
+        ["poetry", "run", "python3", "-c",
          f"from app.main import app; "
          f"assert app.title == {app.pascal_name!r}, f'title={{app.title!r}}'"],
         cwd=backend_dir,
