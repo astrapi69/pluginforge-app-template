@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
-import {api, HelpNavItem} from "../../api/client";
+import {HelpNavItem, loadNav, loadPage, searchPages} from "../../help/loader";
 import {useHelp} from "../../contexts/HelpContext";
 import {useI18n} from "../../hooks/useI18n";
 import {LoadingIndicator} from "../LoadingIndicator";
@@ -31,30 +31,30 @@ export default function HelpPanel() {
     // Load navigation on open
     useEffect(() => {
         if (!open) return;
-        api.help.navigation(lang).then(setNav).catch(() => setNav([]));
+        loadNav(lang).then(setNav).catch(() => setNav([]));
     }, [open, lang]);
 
     // Load page when slug changes
-    const loadPage = useCallback(async (pageSlug: string) => {
+    const openPage = useCallback(async (pageSlug: string) => {
         setLoading(true);
         setSearchResults([]);
         setSearchQuery("");
-        try {
-            const page = await api.help.page(lang, pageSlug);
+        const page = await loadPage(lang, pageSlug);
+        if (page) {
             setContent(page.content);
-            setActiveSlug(pageSlug);
-        } catch {
+        } else {
             setContent(`# ${t("ui.help.not_found", "Seite nicht gefunden")}\n\n${pageSlug}`);
         }
+        setActiveSlug(pageSlug);
         setLoading(false);
     }, [lang, t]);
 
     // Open to specific slug or default
     useEffect(() => {
         if (open) {
-            loadPage(slug || "getting-started");
+            openPage(slug || "getting-started");
         }
-    }, [open, slug, loadPage]);
+    }, [open, slug, openPage]);
 
     // Search with debounce
     useEffect(() => {
@@ -65,8 +65,8 @@ export default function HelpPanel() {
         const timer = setTimeout(async () => {
             setSearching(true);
             try {
-                const res = await api.help.search(lang, searchQuery);
-                setSearchResults(res.results);
+                const res = await searchPages(lang, searchQuery);
+                setSearchResults(res);
             } catch {
                 setSearchResults([]);
             }
@@ -187,7 +187,7 @@ export default function HelpPanel() {
                                         {searchResults.map((r) => (
                                             <button
                                                 key={r.slug}
-                                                onClick={() => loadPage(r.slug)}
+                                                onClick={() => openPage(r.slug)}
                                                 style={{
                                                     display: "block", width: "100%", textAlign: "left",
                                                     padding: "6px 12px", border: "none", background: "none",
@@ -211,7 +211,7 @@ export default function HelpPanel() {
                                     <NavTree
                                         items={nav}
                                         activeSlug={activeSlug}
-                                        onSelect={loadPage}
+                                        onSelect={openPage}
                                     />
                                 )}
                             </div>
@@ -229,7 +229,7 @@ export default function HelpPanel() {
                                     <span key={crumb.slug} style={{display: "flex", alignItems: "center", gap: 4}}>
                                         {i > 0 && <ChevronRight size={10}/>}
                                         <button
-                                            onClick={() => loadPage(crumb.slug)}
+                                            onClick={() => openPage(crumb.slug)}
                                             style={{
                                                 background: "none", border: "none", cursor: "pointer",
                                                 color: i === breadcrumb.length - 1 ? "var(--text-primary)" : "var(--text-muted)",
@@ -265,7 +265,7 @@ export default function HelpPanel() {
                                                             onClick={(e) => {
                                                                 e.preventDefault();
                                                                 const slug = href.replace(/\.md$/, "").replace(/^\//, "");
-                                                                loadPage(slug);
+                                                                openPage(slug);
                                                             }}
                                                             style={{color: "var(--accent)", cursor: "pointer"}}
                                                         >

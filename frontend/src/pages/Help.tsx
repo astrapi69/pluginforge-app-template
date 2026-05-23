@@ -1,6 +1,4 @@
-import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {api} from "../api/client";
 import ThemeToggle from "../components/ThemeToggle";
 import {ChevronLeft, Keyboard, HelpCircle, Info, Home} from "lucide-react";
 import {useI18n} from "../hooks/useI18n";
@@ -22,16 +20,10 @@ export default function Help() {
             navigate(-1);
         }
     };
-    const {t, lang} = useI18n();
-    const [shortcuts, setShortcuts] = useState<{keys: string; action: string}[]>([]);
-    const [faq, setFaq] = useState<{question: string; answer: string}[]>([]);
-    const [about, setAbout] = useState<Record<string, string>>({});
-
-    useEffect(() => {
-        api.help.shortcuts(lang).then(setShortcuts).catch(() => {});
-        api.help.faq(lang).then(setFaq).catch(() => {});
-        api.help.about().then(setAbout).catch(() => {});
-    }, [lang]);
+    const {t} = useI18n();
+    const shortcuts: {keys: string; action: string}[] = [];
+    const faq: {question: string; answer: string}[] = [];
+    const about: Record<string, string> = {};
 
     return (
         <div className={styles.container}>
