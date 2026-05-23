@@ -1965,3 +1965,25 @@ body {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
+
+/* --- WCAG 2.3.3 / Reduced Motion: global animation kill-switch ---
+ * When the user has prefers-reduced-motion: reduce set at the OS
+ * level, near-zero out every animation + transition duration AND
+ * disable smooth-scroll behaviour. 0.01ms (not 0s) keeps the
+ * animationend / transitionend events firing so JS that relies on
+ * them does not break.
+ *
+ * Existing per-component reduced-motion blocks (e.g. in
+ * ImportWizardModal.tsx) remain in place but are now redundant -
+ * this global gate covers them and any future animations added
+ * to the template automatically. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
