@@ -1947,3 +1947,21 @@ body {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
+
+/* --- WCAG 2.4.7 Focus Visible: keyboard-only focus indicators --- */
+/* Paired with the multiple `outline: none` declarations above on .input,
+ * .radix-select-trigger, .radix-select-item, .tiptap-editor, .hamburger-menu-item.
+ * Also covers .btn / .btn-icon / .radix-tab-trigger which had no explicit
+ * focus style. `:focus-visible` matches keyboard-only focus, so mouse
+ * clicks do not get the ring (matches Radix UI conventions). */
+.btn:focus-visible,
+.btn-icon:focus-visible,
+.input:focus-visible,
+.radix-select-trigger:focus-visible,
+.radix-select-item:focus-visible,
+.radix-tab-trigger:focus-visible,
+.hamburger-menu-item:focus-visible,
+.tiptap-editor:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
