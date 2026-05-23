@@ -1,15 +1,17 @@
 import * as Select from "@radix-ui/react-select";
 import {ChevronDown as ChevronDownIcon} from "lucide-react";
 
-export function RadixSelect({value, onValueChange, options, testId}: {
+export function RadixSelect({value, onValueChange, options, testId, id}: {
     value: string;
     onValueChange: (value: string) => void;
     options: {value: string; label: string}[];
     testId?: string;
+    id?: string;
 }) {
     return (
         <Select.Root value={value} onValueChange={onValueChange}>
             <Select.Trigger
+                id={id}
                 className="radix-select-trigger"
                 data-testid={testId ? `${testId}-trigger` : undefined}
             >

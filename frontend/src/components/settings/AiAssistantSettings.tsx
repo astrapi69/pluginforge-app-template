@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useId, useState} from "react";
 import {Save, Eye, EyeOff} from "lucide-react";
 import {api} from "../../api/client";
 import {useI18n} from "../../hooks/useI18n";
@@ -18,6 +18,7 @@ export function AiAssistantSettings({config, onSave, saving}: {
     saving: boolean;
 }) {
     const {t} = useI18n();
+    const idPrefix = useId();
     const aiConfig = (config.ai || {}) as Record<string, unknown>;
 
     const [aiEnabled, setAiEnabled] = useState(Boolean(aiConfig.enabled));
@@ -91,8 +92,9 @@ export function AiAssistantSettings({config, onSave, saving}: {
 
                     <div style={{opacity: aiEnabled ? 1 : 0.4, pointerEvents: aiEnabled ? "auto" : "none"}} aria-disabled={!aiEnabled}>
                         <div className="field">
-                            <label className="label">{t("ui.settings.ai_provider", "KI-Anbieter")}</label>
+                            <label className="label" htmlFor={`${idPrefix}-ai-provider`}>{t("ui.settings.ai_provider", "KI-Anbieter")}</label>
                             <RadixSelect
+                                id={`${idPrefix}-ai-provider`}
                                 value={aiProvider}
                                 onValueChange={(val) => {
                                     setAiProvider(val);
@@ -120,14 +122,14 @@ export function AiAssistantSettings({config, onSave, saving}: {
                             />
                         </div>
                         <div className="field">
-                            <label className="label">{t("ui.settings.ai_base_url", "Base URL")}</label>
-                            <input className="input" value={aiBaseUrl} onChange={(e) => setAiBaseUrl(e.target.value)}
+                            <label className="label" htmlFor={`${idPrefix}-ai-base-url`}>{t("ui.settings.ai_base_url", "Base URL")}</label>
+                            <input id={`${idPrefix}-ai-base-url`} className="input" value={aiBaseUrl} onChange={(e) => setAiBaseUrl(e.target.value)}
                                 data-testid="ai-base-url"
                                 placeholder="https://api.openai.com/v1" style={{fontFamily: "var(--font-mono)", fontSize: "0.8125rem"}}/>
                         </div>
                         <div className="field">
-                            <label className="label">{t("ui.settings.ai_model", "Modell")}</label>
-                            <input className="input" value={aiModel} onChange={(e) => setAiModel(e.target.value)}
+                            <label className="label" htmlFor={`${idPrefix}-ai-model`}>{t("ui.settings.ai_model", "Modell")}</label>
+                            <input id={`${idPrefix}-ai-model`} className="input" value={aiModel} onChange={(e) => setAiModel(e.target.value)}
                                 list="ai-model-suggestions"
                                 data-testid="ai-model"
                                 placeholder={aiProvider === "lmstudio" ? t("ui.settings.ai_model_lmstudio", "Vom Server bereitgestellt") : ""}
@@ -140,14 +142,14 @@ export function AiAssistantSettings({config, onSave, saving}: {
                         </div>
                         <div style={{display: "flex", gap: 12}}>
                             <div className="field" style={{flex: 1}}>
-                                <label className="label">{t("ui.settings.ai_temperature", "Temperature")}</label>
-                                <input className="input" type="number" min="0" max="2" step="0.1"
+                                <label className="label" htmlFor={`${idPrefix}-ai-temperature`}>{t("ui.settings.ai_temperature", "Temperature")}</label>
+                                <input id={`${idPrefix}-ai-temperature`} className="input" type="number" min="0" max="2" step="0.1"
                                     data-testid="ai-temperature"
                                     value={aiTemp} onChange={(e) => setAiTemp(e.target.value)}/>
                             </div>
                             <div className="field" style={{flex: 1}}>
-                                <label className="label">{t("ui.settings.ai_max_tokens", "Max Tokens")}</label>
-                                <input className="input" type="number" min="256" max="32768" step="256"
+                                <label className="label" htmlFor={`${idPrefix}-ai-max-tokens`}>{t("ui.settings.ai_max_tokens", "Max Tokens")}</label>
+                                <input id={`${idPrefix}-ai-max-tokens`} className="input" type="number" min="256" max="32768" step="256"
                                     data-testid="ai-max-tokens"
                                     value={aiMaxTokens} onChange={(e) => setAiMaxTokens(e.target.value)}/>
                             </div>
@@ -180,9 +182,9 @@ export function AiAssistantSettings({config, onSave, saving}: {
                             </div>
                         ) : (
                             <div className="field">
-                                <label className="label">{t("ui.settings.ai_api_key", "API Key")}</label>
+                                <label className="label" htmlFor={`${idPrefix}-ai-api-key`}>{t("ui.settings.ai_api_key", "API Key")}</label>
                                 <div style={{display: "flex", gap: 8}}>
-                                    <input className="input" type={showAiKey ? "text" : "password"}
+                                    <input id={`${idPrefix}-ai-api-key`} className="input" type={showAiKey ? "text" : "password"}
                                         data-testid="ai-api-key-input"
                                         value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)}
                                         placeholder={aiProvider === "lmstudio" ? t("ui.settings.ai_key_not_required", "Nicht erforderlich") : "sk-..."}

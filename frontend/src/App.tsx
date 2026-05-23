@@ -11,6 +11,7 @@ import {useTheme} from "./hooks/useTheme";
 import {I18nProvider} from "./hooks/useI18n";
 import {DialogProvider} from "./components/AppDialog";
 import OfflineBanner from "./components/OfflineBanner";
+import SkipToContent from "./components/SkipToContent";
 import {BulkAiFillJobProvider} from "./contexts/BulkAiFillJobContext";
 import BulkAiFillDock from "./components/BulkAiFillDock";
 import {HelpProvider} from "./contexts/HelpContext";
@@ -77,6 +78,7 @@ export default function App() {
         <DialogProvider>
         <BulkAiFillJobProvider>
         <HelpProvider>
+            <SkipToContent />
             <OfflineBanner />
             <Routes>
                 <Route path="/" element={<Dashboard/>}/>

@@ -108,7 +108,7 @@ export default function Settings() {
                         </button>
                         <h1 className={styles.title}>{t("ui.settings.title", "Einstellungen")}</h1>
                     </div>
-                    <div className="icon-row">
+                    <nav className="icon-row" aria-label={t("ui.settings.page_nav", "Settings page navigation")}>
                         <button
                             className="btn-icon"
                             onClick={() => navigate("/")}
@@ -119,7 +119,7 @@ export default function Settings() {
                             <Home size={18}/>
                         </button>
                         <ThemeToggle/>
-                    </div>
+                    </nav>
                 </div>
             </header>
 
@@ -189,7 +189,7 @@ export default function Settings() {
                     );
                 })()}
 
-            <main className={styles.main}>
+            <main id="main-content" tabIndex={-1} className={styles.main}>
                 <Tabs.Content value="app">
                     <AppSettings
                         config={appConfig}

@@ -531,6 +531,9 @@ export default function ArticleEditor() {
 
     return (
         <div data-testid="article-editor" className={layout.page}>
+            <h1 className="sr-only">
+                {article.title || t("ui.articles.editor_default_title", "Article Editor")}
+            </h1>
             <header className={layout.header}>
                 <button
                     type="button"
@@ -607,7 +610,7 @@ export default function ArticleEditor() {
                 <ThemeToggle />
             </header>
 
-            <main className={layout.body}>
+            <main id="main-content" tabIndex={-1} className={layout.body}>
                 <aside className={layout.sidebar} data-testid="article-editor-sidebar">
                     <h3 className={layout.sidebarHeading}>
                         {t("ui.articles.metadata_heading", "Metadaten")}

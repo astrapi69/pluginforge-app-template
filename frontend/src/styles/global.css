@@ -1911,3 +1911,79 @@ body {
         margin-bottom: 2px;
     }
 }
+
+/* Accessibility utilities */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 8px;
+    z-index: 10000;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-decoration: none;
+    transition: top 0.15s ease-out;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+    top: 8px;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* --- WCAG 2.4.7 Focus Visible: keyboard-only focus indicators --- */
+/* Paired with the multiple `outline: none` declarations above on .input,
+ * .radix-select-trigger, .radix-select-item, .tiptap-editor, .hamburger-menu-item.
+ * Also covers .btn / .btn-icon / .radix-tab-trigger which had no explicit
+ * focus style. `:focus-visible` matches keyboard-only focus, so mouse
+ * clicks do not get the ring (matches Radix UI conventions). */
+.btn:focus-visible,
+.btn-icon:focus-visible,
+.input:focus-visible,
+.radix-select-trigger:focus-visible,
+.radix-select-item:focus-visible,
+.radix-tab-trigger:focus-visible,
+.hamburger-menu-item:focus-visible,
+.tiptap-editor:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* --- WCAG 2.3.3 / Reduced Motion: global animation kill-switch ---
+ * When the user has prefers-reduced-motion: reduce set at the OS
+ * level, near-zero out every animation + transition duration AND
+ * disable smooth-scroll behaviour. 0.01ms (not 0s) keeps the
+ * animationend / transitionend events firing so JS that relies on
+ * them does not break.
+ *
+ * Existing per-component reduced-motion blocks (e.g. in
+ * ImportWizardModal.tsx) remain in place but are now redundant -
+ * this global gate covers them and any future animations added
+ * to the template automatically. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -440,7 +440,7 @@ export default function Dashboard() {
                         </button>
 
                         {/* Desktop: inline buttons */}
-                        <div className="hide-mobile" style={{display: "flex", alignItems: "center", gap: 6}}>
+                        <nav className="hide-mobile" aria-label={t("ui.dashboard.page_nav", "Dashboard navigation")} style={{display: "flex", alignItems: "center", gap: 6}}>
                             <div className={styles.headerSeparator}/>
                             <button
                                 className="btn btn-secondary btn-sm"
@@ -454,13 +454,13 @@ export default function Dashboard() {
                                 <Upload size={14}/> {t("ui.dashboard.import", "Importieren")}
                             </button>
                             <div className={styles.headerSeparator}/>
-                            <button className="btn-icon" onClick={() => navigate("/get-started")} title={t("ui.get_started.title", "Erste Schritte")}>
+                            <button className="btn-icon" onClick={() => navigate("/get-started")} aria-label={t("ui.get_started.title", "Erste Schritte")} title={t("ui.get_started.title", "Erste Schritte")}>
                                 <Rocket size={18}/>
                             </button>
-                            <button className="btn-icon" onClick={() => openHelp()} title={t("ui.dashboard.help", "Hilfe")}>
+                            <button className="btn-icon" onClick={() => openHelp()} aria-label={t("ui.dashboard.help", "Hilfe")} title={t("ui.dashboard.help", "Hilfe")}>
                                 <HelpCircle size={18}/>
                             </button>
-                            <button className="btn-icon" onClick={() => navigate("/settings")} title={t("ui.settings.title", "Einstellungen")}>
+                            <button className="btn-icon" onClick={() => navigate("/settings")} aria-label={t("ui.settings.title", "Einstellungen")} title={t("ui.settings.title", "Einstellungen")}>
                                 <Settings size={18}/>
                             </button>
                             <button
@@ -481,7 +481,7 @@ export default function Dashboard() {
                                 )}
                             </button>
                             <ThemeToggle/>
-                        </div>
+                        </nav>
 
                         {/* Mobile: hamburger menu */}
                         <DropdownMenu.Root>
@@ -526,7 +526,7 @@ export default function Dashboard() {
             </header>
 
             {/* Content */}
-            <main className={styles.main}>
+            <main id="main-content" tabIndex={-1} className={styles.main}>
                 {donationsConfig && reminderVisible && !showTrash ? (
                     <DonationReminderBanner
                         donations={donationsConfig}
@@ -537,7 +537,7 @@ export default function Dashboard() {
                     /* Trash view */
                     <div data-testid="trash-view">
                         <div className={styles.mainHeader}>
-                            <button className="btn-icon" onClick={() => setShowTrash(false)} title={t("ui.dashboard.back", "Zurück")}>
+                            <button className="btn-icon" onClick={() => setShowTrash(false)} aria-label={t("ui.dashboard.back", "Zurück")} title={t("ui.dashboard.back", "Zurück")}>
                                 <ChevronLeft size={18}/>
                             </button>
                             <Trash2 size={20} className="muted"/>

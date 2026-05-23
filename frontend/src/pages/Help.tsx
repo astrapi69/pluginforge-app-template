@@ -63,16 +63,17 @@ export default function Help() {
                         </button>
                         <h1 className={styles.title}>{t("ui.help.title", "Help")}</h1>
                     </div>
-                    <div className="icon-row">
+                    <nav className="icon-row" aria-label={t("ui.help.page_nav", "Help page navigation")}>
                         <button
                             className="btn-icon"
                             onClick={() => navigate("/")}
+                            aria-label={t("ui.dashboard.title", "Dashboard")}
                             title={t("ui.dashboard.title", "Dashboard")}
                         >
                             <Home size={18} />
                         </button>
                         <ThemeToggle />
-                    </div>
+                    </nav>
                 </div>
             </header>
 
@@ -80,7 +81,7 @@ export default function Help() {
                 <aside className={styles.sidebar} data-testid="help-sidebar">
                     <HelpSidebar items={nav} activeSlug={activeSlug} onSelect={handleSelect} />
                 </aside>
-                <main className={styles.content} data-testid="help-page-content">
+                <main id="main-content" tabIndex={-1} className={styles.content} data-testid="help-page-content">
                     <HelpContent content={content} onInternalLink={handleSelect} />
                 </main>
             </div>

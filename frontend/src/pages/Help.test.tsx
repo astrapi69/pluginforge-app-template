@@ -1,6 +1,7 @@
 import {describe, expect, it, vi, beforeEach} from "vitest";
 import {render, screen, waitFor} from "@testing-library/react";
 import {MemoryRouter} from "react-router-dom";
+import axe from "axe-core";
 import Help from "./Help";
 
 const navigateMock = vi.fn();
@@ -78,5 +79,40 @@ describe("Help page", () => {
         await waitFor(() => {
             expect(screen.getByRole("heading", {level: 1, name: /page not found/i})).toBeInTheDocument();
         });
+    });
+
+    it("has no critical or serious WCAG violations (axe-core scan)", async () => {
+        const {container} = renderPage();
+        await waitFor(() => {
+            expect(screen.getByRole("heading", {level: 1, name: /getting started/i})).toBeInTheDocument();
+        });
+        const results = await axe.run(container, {
+            // happy-dom does not compute styles the way a real browser
+            // does, so color-contrast is unreliable here. Verified
+            // manually in the audit (all default-theme pairs PASS AA);
+            // dev-time @axe-core/react covers it at runtime.
+            rules: {"color-contrast": {enabled: false}},
+        });
+        const blocking = results.violations.filter(
+            (v) => v.impact === "critical" || v.impact === "serious",
+        );
+        if (blocking.length > 0) {
+            console.error(
+                "axe violations:",
+                JSON.stringify(
+                    blocking.map((v) => ({id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length})),
+                    null,
+                    2,
+                ),
+            );
+        }
+        expect(blocking).toEqual([]);
+    });
+
+    it("renders the <main> with id='main-content' so the skip link works", () => {
+        const {container} = renderPage();
+        const main = container.querySelector("main#main-content");
+        expect(main).not.toBeNull();
+        expect(main).toHaveAttribute("tabindex", "-1");
     });
 });

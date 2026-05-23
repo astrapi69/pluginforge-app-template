@@ -125,16 +125,16 @@ export default function GetStarted() {
                         <Rocket size={22} style={{color: "var(--accent)"}}/>
                         <h1 className={styles.title}>{t("ui.get_started.title", "Erste Schritte")}</h1>
                     </div>
-                    <div className="icon-row">
-                        <button className="btn-icon" onClick={() => navigate("/")} title="Dashboard">
+                    <nav className="icon-row" aria-label={t("ui.get_started.page_nav", "Get-Started page navigation")}>
+                        <button className="btn-icon" onClick={() => navigate("/")} aria-label={t("ui.dashboard.title", "Dashboard")} title={t("ui.dashboard.title", "Dashboard")}>
                             <Home size={18}/>
                         </button>
                         <ThemeToggle/>
-                    </div>
+                    </nav>
                 </div>
             </header>
 
-            <main className={styles.main}>
+            <main id="main-content" tabIndex={-1} className={styles.main}>
                 {/* Progress bar */}
                 <div className={styles.progressSection}>
                     <div className={styles.progressBar}>
