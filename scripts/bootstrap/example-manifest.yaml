@@ -1,0 +1,141 @@
+# Example manifest: reproduces Topos exactly.
+#
+# Running:
+#   scripts/bootstrap/bootstrap-app.sh \
+#       --manifest scripts/bootstrap/example-manifest.yaml \
+#       --target-dir /tmp/topos-replay
+#
+# Must produce a tree that passes the 10-check phase-8 sanity sweep
+# AND `make install && make test`.
+#
+# Use this file as the working schema reference. Real apps copy and
+# edit; see DESIGN.md for the schema.
+
+app:
+  name: topos
+  pascal_name: Topos
+  upper_name: TOPOS
+  version: "0.1.0"
+  description: "Personal inventory tracker for folders, boxes, and what's inside."
+  short_tagline: "Personal inventory tracker"
+  default_language: de
+  supported_languages: [de, en, es, fr, el, pt, tr, ja]
+  author_name: "Asterios Raptis"
+  author_email: "aster.raptis@gmail.com"
+  repository_url: "https://github.com/astrapi69/topos"
+
+entities:
+  - name: Container
+    plural: containers
+    behaviour: standard
+    timestamps: true
+    docstring: "A physical storage container: a file folder, an archive box, a drawer."
+    fields:
+      - {name: external_id, type: int, unique: true, indexed: true}
+      - {name: type, type: enum, enum_name: ContainerType,
+         enum_values: [folder, box], indexed: true}
+      - {name: owner, type: enum, enum_name: Owner,
+         enum_values: [self, parents, shared], indexed: true}
+      - {name: label, type: str, max_length: 500}
+      - {name: description, type: str, max_length: 2000, nullable: true}
+      - {name: location, type: str, max_length: 500, nullable: true, indexed: true}
+      - {name: size_group, type: str, max_length: 50, nullable: true}
+    relationships:
+      - {kind: has_many, target: Item, back_populates: container,
+         cascade: "all, delete-orphan"}
+    list_filters:
+      - {name: owner, kind: equals, field: owner}
+      - {name: type, kind: equals, field: type}
+    extra_endpoints:
+      - id: get_by_external_id
+        method: GET
+        path: /by-external-id/{external_id}
+        service_fn: get_container_by_external_id
+        returns: ContainerRead
+        path_params: [{name: external_id, type: int}]
+        not_found_message: "Container with external_id={external_id} not found"
+        on_duplicate_create: 409
+
+  - name: Item
+    plural: items
+    behaviour: standard
+    timestamps: true
+    docstring: "A single item stored inside a Container."
+    fields:
+      - {name: container_id, type: fk, target: Container,
+         column: containers.id, indexed: true}
+      - {name: content, type: str, max_length: 1000}
+      - {name: priority, type: enum, enum_name: Priority,
+         enum_values: [none, low, medium, high, very_high],
+         default: none, indexed: true}
+      - {name: category_path, type: str, max_length: 500,
+         nullable: true, indexed: true}
+      - {name: notes, type: str, max_length: 2000, nullable: true}
+    relationships:
+      - {kind: belongs_to, target: Container, back_populates: items}
+      - {kind: has_many, target: Action, back_populates: item,
+         cascade: "all, delete-orphan"}
+    list_filters:
+      - {name: container_id, kind: equals, field: container_id}
+    extra_endpoints:
+      - id: search
+        method: GET
+        path: /search
+        service_fn: search_items
+        returns: list[ItemRead]
+        query_params: [{name: q, type: str, required: true}]
+        description: "Full-text ilike across content, category_path, notes."
+
+  - name: Category
+    plural: categories
+    behaviour: tree
+    timestamps: false
+    docstring: |
+      A node in the category tree. Paths are kebab-case English slugs
+      (e.g. "finance/bank/checking-account"); display_name carries the
+      localized label. The level field is computed from path depth.
+    fields:
+      - {name: path, type: str, max_length: 500, unique: true, indexed: true}
+      - {name: parent_path, type: str, max_length: 500,
+         nullable: true, indexed: true}
+      - {name: name, type: str, max_length: 200}
+      - {name: display_name, type: str, max_length: 200}
+      - {name: level, type: int, default: 0}
+    # behaviour: tree auto-generates:
+    #   - service: list_children(parent_path), get_by_path(path),
+    #              build_tree() -> CategoryNode forest
+    #   - schema:  CategoryNode (recursive: { ...CategoryRead, children: list[CategoryNode] })
+    #   - routes:  GET /tree, GET /children?parent_path=..., GET /by-path/{path}
+
+  - name: Action
+    plural: actions
+    behaviour: standard
+    timestamps: false
+    docstring: "An actionable follow-up attached to an Item (e.g. 'shred this folder')."
+    fields:
+      - {name: item_id, type: fk, target: Item, column: items.id, indexed: true}
+      - {name: text, type: str, max_length: 1000}
+      - {name: status, type: enum, enum_name: ActionStatus,
+         enum_values: [open, done, archived], default: open, indexed: true}
+      - {name: due_date, type: datetime, nullable: true}
+      - {name: created_at, type: datetime, default_now: true}
+      - {name: completed_at, type: datetime, nullable: true}
+    relationships:
+      - {kind: belongs_to, target: Item, back_populates: actions}
+    list_filters:
+      - {name: status, kind: equals, field: status}
+    extra_endpoints:
+      - id: complete
+        method: POST
+        path: /{action_id}/complete
+        service_fn: complete_action
+        returns: ActionRead
+        path_params: [{name: action_id, type: int}]
+        side_effects: "Set status=done, completed_at=utcnow()."
+      - id: reopen
+        method: POST
+        path: /{action_id}/reopen
+        service_fn: reopen_action
+        returns: ActionRead
+        path_params: [{name: action_id, type: int}]
+        side_effects: "Set status=open, completed_at=None."
