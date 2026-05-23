@@ -685,6 +685,7 @@ export default function ArticleList() {
                             <button
                                 className="btn-icon"
                                 onClick={() => navigate("/get-started")}
+                                aria-label={t("ui.get_started.title", "Erste Schritte")}
                                 title={t("ui.get_started.title", "Erste Schritte")}
                                 data-testid="article-list-get-started"
                             >
@@ -693,6 +694,7 @@ export default function ArticleList() {
                             <button
                                 className="btn-icon"
                                 onClick={() => openHelp()}
+                                aria-label={t("ui.dashboard.help", "Hilfe")}
                                 title={t("ui.dashboard.help", "Hilfe")}
                                 data-testid="article-list-help"
                             >
@@ -701,6 +703,7 @@ export default function ArticleList() {
                             <button
                                 className="btn-icon"
                                 onClick={() => navigate("/settings")}
+                                aria-label={t("ui.settings.title", "Einstellungen")}
                                 title={t("ui.settings.title", "Einstellungen")}
                                 data-testid="article-list-settings"
                             >
@@ -715,6 +718,7 @@ export default function ArticleList() {
                                         ? { color: "var(--accent)", position: "relative" }
                                         : { position: "relative" }
                                 }
+                                aria-label={t("ui.articles.trash_title", "Papierkorb")}
                                 title={t("ui.articles.trash_title", "Papierkorb")}
                                 aria-pressed={showTrash}
                             >
@@ -1068,6 +1072,7 @@ function TrashPanel({
                 className="btn-icon"
                 onClick={onBack}
                 data-testid="article-trash-back"
+                aria-label={t("ui.dashboard.back", "Zurück")}
                 title={t("ui.dashboard.back", "Zurück")}
             >
                 <ChevronLeft size={18} />

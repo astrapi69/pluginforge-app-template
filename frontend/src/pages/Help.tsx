@@ -67,6 +67,7 @@ export default function Help() {
                         <button
                             className="btn-icon"
                             onClick={() => navigate("/")}
+                            aria-label={t("ui.dashboard.title", "Dashboard")}
                             title={t("ui.dashboard.title", "Dashboard")}
                         >
                             <Home size={18} />

@@ -126,7 +126,7 @@ export default function GetStarted() {
                         <h1 className={styles.title}>{t("ui.get_started.title", "Erste Schritte")}</h1>
                     </div>
                     <nav className="icon-row" aria-label={t("ui.get_started.page_nav", "Get-Started page navigation")}>
-                        <button className="btn-icon" onClick={() => navigate("/")} title="Dashboard">
+                        <button className="btn-icon" onClick={() => navigate("/")} aria-label={t("ui.dashboard.title", "Dashboard")} title={t("ui.dashboard.title", "Dashboard")}>
                             <Home size={18}/>
                         </button>
                         <ThemeToggle/>

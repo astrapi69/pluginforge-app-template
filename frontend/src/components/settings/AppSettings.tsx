@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useId, useState} from "react";
 import {Save, Wrench} from "lucide-react";
 import {useI18n} from "../../hooks/useI18n";
 import {PALETTES} from "../../themes/palettes";
@@ -11,6 +11,7 @@ export function AppSettings({config, onSave, saving}: {
     saving: boolean;
 }) {
     const {t} = useI18n();
+    const idPrefix = useId();
     const app = (config.app || {}) as Record<string, unknown>;
     const ui = (config.ui || {}) as Record<string, unknown>;
     const pluginsConfig = (config.plugins || {}) as Record<string, unknown>;
@@ -131,8 +132,9 @@ export function AppSettings({config, onSave, saving}: {
             <h2 className={styles.sectionTitle}>{t("ui.settings.app_settings", "App-Einstellungen")}</h2>
             <div className={styles.card}>
                 <div className="field">
-                    <label className="label">{t("ui.settings.language", "Sprache")}</label>
+                    <label className="label" htmlFor={`${idPrefix}-language`}>{t("ui.settings.language", "Sprache")}</label>
                     <RadixSelect
+                        id={`${idPrefix}-language`}
                         value={lang}
                         onValueChange={setLang}
                         testId="settings-language"
@@ -149,8 +151,9 @@ export function AppSettings({config, onSave, saving}: {
                     />
                 </div>
                 <div className="field">
-                    <label className="label">{t("ui.settings.theme", "Theme")}</label>
+                    <label className="label" htmlFor={`${idPrefix}-theme`}>{t("ui.settings.theme", "Theme")}</label>
                     <RadixSelect
+                        id={`${idPrefix}-theme`}
                         value={theme}
                         onValueChange={(val) => {
                             setTheme(val);
@@ -165,10 +168,11 @@ export function AppSettings({config, onSave, saving}: {
                     />
                 </div>
                 <div className="field">
-                    <label className="label" title={t("ui.settings.dashboard_books_view_tooltip", "Standard-Ansicht beim Öffnen des Bücher-Dashboards. Kann jederzeit über das Symbol oben rechts geändert werden.")}>
+                    <label className="label" htmlFor={`${idPrefix}-books-view`} title={t("ui.settings.dashboard_books_view_tooltip", "Standard-Ansicht beim Öffnen des Bücher-Dashboards. Kann jederzeit über das Symbol oben rechts geändert werden.")}>
                         {t("ui.settings.dashboard_books_view_label", "Bücher-Dashboard: Standard-Ansicht")}
                     </label>
                     <RadixSelect
+                        id={`${idPrefix}-books-view`}
                         value={booksView}
                         onValueChange={setBooksView}
                         testId="settings-books-view"
@@ -179,10 +183,11 @@ export function AppSettings({config, onSave, saving}: {
                     />
                 </div>
                 <div className="field">
-                    <label className="label" title={t("ui.settings.dashboard_articles_view_tooltip", "Standard-Ansicht beim Öffnen des Artikel-Dashboards. Kann jederzeit über das Symbol oben rechts geändert werden.")}>
+                    <label className="label" htmlFor={`${idPrefix}-articles-view`} title={t("ui.settings.dashboard_articles_view_tooltip", "Standard-Ansicht beim Öffnen des Artikel-Dashboards. Kann jederzeit über das Symbol oben rechts geändert werden.")}>
                         {t("ui.settings.dashboard_articles_view_label", "Artikel-Dashboard: Standard-Ansicht")}
                     </label>
                     <RadixSelect
+                        id={`${idPrefix}-articles-view`}
                         value={articlesView}
                         onValueChange={setArticlesView}
                         testId="settings-articles-view"
@@ -195,6 +200,7 @@ export function AppSettings({config, onSave, saving}: {
                 <div className="field">
                     <label
                         className="label"
+                        htmlFor={`${idPrefix}-books-trash-view`}
                         title={t(
                             "ui.settings.dashboard_books_trash_view_tooltip",
                             "Standard-Ansicht für den Bücher-Papierkorb. Toggles im Papierkorb sind sitzungsspezifisch und überschreiben diese Einstellung nicht.",
@@ -206,6 +212,7 @@ export function AppSettings({config, onSave, saving}: {
                         )}
                     </label>
                     <RadixSelect
+                        id={`${idPrefix}-books-trash-view`}
                         value={booksTrashView}
                         onValueChange={setBooksTrashView}
                         testId="settings-books-trash-view"
@@ -218,6 +225,7 @@ export function AppSettings({config, onSave, saving}: {
                 <div className="field">
                     <label
                         className="label"
+                        htmlFor={`${idPrefix}-articles-trash-view`}
                         title={t(
                             "ui.settings.dashboard_articles_trash_view_tooltip",
                             "Standard-Ansicht für den Artikel-Papierkorb. Toggles im Papierkorb sind sitzungsspezifisch und überschreiben diese Einstellung nicht.",
@@ -229,6 +237,7 @@ export function AppSettings({config, onSave, saving}: {
                         )}
                     </label>
                     <RadixSelect
+                        id={`${idPrefix}-articles-trash-view`}
                         value={articlesTrashView}
                         onValueChange={setArticlesTrashView}
                         testId="settings-articles-trash-view"
@@ -251,8 +260,9 @@ export function AppSettings({config, onSave, saving}: {
                     </label>
                     {trashEnabled && (
                         <div style={{marginTop: 8, marginLeft: 24}}>
-                            <label className="label">{t("ui.settings.trash_delete_after", "Endgültig löschen nach")}</label>
+                            <label className="label" htmlFor={`${idPrefix}-trash-days`}>{t("ui.settings.trash_delete_after", "Endgültig löschen nach")}</label>
                             <RadixSelect
+                                id={`${idPrefix}-trash-days`}
                                 value={trashDays}
                                 onValueChange={setTrashDays}
                                 testId="settings-trash-days"
@@ -328,15 +338,15 @@ export function AppSettings({config, onSave, saving}: {
                 <div className={styles.card}>
                     <div style={{display: "flex", gap: 12, flexWrap: "wrap"}}>
                         <div className="field" style={{flex: 1, minWidth: 140}}>
-                            <label className="label">{t("ui.settings.editor_autosave", "Autosave (ms)")}</label>
-                            <input className="input" type="number" min="200" max="5000" step="100"
+                            <label className="label" htmlFor={`${idPrefix}-editor-autosave`}>{t("ui.settings.editor_autosave", "Autosave (ms)")}</label>
+                            <input className="input" id={`${idPrefix}-editor-autosave`} type="number" min="200" max="5000" step="100"
                                 data-testid="editor-autosave"
                                 value={edAutosave} onChange={(e) => setEdAutosave(e.target.value)}/>
                             <small style={{color: "var(--text-muted)", fontSize: "0.7rem"}}>{t("ui.settings.editor_autosave_hint", "Verzoegerung bis zum automatischen Speichern")}</small>
                         </div>
                         <div className="field" style={{flex: 1, minWidth: 140}}>
-                            <label className="label">{t("ui.settings.editor_draft_save", "Entwurf (ms)")}</label>
-                            <input className="input" type="number" min="500" max="10000" step="500"
+                            <label className="label" htmlFor={`${idPrefix}-editor-draft-save`}>{t("ui.settings.editor_draft_save", "Entwurf (ms)")}</label>
+                            <input className="input" id={`${idPrefix}-editor-draft-save`} type="number" min="500" max="10000" step="500"
                                 data-testid="editor-draft-save"
                                 value={edDraftSave} onChange={(e) => setEdDraftSave(e.target.value)}/>
                             <small style={{color: "var(--text-muted)", fontSize: "0.7rem"}}>{t("ui.settings.editor_draft_hint", "Verzoegerung bis zur lokalen Sicherung")}</small>
@@ -344,15 +354,15 @@ export function AppSettings({config, onSave, saving}: {
                     </div>
                     <div style={{display: "flex", gap: 12, flexWrap: "wrap"}}>
                         <div className="field" style={{flex: 1, minWidth: 140}}>
-                            <label className="label">{t("ui.settings.editor_draft_age", "Entwurf-Alter (Tage)")}</label>
-                            <input className="input" type="number" min="1" max="365" step="1"
+                            <label className="label" htmlFor={`${idPrefix}-editor-draft-age`}>{t("ui.settings.editor_draft_age", "Entwurf-Alter (Tage)")}</label>
+                            <input className="input" id={`${idPrefix}-editor-draft-age`} type="number" min="1" max="365" step="1"
                                 data-testid="editor-draft-age"
                                 value={edDraftAge} onChange={(e) => setEdDraftAge(e.target.value)}/>
                             <small style={{color: "var(--text-muted)", fontSize: "0.7rem"}}>{t("ui.settings.editor_draft_age_hint", "Lokale Entwuerfe älter als dieser Wert werden gelöscht")}</small>
                         </div>
                         <div className="field" style={{flex: 1, minWidth: 140}}>
-                            <label className="label">{t("ui.settings.editor_ai_chars", "KI-Kontext (Zeichen)")}</label>
-                            <input className="input" type="number" min="500" max="32000" step="500"
+                            <label className="label" htmlFor={`${idPrefix}-editor-ai-chars`}>{t("ui.settings.editor_ai_chars", "KI-Kontext (Zeichen)")}</label>
+                            <input className="input" id={`${idPrefix}-editor-ai-chars`} type="number" min="500" max="32000" step="500"
                                 data-testid="editor-ai-chars"
                                 value={edAiChars} onChange={(e) => setEdAiChars(e.target.value)}/>
                             <small style={{color: "var(--text-muted)", fontSize: "0.7rem"}}>{t("ui.settings.editor_ai_chars_hint", "Maximale Zeichenanzahl für KI-Vorschläge")}</small>
@@ -387,8 +397,9 @@ export function AppSettings({config, onSave, saving}: {
                         </p>
 
                         <div className="field" style={{marginBottom: 12}}>
-                            <label className="label">{t("ui.settings.app_name", "App-Name")}</label>
+                            <label className="label" htmlFor={`${idPrefix}-app-name`}>{t("ui.settings.app_name", "App-Name")}</label>
                             <input
+                                id={`${idPrefix}-app-name`}
                                 className="input"
                                 value={uiTitle}
                                 onChange={(e) => setUiTitle(e.target.value)}
@@ -396,8 +407,9 @@ export function AppSettings({config, onSave, saving}: {
                             />
                         </div>
                         <div className="field" style={{marginBottom: 16}}>
-                            <label className="label">{t("ui.settings.description", "Beschreibung")}</label>
+                            <label className="label" htmlFor={`${idPrefix}-description`}>{t("ui.settings.description", "Beschreibung")}</label>
                             <input
+                                id={`${idPrefix}-description`}
                                 className="input"
                                 value={uiSubtitle}
                                 onChange={(e) => setUiSubtitle(e.target.value)}
