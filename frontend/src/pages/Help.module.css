@@ -1,23 +1,18 @@
-/**
- * T-01 Phase B: Help page CSS-Module.
- *
- * Migrated from a 38-line ``const styles`` block at the bottom of
- * Help.tsx. 16 keys, ~28 inline applications (FAQ + shortcut table
- * sections).
- */
-
 .container {
     min-height: 100vh;
     background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
 }
 
 .header {
     border-bottom: 1px solid var(--border);
     background: var(--bg-card);
+    flex-shrink: 0;
 }
 
 .headerInner {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 16px 24px;
     display: flex;
@@ -49,70 +44,44 @@
     color: var(--text-primary);
 }
 
-.main {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px;
-}
-
-.section {
+.body {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.sectionTitle {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 20px;
-}
-
-.table {
+    max-width: 1200px;
     width: 100%;
-    border-collapse: collapse;
+    margin: 0 auto;
+    min-height: 0;
 }
 
-.th {
-    text-align: left;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--text-muted);
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+    overflow-y: auto;
 }
 
-.td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9375rem;
+.content {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto;
+    max-width: 800px;
 }
 
-.kbd {
-    display: inline-block;
-    padding: 2px 8px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 500;
-}
+@media (max-width: 768px) {
+    .body {
+        flex-direction: column;
+    }
 
-.faqQuestion {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 8px 0;
+        max-height: 200px;
+    }
 
-.faqAnswer {
-    color: var(--text-secondary);
-    line-height: 1.6;
+    .content {
+        padding: 16px 20px;
+    }
 }

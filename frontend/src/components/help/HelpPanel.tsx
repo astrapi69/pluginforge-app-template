@@ -1,15 +1,12 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {ChevronRight, ExternalLink, Search, X} from "lucide-react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import {HelpNavItem, loadNav, loadPage, searchPages} from "../../help/loader";
 import {useHelp} from "../../contexts/HelpContext";
 import {useI18n} from "../../hooks/useI18n";
 import {LoadingIndicator} from "../LoadingIndicator";
+import HelpContent from "./HelpContent";
 
 /**
  * Full-screen slide-over help panel mounted at the App root.
@@ -250,47 +247,7 @@ export default function HelpPanel() {
                                     label={t("ui.common.loading", "Laden...")}
                                 />
                             ) : (
-                                <div className="help-content">
-                                    <Markdown
-                                        remarkPlugins={[remarkGfm]}
-                                        rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings]}
-                                        components={{
-                                            // Internal links: navigate within the help panel
-                                            a: ({href, children, ...props}) => {
-                                                if (href && !href.startsWith("http") && !href.startsWith("#")) {
-                                                    return (
-                                                        <a
-                                                            {...props}
-                                                            href={href}
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                const slug = href.replace(/\.md$/, "").replace(/^\//, "");
-                                                                openPage(slug);
-                                                            }}
-                                                            style={{color: "var(--accent)", cursor: "pointer"}}
-                                                        >
-                                                            {children}
-                                                        </a>
-                                                    );
-                                                }
-                                                // External links open in new tab
-                                                return (
-                                                    <a
-                                                        {...props}
-                                                        href={href}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        style={{color: "var(--accent)"}}
-                                                    >
-                                                        {children} <ExternalLink size={10} style={{verticalAlign: "middle"}}/>
-                                                    </a>
-                                                );
-                                            },
-                                        }}
-                                    >
-                                        {content}
-                                    </Markdown>
-                                </div>
+                                <HelpContent content={content} onInternalLink={openPage} />
                             )}
                         </div>
                     </div>

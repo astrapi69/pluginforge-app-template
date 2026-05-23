@@ -1,29 +1,52 @@
+import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
+import {ChevronLeft, Home} from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
-import {ChevronLeft, Keyboard, HelpCircle, Info, Home} from "lucide-react";
+import HelpSidebar from "../components/help/HelpSidebar";
+import HelpContent from "../components/help/HelpContent";
+import {loadNav, loadPage, type HelpNavItem} from "../help/loader";
 import {useI18n} from "../hooks/useI18n";
-import * as Tabs from "@radix-ui/react-tabs";
 import styles from "./Help.module.css";
+
+const DEFAULT_SLUG = "getting-started";
 
 export default function Help() {
     const navigate = useNavigate();
     const location = useLocation();
-    // ``location.key === "default"`` is react-router v6/v7's sentinel
-    // for "this is the initial entry in the app's history stack" -
-    // i.e. the user landed here via direct URL / bookmark / refresh.
-    // In that case navigate(-1) would leave the app entirely, so fall
-    // back to the Books-Dashboard root.
+    const {t, lang} = useI18n();
+    const [nav, setNav] = useState<HelpNavItem[]>([]);
+    const [content, setContent] = useState<string>("");
+    const [activeSlug, setActiveSlug] = useState<string>(DEFAULT_SLUG);
+
+    useEffect(() => {
+        const hash = location.hash.replace(/^#/, "");
+        setActiveSlug(hash || DEFAULT_SLUG);
+    }, [location.hash]);
+
+    useEffect(() => {
+        loadNav(lang).then(setNav).catch(() => setNav([]));
+    }, [lang]);
+
+    useEffect(() => {
+        loadPage(lang, activeSlug).then((page) => {
+            if (page) {
+                setContent(page.content);
+            } else {
+                setContent(`# ${t("ui.help.not_found", "Page not found")}\n\n\`${activeSlug}\``);
+            }
+        }).catch(() => {
+            setContent(`# ${t("ui.help.not_found", "Page not found")}\n\n\`${activeSlug}\``);
+        });
+    }, [lang, activeSlug, t]);
+
     const handleBack = () => {
-        if (location.key === "default") {
-            navigate("/");
-        } else {
-            navigate(-1);
-        }
+        if (location.key === "default") navigate("/");
+        else navigate(-1);
     };
-    const {t} = useI18n();
-    const shortcuts: {keys: string; action: string}[] = [];
-    const faq: {question: string; answer: string}[] = [];
-    const about: Record<string, string> = {};
+
+    const handleSelect = (slug: string) => {
+        navigate(`/help#${slug}`);
+    };
 
     return (
         <div className={styles.container}>
@@ -34,91 +57,33 @@ export default function Help() {
                             className={styles.backBtn}
                             onClick={handleBack}
                             data-testid="help-nav-back"
-                            aria-label={t("ui.dashboard.back", "Zurück")}
+                            aria-label={t("ui.dashboard.back", "Back")}
                         >
-                            <ChevronLeft size={18}/>
+                            <ChevronLeft size={18} />
                         </button>
-                        <h1 className={styles.title}>{t("ui.help.title", "Hilfe")}</h1>
+                        <h1 className={styles.title}>{t("ui.help.title", "Help")}</h1>
                     </div>
                     <div className="icon-row">
-                        <button className="btn-icon" onClick={() => navigate("/")} title={t("ui.dashboard.title", "Dashboard")}>
-                            <Home size={18}/>
+                        <button
+                            className="btn-icon"
+                            onClick={() => navigate("/")}
+                            title={t("ui.dashboard.title", "Dashboard")}
+                        >
+                            <Home size={18} />
                         </button>
-                        <ThemeToggle/>
+                        <ThemeToggle />
                     </div>
                 </div>
             </header>
 
-            <Tabs.Root defaultValue="shortcuts">
-                <Tabs.List className="radix-tabs-list">
-                    <Tabs.Trigger value="shortcuts" className="radix-tab-trigger">
-                        <Keyboard size={14}/> {t("ui.help.shortcuts_tab", "Tastenkürzel")}
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="faq" className="radix-tab-trigger">
-                        <HelpCircle size={14}/> FAQ
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="about" className="radix-tab-trigger">
-                        <Info size={14}/> {t("ui.help.about_tab", "Über")}
-                    </Tabs.Trigger>
-                </Tabs.List>
-
-            <main className={styles.main}>
-                <Tabs.Content value="shortcuts">
-                    <div className={styles.section}>
-                        <h2 className={styles.sectionTitle}>{t("ui.help.shortcuts_tab", "Tastenkürzel")}</h2>
-                        <div className={styles.card}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th className={styles.th}>{t("ui.help.key_column", "Taste")}</th>
-                                        <th className={styles.th}>{t("ui.help.action_column", "Aktion")}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {shortcuts.map((s, i) => (
-                                        <tr key={i}>
-                                            <td className={styles.td}>
-                                                <kbd className={styles.kbd}>{s.keys}</kbd>
-                                            </td>
-                                            <td className={styles.td}>{s.action}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </Tabs.Content>
-
-                <Tabs.Content value="faq">
-                    <div className={styles.section}>
-                        <h2 className={styles.sectionTitle}>{t("ui.help.faq_title", "Häufig gestellte Fragen")}</h2>
-                        {faq.map((item, i) => (
-                            <div key={i} className={styles.card}>
-                                <h3 className={styles.faqQuestion}>{item.question}</h3>
-                                <p className={styles.faqAnswer}>{item.answer}</p>
-                            </div>
-                        ))}
-                    </div>
-                </Tabs.Content>
-
-                <Tabs.Content value="about">
-                    <div className={styles.section}>
-                        <h2 className={styles.sectionTitle}>{t("ui.help.about_title", "Über MyApp")}</h2>
-                        <div className={styles.card}>
-                            <p><strong>{about.name}</strong></p>
-                            <p style={{color: "var(--text-muted)", marginTop: 8}}>{about.description}</p>
-                            <p style={{marginTop: 12}}>
-                                {t("ui.help.license", "Lizenz")}: <strong>{about.license}</strong>
-                            </p>
-                            <p style={{marginTop: 4}}>
-                                Website: <a href={about.website} target="_blank" rel="noreferrer"
-                                    style={{color: "var(--accent)"}}>{about.website}</a>
-                            </p>
-                        </div>
-                    </div>
-                </Tabs.Content>
-            </main>
-            </Tabs.Root>
+            <div className={styles.body}>
+                <aside className={styles.sidebar} data-testid="help-sidebar">
+                    <HelpSidebar items={nav} activeSlug={activeSlug} onSelect={handleSelect} />
+                </aside>
+                <main className={styles.content} data-testid="help-page-content">
+                    <HelpContent content={content} onInternalLink={handleSelect} />
+                </main>
+            </div>
         </div>
     );
 }
