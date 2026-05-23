@@ -943,11 +943,12 @@ ui:
     submit: GitHubでissueを作成
   help:
     title: ヘルプ
+    nav_label: ヘルプ
     open: ヘルプを開く
     shortcuts_tab: キーボードショートカット
     about_tab: 概要
     faq_title: よくある質問
-    about_title: Adaptive Learnerについて
+    about_title: MyAppについて
     key_column: キー
     action_column: アクション
     license: ライセンス

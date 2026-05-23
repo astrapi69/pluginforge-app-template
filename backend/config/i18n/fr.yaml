@@ -608,11 +608,12 @@ ui:
     help_backup_4: Les projets externes (.zip, .bgp) peuvent etre charges via "Importer"
   help:
     title: Aide
+    nav_label: Aide
     open: Ouvrir l'aide
     shortcuts_tab: Raccourcis clavier
     about_tab: A propos
     faq_title: Questions frequentes
-    about_title: A propos de Adaptive Learner
+    about_title: A propos de MyApp
     key_column: Touche
     action_column: Action
     license: Licence

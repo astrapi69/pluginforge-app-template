@@ -955,11 +955,12 @@ ui:
     submit: Δημιουργία issue στο GitHub
   help:
     title: Βοήθεια
+    nav_label: Βοήθεια
     open: Άνοιγμα βοήθειας
     shortcuts_tab: Συντομεύσεις πληκτρολογίου
     about_tab: Σχετικά
     faq_title: Συχνές ερωτήσεις
-    about_title: Σχετικά με το Adaptive Learner
+    about_title: Σχετικά με το MyApp
     key_column: Πλήκτρο
     action_column: Ενέργεια
     license: Άδεια

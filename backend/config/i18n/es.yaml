@@ -597,11 +597,12 @@ ui:
     help_backup_4: Los proyectos externos (.zip, .bgp) se pueden cargar via "Importar"
   help:
     title: Ayuda
+    nav_label: Ayuda
     open: Abrir ayuda
     shortcuts_tab: Atajos de teclado
     about_tab: Acerca de
     faq_title: Preguntas frecuentes
-    about_title: Acerca de Adaptive Learner
+    about_title: Acerca de MyApp
     key_column: Tecla
     action_column: Accion
     license: Licencia

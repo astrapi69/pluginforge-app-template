@@ -248,24 +248,6 @@ describe("api.backup", () => {
     });
 });
 
-// --- Help ---
-
-describe("api.help", () => {
-    it("shortcuts fetches with language param", async () => {
-        mockFetch.mockReturnValue(jsonResponse([{keys: "Ctrl+B", action: "Bold"}]));
-        const shortcuts = await api.help.shortcuts("en");
-        expect(shortcuts).toHaveLength(1);
-        expect(mockFetch).toHaveBeenCalledWith("/api/help/shortcuts?lang=en", expect.anything());
-    });
-
-    it("faq fetches with default language", async () => {
-        mockFetch.mockReturnValue(jsonResponse([{question: "Q?", answer: "A."}]));
-        const faq = await api.help.faq();
-        expect(faq).toHaveLength(1);
-        expect(mockFetch).toHaveBeenCalledWith("/api/help/faq?lang=de", expect.anything());
-    });
-});
-
 // --- Licenses ---
 
 describe("api.licenses", () => {

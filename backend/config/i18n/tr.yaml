@@ -593,11 +593,12 @@ ui:
     help_backup_4: Harici projeler (.zip, .bgp) "Iceri aktar" ile yuklenebilir
   help:
     title: Yardim
+    nav_label: Yardim
     open: Yardimi ac
     shortcuts_tab: Klavye kisayollari
     about_tab: Hakkinda
     faq_title: Sikca sorulan sorular
-    about_title: Adaptive Learner hakkinda
+    about_title: MyApp hakkinda
     key_column: Tus
     action_column: Islem
     license: Lisans
