@@ -440,7 +440,7 @@ export default function Dashboard() {
                         </button>
 
                         {/* Desktop: inline buttons */}
-                        <div className="hide-mobile" style={{display: "flex", alignItems: "center", gap: 6}}>
+                        <nav className="hide-mobile" aria-label={t("ui.dashboard.page_nav", "Dashboard navigation")} style={{display: "flex", alignItems: "center", gap: 6}}>
                             <div className={styles.headerSeparator}/>
                             <button
                                 className="btn btn-secondary btn-sm"
@@ -481,7 +481,7 @@ export default function Dashboard() {
                                 )}
                             </button>
                             <ThemeToggle/>
-                        </div>
+                        </nav>
 
                         {/* Mobile: hamburger menu */}
                         <DropdownMenu.Root>
@@ -526,7 +526,7 @@ export default function Dashboard() {
             </header>
 
             {/* Content */}
-            <main className={styles.main}>
+            <main id="main-content" tabIndex={-1} className={styles.main}>
                 {donationsConfig && reminderVisible && !showTrash ? (
                     <DonationReminderBanner
                         donations={donationsConfig}

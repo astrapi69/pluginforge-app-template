@@ -651,8 +651,9 @@ export default function ArticleList() {
                         {/* Desktop chrome: every icon button + ThemeToggle.
                             Hidden under 768px; the hamburger menu below
                             takes over on mobile. */}
-                        <div
+                        <nav
                             className="hide-mobile"
+                            aria-label={t("ui.articles.page_nav", "Articles navigation")}
                             style={{ display: "flex", alignItems: "center", gap: 6 }}
                         >
                             <button
@@ -728,7 +729,7 @@ export default function ArticleList() {
                                 )}
                             </button>
                             <ThemeToggle />
-                        </div>
+                        </nav>
 
                         {/* Mobile: hamburger menu collapses every desktop
                             icon button into one Radix DropdownMenu so the
@@ -803,7 +804,7 @@ export default function ArticleList() {
                     </div>
                 </div>
             </header>
-            <main className={layout.main}>
+            <main id="main-content" tabIndex={-1} className={layout.main}>
             {/* Page title row mirrors the books-dashboard ``mainHeader``
                 shape: heading + count + ViewToggle inline. Hidden in
                 trash mode; TrashPanel renders its own header that
