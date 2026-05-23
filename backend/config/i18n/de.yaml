@@ -923,11 +923,12 @@ ui:
     markdown_mode: Markdown-Modus
   help:
     title: Hilfe
+    nav_label: Hilfe
     open: Hilfe öffnen
     shortcuts_tab: Tastenkürzel
     about_tab: Über
     faq_title: Häufig gestellte Fragen
-    about_title: Über Adaptive Learner
+    about_title: Über MyApp
     key_column: Taste
     action_column: Aktion
     license: Lizenz

@@ -909,11 +909,12 @@ ui:
     markdown_mode: Markdown mode
   help:
     title: Help
+    nav_label: Help
     open: Open help
     shortcuts_tab: Keyboard Shortcuts
     about_tab: About
     faq_title: Frequently Asked Questions
-    about_title: About Adaptive Learner
+    about_title: About MyApp
     key_column: Key
     action_column: Action
     license: License

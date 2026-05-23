@@ -993,11 +993,12 @@ ui:
     submit: Criar issue no GitHub
   help:
     title: Ajuda
+    nav_label: Ajuda
     open: Abrir ajuda
     shortcuts_tab: Atalhos de teclado
     about_tab: Sobre
     faq_title: Perguntas frequentes
-    about_title: Sobre o Adaptive Learner
+    about_title: Sobre o MyApp
     key_column: Tecla
     action_column: Acao
     license: Licenca
