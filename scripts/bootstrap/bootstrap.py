@@ -1742,6 +1742,7 @@ def phase3_domain_swap(ctx: BootstrapContext) -> None:
     _write_exceptions_shell(ctx)
     _write_hookspecs_shell(ctx)
     _gut_i18n_catalogs(ctx)
+    _strip_template_markers(ctx)
     _generate_migration(ctx)
 
     entity_list = ", ".join(e.name for e in ctx.manifest.entities)
@@ -1798,6 +1799,40 @@ def _delete_example_domain(target: Path, inventory: dict) -> None:
             path.unlink()
         elif path.is_dir():
             shutil.rmtree(path)
+
+
+_TEMPLATE_MARKER_PATTERNS = (
+    re.compile(r"^# TEMPLATE:.*\n", re.M),
+    re.compile(r"^// TEMPLATE:.*\n", re.M),
+)
+
+
+def _strip_template_markers(ctx: BootstrapContext) -> None:
+    """Strip single-line ``# TEMPLATE: ...`` / ``// TEMPLATE: ...`` marker
+    comments from kept files.
+
+    The markers exist in the template tree to flag files as adaptable
+    examples for downstream apps. Most carry-over files (universal
+    backend / launcher / frontend infrastructure tests) still bear the
+    marker even though the bootstrap intentionally keeps them. The
+    Phase 8 sanity check then flags them as leftover example-domain
+    content. Stripping the comment line is safe: it never carries
+    semantic load.
+
+    Multi-line ``/* TEMPLATE: ... */`` blocks are NOT handled here; the
+    only file that uses that shape is the legacy ``Dashboard.tsx`` which
+    is in the inventory delete list and never reaches this pass.
+    """
+    for path in _iter_text_files(ctx.target_dir):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        new = text
+        for pat in _TEMPLATE_MARKER_PATTERNS:
+            new = pat.sub("", new)
+        if new != text:
+            path.write_text(new, encoding="utf-8")
 
 
 def _gut_i18n_catalogs(ctx: BootstrapContext) -> None:
@@ -2396,7 +2431,13 @@ def phase8_sanity_sweep(ctx: BootstrapContext) -> None:
         if not ok:
             failures.append((check, name, detail))
 
-    placeholders = ["myapp", "MyApp", "MYAPP", "EXAMPLE-DOMAIN", "pluginforge-app-template"]
+    # `pluginforge-app-template` is intentionally NOT in this list: Phase 7
+    # docs (README, CLAUDE.md, CONCEPT.md, ROADMAP.md) carry attribution
+    # links back to the template's GitHub repo as a template-lineage rule,
+    # similar to the em-dash exemption for `.claude/rules/`. Phase 2's
+    # `str.replace` sweep is reliable enough that we do not need a
+    # post-bootstrap regression check for the template's own name.
+    placeholders = ["myapp", "MyApp", "MYAPP", "EXAMPLE-DOMAIN"]
     hits: list[str] = []
     for path in _iter_text_files(target):
         try:

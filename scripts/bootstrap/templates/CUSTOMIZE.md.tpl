@@ -10,11 +10,11 @@ by hand.
 
 - **Phase 1 (bootstrap)**: copied the template tree, severed the
   template `.git`, initialised a fresh `${name}` repo on `main`.
-- **Phase 2 (rename)**: sed-swept `myapp -> ${name}`,
-  `MyApp -> ${pascal_name}`, `MYAPP -> ${upper_name}` across every
-  text file, plus the launcher dir/icon/spec renames + the
+- **Phase 2 (rename)**: sed-swept the template's placeholder
+  strings to `${name}` / `${pascal_name}` / `${upper_name}` across
+  every text file, plus the launcher dir/icon/spec renames + the
   pyproject/package metadata rewrites.
-- **Phase 3 (domain)**: deleted the EXAMPLE-DOMAIN
+- **Phase 3 (domain)**: deleted the template's example domain
   (Book/Chapter/Article/...) and generated ${entity_count} new
   entities (${entity_names}) with models + schemas + migration.
 - **Phase 4 (CRUD)**: generated services + routers + integration
