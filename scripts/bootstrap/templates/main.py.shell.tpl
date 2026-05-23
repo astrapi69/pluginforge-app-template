@@ -482,3 +482,27 @@ def get_i18n(lang: str) -> dict[str, Any]:
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": __version__, "debug": DEBUG}
+
+
+# --- Stubs required by kept universal infrastructure ---------------------
+#
+# The kept settings router (``app.routers.settings``) and the kept
+# config-loader test (``backend/tests/test_config_loader.py``) reach into
+# ``app.main`` for these symbols. They exist as real implementations in
+# downstream apps that wire up plugin-status caching and a deprecation
+# warning for secrets in the project config. The bootstrap shell ships
+# them as no-op stubs so the kept callers import cleanly; replace the
+# bodies once the corresponding feature is built out.
+
+
+def invalidate_plugin_status_cache() -> None:
+    """No-op stub. Downstream apps wire this up to clear an
+    ``editor/plugin-status`` response cache when settings change."""
+    return None
+
+
+def _has_project_secret_without_override() -> bool:
+    """No-op stub. Downstream apps detect the legacy pattern of an API
+    key sitting in the project ``app.yaml`` without a user-override and
+    log a deprecation hint. The shell returns False (no deprecation)."""
+    return False

@@ -1386,18 +1386,47 @@ def render_router_test(entity: EntityDef, manifest: Manifest) -> str:
 
 
 def _render_fk_fixtures(entity: EntityDef, manifest: Manifest, fk_fields: list[FieldDef]) -> list[str]:
-    """For each FK in the entity, generate a pytest fixture that creates
-    the parent row and returns its JSON."""
-    out = []
-    for fd in fk_fields:
-        target_lower = fd.target.lower()
-        target_entity = manifest.entity_by_name.get(fd.target)
-        if target_entity is None:
-            continue
+    """Generate pytest fixtures for the FK ancestor chain.
+
+    A test for entity X needs a fixture for every X.FK target, AND for
+    every transitive ancestor up the chain. For the Topos shape
+    ``Action -> Item -> Container``, the Action test needs an ``item``
+    fixture, which in turn declares ``container`` as a parameter, which
+    requires its own ``container`` fixture. Each fixture's payload
+    references ancestor IDs (e.g. ``item``'s payload uses
+    ``container["id"]``), so each fixture must accept its own parents
+    as parameters AND those parents must exist as fixtures earlier in
+    the file.
+
+    The earlier single-level implementation only emitted the direct
+    parent fixture without its own parents, producing
+    ``NameError: name 'container' is not defined`` when the payload was
+    evaluated. Walking the ancestry depth-first with a seen-set both
+    produces every needed fixture and orders them
+    parent-before-child (pytest doesn't require this ordering but it
+    keeps the generated file readable).
+    """
+    seen: set[str] = set()
+    fixtures: list[str] = []
+
+    def _add(target_entity: EntityDef) -> None:
+        if target_entity.name in seen:
+            return
+        seen.add(target_entity.name)
+        parent_fks = [f for f in target_entity.fields if f.type == "fk"]
+        for pfd in parent_fks:
+            grand = manifest.entity_by_name.get(pfd.target)
+            if grand is not None:
+                _add(grand)
+        parent_args = (
+            ", " + ", ".join(p.target.lower() for p in parent_fks)
+            if parent_fks else ""
+        )
+        target_lower = target_entity.name.lower()
         parent_payload = _sample_create_payload(target_entity, manifest, idx=7001)
-        out.append(
+        fixtures.append(
             f"@pytest.fixture\n"
-            f"def {target_lower}(client: TestClient) -> dict:\n"
+            f"def {target_lower}(client: TestClient{parent_args}) -> dict:\n"
             f"    r = client.post(\n"
             f"        \"/api/{target_entity.plural}\",\n"
             f"        json={parent_payload},\n"
@@ -1405,7 +1434,12 @@ def _render_fk_fixtures(entity: EntityDef, manifest: Manifest, fk_fields: list[F
             f"    assert r.status_code == 201, r.text\n"
             f"    return r.json()",
         )
-    return out
+
+    for fd in fk_fields:
+        target_entity = manifest.entity_by_name.get(fd.target)
+        if target_entity is not None:
+            _add(target_entity)
+    return fixtures
 
 
 def _sample_create_payload(entity: EntityDef, manifest: Manifest, idx: int) -> str:

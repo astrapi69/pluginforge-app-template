@@ -167,6 +167,27 @@ ${api_namespace_entries}
     i18n: {
         get: (lang: string) => request<Record<string, unknown>>(`/i18n/$${lang}`),
     },
+    // Universal app-level namespaces. These are NOT generated from the
+    // manifest entities; they map to the kept ``app/routers/settings.py``
+    // and ``app/routers/plugin_install.py`` routers and are consumed by
+    // universal hooks (``useI18n``, future settings UI).
+    settings: {
+        getApp: () => request<Record<string, unknown>>("/settings/app"),
+        updateApp: (data: Record<string, unknown>) =>
+            request<Record<string, unknown>>("/settings/app", {method: "PATCH", body: data}),
+        listPlugins: () => request<Record<string, unknown>>("/settings/plugins"),
+        listDiscoveredPlugins: () =>
+            request<{name: string; has_config: boolean; enabled: boolean; loaded: boolean}[]>(
+                "/settings/plugins/discovered",
+            ),
+        getPlugin: (name: string) =>
+            request<Record<string, unknown>>(`/settings/plugins/$${name}`),
+        deletePlugin: (name: string) =>
+            request<{plugin: string; status: string}>(
+                `/settings/plugins/$${name}`,
+                {method: "DELETE"},
+            ),
+    },
 };
 
 // Expose helpers for tests that exercise the conversion logic directly.
