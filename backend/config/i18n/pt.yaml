@@ -65,7 +65,7 @@ ui:
     restored: Livro restaurado.
     restore_failed: Falha ao restaurar.
     delete_permanent: Excluir permanentemente
-    welcome: Bem-vindo ao Adaptive Learner
+    welcome: Bem-vindo ao MyApp
     welcome_text: Crie seu primeiro livro, importe um projeto existente ou confira
       o guia de primeiros passos.
     create_book: Criar livro
@@ -412,7 +412,7 @@ ui:
     white_label: 'Avancado: Personalizar aplicativo'
     white_label_hide: Ocultar avancado
     white_label_title: Configuracao de marca propria
-    white_label_desc: Personalize o Adaptive Learner como seu proprio aplicativo.
+    white_label_desc: Personalize o MyApp como seu proprio aplicativo.
       Altere o nome, remova plugins padrao e crie sua propria plataforma de escrita.
     core_plugins: Plugins padrao
     restart_hint: As alteracoes sao aplicadas apos salvar. Reinicializacao necessaria.
@@ -1048,8 +1048,8 @@ ui:
     save_as_new_failed: Falha ao salvar como novo capitulo.
   donations:
     tab: Apoiar
-    section_title: Apoiar o Adaptive Learner
-    intro: 'O Adaptive Learner e desenvolvido como projeto de codigo aberto, sem rastreio,
+    section_title: Apoiar o MyApp
+    intro: 'O MyApp e desenvolvido como projeto de codigo aberto, sem rastreio,
       sem backend na nuvem, sem publicidade. Se a aplicacao te ajuda e queres apoiar
       o projeto:'
     recommended_badge: Recomendado
@@ -1064,12 +1064,12 @@ ui:
         sponsors no primeiro ano.
       kofi_desc: Baixa barreira, estilo 'compra-me um cafe', sem conta necessaria.
       paypal_desc: Maior alcance, pagamento unico, cartao de credito sem conta PayPal.
-    onboarding_title: Apoiar o Adaptive Learner
-    onboarding_body: 'O Adaptive Learner e desenvolvido como projeto de codigo aberto,
+    onboarding_title: Apoiar o MyApp
+    onboarding_body: 'O MyApp e desenvolvido como projeto de codigo aberto,
       sem rastreio, sem backend na nuvem, sem publicidade. Se a aplicacao te ajuda
       e queres apoiar o projeto:'
     onboarding_hint: Esta dica fica disponivel a qualquer momento nas Definicoes.
-    reminder_body: 'Ja usas o Adaptive Learner ha tres meses. Se gostas do projeto:'
+    reminder_body: 'Ja usas o MyApp ha tres meses. Se gostas do projeto:'
     reminder_close: Fechar
   themes:
     warm_literary: Literário quente

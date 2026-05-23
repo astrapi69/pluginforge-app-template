@@ -65,7 +65,7 @@ ui:
     restored: Livre restaure.
     restore_failed: Echec de la restauration.
     delete_permanent: Supprimer definitivement
-    welcome: Bienvenue sur Adaptive Learner
+    welcome: Bienvenue sur MyApp
     welcome_text: Creez votre premier livre, importez un projet existant ou consultez
       le guide de demarrage.
     create_book: Creer un livre
@@ -429,7 +429,7 @@ ui:
     white_label: 'Avance: Personnaliser l''application'
     white_label_hide: Masquer les options avancees
     white_label_title: Configuration marque blanche
-    white_label_desc: Personnalisez Adaptive Learner comme votre propre application.
+    white_label_desc: Personnalisez MyApp comme votre propre application.
       Changez le nom, supprimez les plugins standard et creez votre propre plateforme
       d'ecriture.
     core_plugins: Plugins standard
@@ -553,7 +553,7 @@ ui:
     done: Termine!
     congratulations: Felicitations!
     all_done: Vous connaissez maintenant toutes les fonctionnalites importantes de
-      Adaptive Learner.
+      MyApp.
     to_dashboard: Aller au tableau de bord
     restart: Recommencer
     how_to: Comment ca marche?
@@ -1063,8 +1063,8 @@ ui:
     save_as_new_failed: Echec de l'enregistrement comme nouveau chapitre.
   donations:
     tab: Soutenir
-    section_title: Soutenir Adaptive Learner
-    intro: 'Adaptive Learner est developpe comme projet open-source, sans pistage,
+    section_title: Soutenir MyApp
+    intro: 'MyApp est developpe comme projet open-source, sans pistage,
       sans backend cloud, sans publicite. Si l''application vous aide et vous souhaitez
       soutenir le projet:'
     recommended_badge: Recommande
@@ -1079,12 +1079,12 @@ ui:
       kofi_desc: Barriere basse, style 'offrez-moi un cafe', sans compte requis.
       paypal_desc: Portee maximale, paiement unique, carte bancaire sans compte PayPal
         possible.
-    onboarding_title: Soutenir Adaptive Learner
-    onboarding_body: 'Adaptive Learner est developpe comme projet open-source, sans
+    onboarding_title: Soutenir MyApp
+    onboarding_body: 'MyApp est developpe comme projet open-source, sans
       pistage, sans backend cloud, sans publicite. Si l''application vous aide et
       vous souhaitez soutenir le projet:'
     onboarding_hint: Cette indication reste disponible a tout moment dans les Reglages.
-    reminder_body: 'Vous utilisez Adaptive Learner depuis trois mois. Si le projet
+    reminder_body: 'Vous utilisez MyApp depuis trois mois. Si le projet
       vous plait:'
     reminder_close: Fermer
   themes:

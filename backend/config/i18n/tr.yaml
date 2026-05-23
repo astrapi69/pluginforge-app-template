@@ -65,7 +65,7 @@ ui:
     restored: Kitap geri yuklendi.
     restore_failed: Geri yukleme basarisiz.
     delete_permanent: Kalici olarak sil
-    welcome: Adaptive Learner'a hos geldiniz
+    welcome: MyApp'a hos geldiniz
     welcome_text: Ilk kitabinizi olusturun, mevcut bir projeyi iceri aktarin veya
       baslangic rehberine goz atin.
     create_book: Kitap olustur
@@ -425,7 +425,7 @@ ui:
     white_label: 'Gelismis: Uygulamayi ozellestir'
     white_label_hide: Gelismis secenekleri gizle
     white_label_title: White-Label yapilandirmasi
-    white_label_desc: Adaptive Learner'u kendi uygulamaniz olarak ozellestirin. Adi
+    white_label_desc: MyApp'u kendi uygulamaniz olarak ozellestirin. Adi
       degistirin, standart eklentileri kaldirin ve kendi yazarlik platformunuzu olusturun.
     core_plugins: Standart eklentiler
     restart_hint: Degisiklikler kaydettikten sonra uygulanir. Yeniden baslatma gerekli.
@@ -541,7 +541,7 @@ ui:
     progress: Adim {current} / {total}
     done: Tamam!
     congratulations: Tebrikler!
-    all_done: Artik Adaptive Learner'un tum onemli ozelliklerini biliyorsunuz.
+    all_done: Artik MyApp'un tum onemli ozelliklerini biliyorsunuz.
     to_dashboard: Panele git
     restart: Tekrar basla
     how_to: Nasil calisir?
@@ -549,7 +549,7 @@ ui:
     mark_complete: Tamamlandi olarak isaretle
     finish: Tamam - panele git
     sample_book: Ornek kitap olustur
-    sample_book_hint: Adaptive Learner'u kesfetmek icin ornek bolumlerle bir kitap
+    sample_book_hint: MyApp'u kesfetmek icin ornek bolumlerle bir kitap
       olusturun.
     creating: Olusturuluyor...
     or_sample: 'Veya: Ornek kitap olustur'
@@ -1042,8 +1042,8 @@ ui:
     save_as_new_failed: Yeni bolum olarak kaydedilemedi.
   donations:
     tab: Destekle
-    section_title: Adaptive Learner'u destekleyin
-    intro: 'Adaptive Learner, takip, bulut backend ve reklam olmayan bir acik kaynak
+    section_title: MyApp'u destekleyin
+    intro: 'MyApp, takip, bulut backend ve reklam olmayan bir acik kaynak
       projesi olarak gelistirilmektedir. Uygulama size yardimci oluyorsa ve projeyi
       desteklemek istiyorsaniz:'
     recommended_badge: Onerilen
@@ -1057,12 +1057,12 @@ ui:
         esitler.
       kofi_desc: Dusuk esik, 'bana bir kahve ismarla' tarzi, hesap gerekmez.
       paypal_desc: En genis erisim, tek seferlik, PayPal hesabi olmadan kredi karti.
-    onboarding_title: Adaptive Learner'u destekleyin
-    onboarding_body: 'Adaptive Learner, takip, bulut backend ve reklam olmayan bir
+    onboarding_title: MyApp'u destekleyin
+    onboarding_body: 'MyApp, takip, bulut backend ve reklam olmayan bir
       acik kaynak projesi olarak gelistirilmektedir. Uygulama size yardimci oluyorsa
       ve projeyi desteklemek istiyorsaniz:'
     onboarding_hint: Bu notu her zaman Ayarlarda bulabilirsiniz.
-    reminder_body: 'Adaptive Learner''u uc aydir kullaniyorsunuz. Projeyi begeniyorsaniz:'
+    reminder_body: 'MyApp''u uc aydir kullaniyorsunuz. Projeyi begeniyorsaniz:'
     reminder_close: Kapat
   themes:
     warm_literary: Sıcak edebî

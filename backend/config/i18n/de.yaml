@@ -55,7 +55,7 @@ ui:
     restored: Buch wiederhergestellt.
     restore_failed: Wiederherstellen fehlgeschlagen.
     delete_permanent: Endgültig löschen
-    welcome: Willkommen bei Adaptive Learner
+    welcome: Willkommen bei MyApp
     welcome_text: Erstelle dein erstes Buch, importiere ein bestehendes Projekt, oder
       schaue dir die Erste-Schritte-Anleitung an.
     create_book: Buch erstellen
@@ -404,7 +404,7 @@ ui:
     white_label: 'Erweitert: App anpassen'
     white_label_hide: Erweitert ausblenden
     white_label_title: White-Label Konfiguration
-    white_label_desc: Passe Adaptive Learner als eigene App an. Ändere den Namen,
+    white_label_desc: Passe MyApp als eigene App an. Ändere den Namen,
       entferne Standard-Plugins und erstelle deine eigene Autoren-Plattform.
     core_plugins: Standard-Plugins
     restart_hint: Änderungen werden beim nächsten "Speichern" übernommen. Neustart
@@ -525,7 +525,7 @@ ui:
     progress: Schritt {current} von {total}
     done: Fertig!
     congratulations: Glückwunsch!
-    all_done: Du kennst jetzt alle wichtigen Funktionen von Adaptive Learner.
+    all_done: Du kennst jetzt alle wichtigen Funktionen von MyApp.
     to_dashboard: Zum Dashboard
     restart: Nochmal starten
     how_to: Wie geht das?
@@ -533,7 +533,7 @@ ui:
     mark_complete: Als erledigt markieren
     finish: Fertig - zum Dashboard
     sample_book: Beispielbuch erstellen
-    sample_book_hint: Erstelle ein Buch mit Beispielkapiteln, um Adaptive Learner
+    sample_book_hint: Erstelle ein Buch mit Beispielkapiteln, um MyApp
       kennenzulernen.
     creating: Erstellt...
     or_sample: 'Oder: Beispielbuch erstellen'
@@ -1048,8 +1048,8 @@ ui:
     save_as_new_failed: Speichern als neues Kapitel fehlgeschlagen.
   donations:
     tab: Unterstützen
-    section_title: Adaptive Learner unterstützen
-    intro: 'Adaptive Learner entsteht als Open-Source-Projekt ohne Tracking, ohne
+    section_title: MyApp unterstützen
+    intro: 'MyApp entsteht als Open-Source-Projekt ohne Tracking, ohne
       Cloud-Backend, ohne Werbung. Wenn die App dir hilft und du das Projekt unterstützen
       möchtest:'
     recommended_badge: Empfohlen
@@ -1065,12 +1065,12 @@ ui:
         Spender-Konto.
       paypal_desc: Breite Reichweite, einmalig, Kreditkarte auch ohne PayPal-Konto
         möglich.
-    onboarding_title: Unterstützung für Adaptive Learner
-    onboarding_body: 'Adaptive Learner entsteht als Open-Source-Projekt ohne Tracking,
+    onboarding_title: Unterstützung für MyApp
+    onboarding_body: 'MyApp entsteht als Open-Source-Projekt ohne Tracking,
       ohne Cloud-Backend, ohne Werbung. Wenn die App dir hilft und du das Projekt
       unterstützen möchtest:'
     onboarding_hint: Diesen Hinweis findest du jederzeit in den Einstellungen.
-    reminder_body: 'Du nutzt Adaptive Learner seit drei Monaten. Wenn dir das Projekt
+    reminder_body: 'Du nutzt MyApp seit drei Monaten. Wenn dir das Projekt
       gefällt:'
     reminder_close: Schließen
   themes:

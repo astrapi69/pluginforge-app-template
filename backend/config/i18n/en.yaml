@@ -54,7 +54,7 @@ ui:
     restored: Book restored.
     restore_failed: Restore failed.
     delete_permanent: Delete permanently
-    welcome: Welcome to Adaptive Learner
+    welcome: Welcome to MyApp
     welcome_text: Create your first book, import an existing project, or check out
       the getting started guide.
     create_book: Create book
@@ -400,7 +400,7 @@ ui:
     white_label: 'Advanced: Customize App'
     white_label_hide: Hide Advanced
     white_label_title: White-Label Configuration
-    white_label_desc: Customize Adaptive Learner as your own app. Change the name,
+    white_label_desc: Customize MyApp as your own app. Change the name,
       remove standard plugins and create your own authoring platform.
     core_plugins: Standard Plugins
     restart_hint: Changes apply after saving. Restart required.
@@ -519,7 +519,7 @@ ui:
     progress: Step {current} of {total}
     done: Done!
     congratulations: Congratulations!
-    all_done: You now know all the important features of Adaptive Learner.
+    all_done: You now know all the important features of MyApp.
     to_dashboard: Go to Dashboard
     restart: Start Over
     how_to: How does it work?
@@ -527,7 +527,7 @@ ui:
     mark_complete: Mark as Complete
     finish: Done - go to Dashboard
     sample_book: Create Sample Book
-    sample_book_hint: Create a book with sample chapters to explore Adaptive Learner.
+    sample_book_hint: Create a book with sample chapters to explore MyApp.
     creating: Creating...
     or_sample: 'Or: Create sample book'
     back: Back
@@ -1031,8 +1031,8 @@ ui:
     save_as_new_failed: Saving as a new chapter failed.
   donations:
     tab: Support
-    section_title: Support Adaptive Learner
-    intro: 'Adaptive Learner is developed as an open-source project without tracking,
+    section_title: Support MyApp
+    intro: 'MyApp is developed as an open-source project without tracking,
       without a cloud backend, without ads. If the app helps you and you want to support
       the project:'
     recommended_badge: Recommended
@@ -1046,12 +1046,12 @@ ui:
         in year one.
       kofi_desc: Low barrier, one-time 'buy me a coffee' style, no donor account required.
       paypal_desc: Widest reach, one-time, credit card works without a PayPal account.
-    onboarding_title: Support Adaptive Learner
-    onboarding_body: 'Adaptive Learner is developed as an open-source project without
+    onboarding_title: Support MyApp
+    onboarding_body: 'MyApp is developed as an open-source project without
       tracking, without a cloud backend, without ads. If the app helps you and you
       want to support the project:'
     onboarding_hint: You can find this hint any time in Settings.
-    reminder_body: 'You have been using Adaptive Learner for three months. If you
+    reminder_body: 'You have been using MyApp for three months. If you
       enjoy the project:'
     reminder_close: Dismiss
   themes:

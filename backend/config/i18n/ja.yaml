@@ -64,7 +64,7 @@ ui:
     restored: 本を復元しました。
     restore_failed: 復元に失敗しました。
     delete_permanent: 完全に削除
-    welcome: Adaptive Learnerへようこそ
+    welcome: MyAppへようこそ
     welcome_text: 最初の本を作成するか、既存のプロジェクトをインポートするか、スタートガイドをご覧ください。
     create_book: 本を作成
     import_project: プロジェクトをインポート
@@ -404,7 +404,7 @@ ui:
     white_label: '詳細設定: アプリのカスタマイズ'
     white_label_hide: 詳細設定を隠す
     white_label_title: ホワイトラベル設定
-    white_label_desc: Adaptive Learnerを独自のアプリとしてカスタマイズできます。名前を変更し、標準プラグインを削除して、独自の執筆プラットフォームを作成しましょう。
+    white_label_desc: MyAppを独自のアプリとしてカスタマイズできます。名前を変更し、標準プラグインを削除して、独自の執筆プラットフォームを作成しましょう。
     core_plugins: 標準プラグイン
     restart_hint: 変更は保存後に適用されます。再起動が必要です。
     'off': オフ
@@ -510,7 +510,7 @@ ui:
     progress: ステップ {current} / {total}
     done: 完了!
     congratulations: おめでとうございます!
-    all_done: Adaptive Learnerのすべての重要な機能を理解しました。
+    all_done: MyAppのすべての重要な機能を理解しました。
     to_dashboard: ダッシュボードへ
     restart: 最初からやり直す
     how_to: 使い方は?
@@ -518,7 +518,7 @@ ui:
     mark_complete: 完了としてマーク
     finish: 完了 - ダッシュボードへ
     sample_book: サンプルブックを作成
-    sample_book_hint: Adaptive Learnerを探索するためにサンプル章付きの本を作成します。
+    sample_book_hint: MyAppを探索するためにサンプル章付きの本を作成します。
     creating: 作成中...
     or_sample: 'または: サンプルブックを作成'
     back: 戻る
@@ -994,8 +994,8 @@ ui:
     save_as_new_failed: 新しい章として保存できませんでした。
   donations:
     tab: サポート
-    section_title: Adaptive Learner をサポートする
-    intro: 'Adaptive Learner はトラッキング・クラウドバックエンド・広告のないオープンソースプロジェクトとして開発されています。アプリがあなたの役に立ち、このプロジェクトを支援したい場合:'
+    section_title: MyApp をサポートする
+    intro: 'MyApp はトラッキング・クラウドバックエンド・広告のないオープンソースプロジェクトとして開発されています。アプリがあなたの役に立ち、このプロジェクトを支援したい場合:'
     recommended_badge: 推奨
     support_button: プロジェクトを支援する
     understood_button: 了解しました
@@ -1006,10 +1006,10 @@ ui:
       github_desc: 開発者向け、月次継続、GitHub が最初の年に新規スポンサーをマッチング。
       kofi_desc: ハードル低め、「コーヒーをおごる」スタイル、アカウント不要。
       paypal_desc: 最も広い到達範囲、一回払い、PayPal アカウントなしでクレジットカード可。
-    onboarding_title: Adaptive Learner をサポートする
-    onboarding_body: 'Adaptive Learner はトラッキング・クラウドバックエンド・広告のないオープンソースプロジェクトとして開発されています。アプリがあなたの役に立ち、このプロジェクトを支援したい場合:'
+    onboarding_title: MyApp をサポートする
+    onboarding_body: 'MyApp はトラッキング・クラウドバックエンド・広告のないオープンソースプロジェクトとして開発されています。アプリがあなたの役に立ち、このプロジェクトを支援したい場合:'
     onboarding_hint: このヒントは設定から随時確認できます。
-    reminder_body: 'Adaptive Learner を 3 か月ご利用いただきました。プロジェクトを気に入っていただけたら:'
+    reminder_body: 'MyApp を 3 か月ご利用いただきました。プロジェクトを気に入っていただけたら:'
     reminder_close: 閉じる
   themes:
     warm_literary: ウォーム・リテラリー
