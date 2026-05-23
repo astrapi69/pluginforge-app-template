@@ -502,7 +502,26 @@ def invalidate_plugin_status_cache() -> None:
 
 
 def _has_project_secret_without_override() -> bool:
-    """No-op stub. Downstream apps detect the legacy pattern of an API
-    key sitting in the project ``app.yaml`` without a user-override and
-    log a deprecation hint. The shell returns False (no deprecation)."""
-    return False
+    """True when the project ``app.yaml`` carries a non-empty
+    ``ai.api_key`` AND no override file or env-var supersedes it.
+
+    Used for the one-shot deprecation warning at startup: users with
+    legacy configs that still keep secrets in the project yaml see a
+    migration hint pointing them at the override file or env-var.
+    Resolves to False (no deprecation) for fresh installs where the
+    project yaml has no ``ai.api_key`` at all.
+    """
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            project = yaml.safe_load(f) or {}
+    except Exception:
+        return False
+    ai_section = project.get("ai")
+    project_key = ai_section.get("api_key", "") if isinstance(ai_section, dict) else ""
+    if not isinstance(project_key, str) or not project_key.strip():
+        return False
+    if _get_user_override_path().exists():
+        return False
+    if os.environ.get("${upper_name}_AI_API_KEY"):
+        return False
+    return True
