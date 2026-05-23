@@ -2479,10 +2479,14 @@ def phase8_sanity_sweep(ctx: BootstrapContext) -> None:
            f"{len(em_dash_hits)} files")
 
     backend_dir = target / "backend"
+    frontend_dir = target / "frontend"
     env_test = f"{app.upper_name}_TEST"
     boot_env = os.environ.copy()
     boot_env[env_test] = "1"
     boot_env["TEST_DATABASE_URL"] = "sqlite:///:memory:"
+
+    _install_target_deps(ctx, backend_dir, frontend_dir, boot_env)
+
     boot_check = subprocess.run(
         ["poetry", "run", "python3", "-c",
          f"from app.main import app; "
@@ -2522,15 +2526,96 @@ def phase8_sanity_sweep(ctx: BootstrapContext) -> None:
             all_green = all_green and ok
         record(6, "plugin pytest green", all_green)
 
-    frontend_dir = target / "frontend"
     _run(7, "frontend npm run build", ["npm", "run", "build"], frontend_dir)
     _run(8, "frontend Vitest", ["npm", "run", "test"], frontend_dir)
-    _run(9, "pre-commit run --all-files", ["pre-commit", "run", "--all-files"], target)
+    _run_pre_commit_twice(target, boot_env, record)
     _run(10, "frontend tsc --noEmit", ["npx", "tsc", "--noEmit"], frontend_dir)
 
     _finalize_phase8(ctx, report_lines, failures)
     if failures:
         raise SystemExit(1)
+
+
+def _install_target_deps(
+    ctx: BootstrapContext, backend_dir: Path, frontend_dir: Path, env: dict[str, str],
+) -> None:
+    """Install backend (poetry) and frontend (npm) deps in the target tree
+    so Phase 8 checks 4, 5, 7, 8, 10 can actually run.
+
+    Phase 3's ``poetry run alembic`` call is unreliable as a side-effect
+    installer (it relies on poetry auto-creating + auto-installing the
+    venv, which is not the documented behaviour). Explicit ``poetry
+    install`` removes that fragility. ``npm install`` is the only path
+    to ``node_modules/`` from which ``tsc`` and ``vitest`` are
+    discoverable.
+
+    Idempotent: poetry-install no-ops when deps are already resolved;
+    npm-install no-ops when ``node_modules/`` is already populated.
+    Logged to ``.bootstrap-phase8-deps-{backend,frontend}.log`` for
+    diagnostics on failure.
+    """
+    target = ctx.target_dir
+    logger.info("Phase 8 setup: installing target dependencies (poetry + npm)")
+    backend_result = subprocess.run(
+        ["poetry", "install", "--no-interaction"],
+        cwd=backend_dir, capture_output=True, text=True, env=env,
+    )
+    if backend_result.returncode != 0:
+        backend_log = target / ".bootstrap-phase8-deps-backend.log"
+        backend_log.write_text(backend_result.stdout + backend_result.stderr, encoding="utf-8")
+        logger.warning(
+            "Backend `poetry install` failed (rc=%d); see %s. "
+            "Subsequent checks that need backend deps (4, 5) will likely fail.",
+            backend_result.returncode, backend_log,
+        )
+
+    frontend_result = subprocess.run(
+        ["npm", "install", "--no-fund", "--no-audit", "--silent"],
+        cwd=frontend_dir, capture_output=True, text=True, env=env,
+    )
+    if frontend_result.returncode != 0:
+        frontend_log = target / ".bootstrap-phase8-deps-frontend.log"
+        frontend_log.write_text(frontend_result.stdout + frontend_result.stderr, encoding="utf-8")
+        logger.warning(
+            "Frontend `npm install` failed (rc=%d); see %s. "
+            "Subsequent checks that need frontend deps (7, 8, 10) will likely fail.",
+            frontend_result.returncode, frontend_log,
+        )
+
+
+def _run_pre_commit_twice(target: Path, env: dict[str, str], record) -> bool:
+    """Run ``pre-commit run --all-files`` twice.
+
+    The first invocation lets the auto-fixer hooks (trailing-whitespace,
+    end-of-file-fixer, ruff --fix, ruff-format) modify the generated
+    tree. Those hooks exit non-zero whenever they touch a file, so the
+    first run is expected to fail. The second invocation verifies the
+    tree is genuinely clean.
+
+    Bootstrap-generated files (Phase 3 alembic migration, Phase 4
+    services / routers / tests) ship not-yet-formatted on purpose: the
+    rendering layer would otherwise need to mirror every detail of
+    ruff-format's output, which is brittle. Running pre-commit's own
+    fixers exactly matches the convention the rest of the repo uses.
+    Any modifications land in the Phase 8 success commit alongside the
+    ``.bootstrap-complete`` stamp.
+    """
+    # First pass: discard the output; goal is just to let fixers run.
+    subprocess.run(
+        ["pre-commit", "run", "--all-files"],
+        cwd=target, capture_output=True, text=True, env=env,
+    )
+    # Second pass: verify clean.
+    result = subprocess.run(
+        ["pre-commit", "run", "--all-files"],
+        cwd=target, capture_output=True, text=True, env=env,
+    )
+    (target / ".bootstrap-phase8-9.log").write_text(
+        result.stdout + result.stderr, encoding="utf-8",
+    )
+    record(9, "pre-commit run --all-files", result.returncode == 0,
+           "see .bootstrap-phase8-9.log")
+    return result.returncode == 0
 
 
 def _finalize_phase8(ctx: BootstrapContext, report_lines: list[str],
