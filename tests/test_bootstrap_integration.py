@@ -216,12 +216,23 @@ def test_full_bootstrap_end_to_end(tmp_path: Path) -> None:
     commit_lines = log.stdout.strip().splitlines()
     assert len(commit_lines) == 7, f"expected 7 commits, got {len(commit_lines)}:\n{log.stdout}"
 
-    # The first commit's message should reference the template.
+    # The first commit's message should reference the template. ``-1``
+    # is applied to the in-order walk BEFORE ``--reverse`` flips the
+    # output, so the naive ``git log --reverse --format=%s -1`` returns
+    # the newest commit, not the oldest. Resolve the root commit
+    # explicitly (the one with no parents) and read its subject.
+    root_sha = subprocess.run(
+        ["git", "rev-list", "--max-parents=0", "HEAD"],
+        cwd=target, capture_output=True, text=True, check=True,
+    ).stdout.strip()
     first_commit = subprocess.run(
-        ["git", "log", "--reverse", "--format=%s", "-1"],
+        ["git", "log", "--format=%s", "-1", root_sha],
         cwd=target, capture_output=True, text=True, check=True,
     )
-    assert "pluginforge-app-template" in first_commit.stdout
+    assert "pluginforge-app-template" in first_commit.stdout, (
+        f"root commit subject was {first_commit.stdout!r}; "
+        f"expected to mention 'pluginforge-app-template' (Phase 1 provenance)."
+    )
 
     # Sanity check the post-bootstrap tree: no placeholders, the new
     # entity files exist.
