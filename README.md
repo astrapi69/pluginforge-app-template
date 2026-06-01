@@ -147,4 +147,5 @@ MIT - see [LICENSE](LICENSE).
 - [CUSTOMIZE.md](CUSTOMIZE.md) - first read after cloning
 - [CLAUDE.md](CLAUDE.md) - guidance for working with Claude Code on this codebase
 - [docs/configuration.md](docs/configuration.md) - layered config + secrets chain
+- [docs/patterns/](docs/patterns/) - reusable cross-cutting patterns (dual-storage, Dexie release gate, release automation, docs verification, i18n sync, friendly errors) backported from adaptive-learner
 - [.claude/rules/](.claude/rules/) - development rules (architecture, coding standards, hygiene, lessons learned, quality checks, release workflow)
