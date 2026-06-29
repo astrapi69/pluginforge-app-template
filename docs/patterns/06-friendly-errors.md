@@ -2,7 +2,7 @@
 
 > Backported from adaptive-learner. Template-neutral; adapt the names to your app.
 
-**Status in this template:** the backend exception hierarchy (`MyAppError` and its subclasses) and the global exception handler are present in `backend/app/exceptions.py` and `backend/app/main.py`; the frontend `ApiError` class is present in `frontend/src/api/client.ts`. The `ui.errors.*` i18n mapping, the `friendlyError` helper, and the Dev-Mode toggle are not yet implemented.
+**Status in this template:** **shipped.** On top of the backend exception hierarchy (`MyAppError` + global handler) and the frontend `ApiError` class, the friendly layer now ships: `utils/friendlyError.ts` maps an `ApiError` by status class to a calm message (resolved via the `ui.errors.*` keys with English fallbacks, so it works before an app adds catalog entries); `utils/devMode.ts` + a Settings > About toggle gate the raw technical detail (off by default); and `notify.error` shows the friendly message while the "Report issue" action still carries the full raw detail + stacktrace. A non-hook `translate()` accessor on `hooks/useI18n.ts` lets module-level code localize without a hook.
 
 ## Why
 

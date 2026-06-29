@@ -34,6 +34,24 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 let cachedLang = DEFAULT_LANG;
 let cachedStrings: I18nStrings = deCatalog as I18nStrings;
 
+/**
+ * Non-hook translation accessor for module-level code (e.g. utils/notify,
+ * utils/friendlyError) that cannot call the `useI18n` hook. Resolves against
+ * the catalog the provider has loaded; falls back to `fallback` or the key.
+ */
+export function translate(key: string, fallback?: string): string {
+    const parts = key.split(".");
+    let current: unknown = cachedStrings;
+    for (const part of parts) {
+        if (current && typeof current === "object" && part in (current as Record<string, unknown>)) {
+            current = (current as Record<string, unknown>)[part];
+        } else {
+            return fallback ?? key;
+        }
+    }
+    return typeof current === "string" ? current : (fallback ?? key);
+}
+
 export function I18nProvider({children}: {children: ReactNode}) {
     const [strings, setStrings] = useState<I18nStrings>(cachedStrings);
     const [lang, setLangState] = useState(cachedLang || "de");

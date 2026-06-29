@@ -9,6 +9,7 @@ import {BookOpen, Code2, ExternalLink, Scale} from "lucide-react";
 import {useI18n} from "../../hooks/useI18n";
 import VersionSection from "./VersionSection";
 import ShareAppSection from "./ShareAppSection";
+import DevModeSection from "./DevModeSection";
 import UpdateCheckControl from "../UpdateCheckControl";
 import styles from "./About.module.css";
 
@@ -97,6 +98,8 @@ export default function AboutTab() {
           )}
         </p>
       </section>
+
+      <DevModeSection />
     </div>
   );
 }
