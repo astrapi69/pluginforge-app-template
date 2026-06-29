@@ -2,7 +2,7 @@
 
 > Backported from adaptive-learner. Template-neutral; adapt the names to your app.
 
-**Status in this template:** not yet implemented. The Makefile has no `verify-docs` or `verify-docs-discipline` target, `scripts/verify_docs.py` does not exist, and no MkDocs or nav-source-of-truth setup is present. The discipline is documented in `.claude/rules/ai-workflow.md` (single-source-of-truth for volatile stats; numeric-claims verification); the enforcement tooling is missing.
+**Status in this template:** a starter `scripts/verify_docs.py` (+ `make verify-docs`) ships - a stdlib drift verifier with two checks: the `docs/patterns/` index has no orphans / dead links, and every `.claude/rules/*.md` is referenced by `CLAUDE.md`. It is intentionally small; extend the `CHECKS` list as your docs grow (version-badge parity, plugin counts, help-page nav, i18n key drift, ...). The discipline behind it is in `.claude/rules/ai-workflow.md` (single-source-of-truth for volatile stats; numeric-claims verification).
 
 ## Why
 
