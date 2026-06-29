@@ -39,6 +39,11 @@ Larger cross-cutting designs (dual storage, release automation, complexity
 ratchets, Test Impact Analysis, design tokens, security scanning, ...) are
 documented as opt-in patterns under [`docs/patterns/`](docs/patterns/).
 
+Drop-in task recipes (systematic audit, SEO, accessibility, feature-strategy
+gating, exploration/EXP design docs) live under
+[`.claude/prompts/`](.claude/prompts/) — copy one into a fresh session, fill
+the `myapp` blanks, run.
+
 On a conflict between CLAUDE.md and the rules, the rules win.
 
 ## Tech stack
