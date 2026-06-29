@@ -16,6 +16,7 @@
        check-file-sizes check-complexity check-complexity-gate check-complexity-gate-update \
        check-directory-size check-directory-size-gate \
        lint lint-fix \
+       sync-i18n sync-i18n-check \
        clean prod prod-down prod-logs help
 
 # --- Development ---
@@ -310,6 +311,14 @@ sync-versions-dry: ## Show what sync-versions would change without writing
 
 sync-versions-check: ## Exit non-zero if any subsystem version drifts from canonical
 	@python3 scripts/sync_versions.py --check
+
+# --- i18n sync (docs/patterns/05-i18n-sync.md) ---
+
+sync-i18n: ## Regenerate frontend/src/data/i18n/*.json from the backend YAML catalogs
+	@cd backend && poetry run python ../scripts/sync_i18n.py
+
+sync-i18n-check: ## Exit non-zero if the bundled i18n JSON drifts from the backend YAML
+	@cd backend && poetry run python ../scripts/sync_i18n.py --check
 
 # --- Release (gitflow; docs/patterns/03-release-automation.md) ---
 # These assume a gitflow layout: `develop` is the active branch, `main`
