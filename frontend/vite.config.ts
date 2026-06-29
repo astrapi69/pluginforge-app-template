@@ -16,7 +16,10 @@ export default defineConfig({
     plugins: [
         react(),
         VitePWA({
-            registerType: "autoUpdate",
+            // "prompt": a newly deployed SW waits, and the in-app
+            // UpdatePrompt offers a reload, instead of silently swapping
+            // under the user mid-session.
+            registerType: "prompt",
             devOptions: {
                 enabled: true,
             },

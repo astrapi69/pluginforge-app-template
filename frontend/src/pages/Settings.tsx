@@ -15,9 +15,13 @@ import {AuthorSettings} from "../components/settings/AuthorSettings";
 import {AuthorsDatabase} from "../components/settings/AuthorsDatabase";
 import {TopicsSettings} from "../components/settings/TopicsSettings";
 import {PluginSettings} from "../components/settings/PluginSettings";
+import {AppearanceSettings} from "../components/settings/AppearanceSettings";
+import FeatureSection from "../components/FeatureSection";
+import {DataSettings} from "../components/settings/DataSettings";
+import AboutTab from "../components/about/AboutTab";
 import styles from "./Settings.module.css";
 
-const VALID_SETTINGS_TABS = ["app", "ai", "author", "authors_database", "topics", "plugins", "comments", "support"] as const;
+const VALID_SETTINGS_TABS = ["app", "appearance", "ai", "author", "authors_database", "topics", "plugins", "comments", "support", "data", "about"] as const;
 type SettingsTab = (typeof VALID_SETTINGS_TABS)[number];
 
 function isSettingsTab(value: string | null): value is SettingsTab {
@@ -131,6 +135,7 @@ export default function Settings() {
                     // they are not Tabs.Trigger nodes.
                     const tabDefs: {value: SettingsTab; label: string; testId: string}[] = [
                         {value: "app", label: t("ui.settings.tab_general", "Allgemein"), testId: "settings-tab-app"},
+                        {value: "appearance", label: t("ui.settings.tab_appearance", "Darstellung"), testId: "settings-tab-appearance"},
                         {value: "ai", label: t("ui.settings.tab_ai", "KI-Assistent"), testId: "settings-tab-ai"},
                         {value: "author", label: t("ui.settings.tab_author", "Autor"), testId: "settings-tab-author"},
                         {value: "authors_database", label: t("ui.settings.tab_authors_database", "Autoren-Datenbank"), testId: "settings-tab-authors-database"},
@@ -140,6 +145,8 @@ export default function Settings() {
                         ...(getDonationsConfig(appConfig)
                             ? [{value: "support" as SettingsTab, label: t("ui.donations.tab", "Unterstützen"), testId: "settings-tab-support"}]
                             : []),
+                        {value: "data", label: t("ui.settings.tab_data", "Daten"), testId: "settings-tab-data"},
+                        {value: "about", label: t("ui.settings.tab_about", "Über"), testId: "settings-tab-about"},
                     ];
                     const activeLabel = tabDefs.find((d) => d.value === activeTab)?.label ?? "";
                     return (
@@ -209,6 +216,22 @@ export default function Settings() {
                         }}
                         saving={saving}
                     />
+                    {/*
+                      * Demo of the feature-state policy (architecture.md SYNC-UI-GATE):
+                      * a section the user can see but not use here, with a localized
+                      * reason. Replace `state`/`reason` with your real gating - e.g.
+                      * derive it from {hasApiKey, mode} or @astrapi69/feature-strategy
+                      * (see .claude/prompts/feature-strategy.md). Remove if unused.
+                      */}
+                    <FeatureSection
+                        state="disabled"
+                        title={t("ui.sync.title", "Geräte-Synchronisierung")}
+                        reason={t("feature.desktop_only", "Nur mit der Desktop-App verfügbar")}
+                        testId="feature-sync-demo"
+                    />
+                </Tabs.Content>
+                <Tabs.Content value="appearance">
+                    <AppearanceSettings />
                 </Tabs.Content>
                 <Tabs.Content value="ai">
                     <AiAssistantSettings
@@ -326,6 +349,12 @@ export default function Settings() {
                         <SupportSection config={getDonationsConfig(appConfig)!} />
                     </Tabs.Content>
                 ) : null}
+                <Tabs.Content value="data">
+                    <DataSettings />
+                </Tabs.Content>
+                <Tabs.Content value="about">
+                    <AboutTab />
+                </Tabs.Content>
             </main>
             </Tabs.Root>
         </div>
