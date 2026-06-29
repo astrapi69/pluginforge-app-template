@@ -14,7 +14,8 @@
  */
 import {useRef, useState} from "react";
 import {Download, Loader2, Trash2, Upload} from "lucide-react";
-import {api, ApiError} from "../../api/client";
+import {ApiError} from "../../api/client";
+import {getStorage} from "../../storage";
 import {useI18n} from "../../hooks/useI18n";
 import {useDialog} from "../AppDialog";
 import {notify} from "../../utils/notify";
@@ -33,7 +34,7 @@ export function DataSettings() {
     // FileResponse on the backend carries Content-Disposition, so a plain
     // anchor download picks up the server-suggested filename.
     const anchor = document.createElement("a");
-    anchor.href = api.backup.exportUrl();
+    anchor.href = getStorage().backup.exportUrl();
     anchor.rel = "noopener";
     document.body.appendChild(anchor);
     anchor.click();
@@ -53,7 +54,7 @@ export function DataSettings() {
     if (!ok) return;
     setBusy("import");
     try {
-      const result = await api.backup.import(file);
+      const result = await getStorage().backup.import(file);
       const total = result.imported_books + (result.imported_articles ?? 0);
       notify.success(
         t("ui.data.import_done", "Backup importiert: {count} Einträge").replace("{count}", String(total)),
