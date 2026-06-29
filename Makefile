@@ -13,7 +13,7 @@
        test-fast test-changed \
        audit-backend audit-frontend bandit-backend security-backend check-security \
        release-prepare release-finish release-publish \
-       check-file-sizes \
+       check-file-sizes check-complexity check-complexity-gate check-complexity-gate-update \
        clean prod prod-down prod-logs help
 
 # --- Development ---
@@ -262,10 +262,19 @@ check-types-frontend: ## Run tsc --noEmit on frontend
 	@echo "=== TypeScript Frontend ==="
 	cd frontend && npx tsc --noEmit
 
-# --- Cohesion gate (docs/patterns/07-complexity-cohesion-ratchet.md) ---
+# --- Cohesion + complexity gates (docs/patterns/07-complexity-cohesion-ratchet.md) ---
 
 check-file-sizes: ## Cohesion watcher: warn >500, error >1000 lines (shrink-only .filesize-baseline)
 	@bash scripts/check-file-sizes.sh
+
+check-complexity: ## Complexity watcher (warn-only): radon (Python) + eslint complexity (TS)
+	@bash scripts/check-complexity.sh
+
+check-complexity-gate: ## Complexity ratchet gate: fail on new/regressed offenders vs .complexity-baseline
+	@bash scripts/check-complexity.sh --gate
+
+check-complexity-gate-update: ## Regenerate .complexity-baseline from current offenders (ratchet may only shrink)
+	@bash scripts/check-complexity.sh --update-baseline
 
 # --- E2E Tests ---
 
