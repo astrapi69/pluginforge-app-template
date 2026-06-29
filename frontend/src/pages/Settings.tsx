@@ -15,10 +15,11 @@ import {AuthorSettings} from "../components/settings/AuthorSettings";
 import {AuthorsDatabase} from "../components/settings/AuthorsDatabase";
 import {TopicsSettings} from "../components/settings/TopicsSettings";
 import {PluginSettings} from "../components/settings/PluginSettings";
+import {AppearanceSettings} from "../components/settings/AppearanceSettings";
 import AboutTab from "../components/about/AboutTab";
 import styles from "./Settings.module.css";
 
-const VALID_SETTINGS_TABS = ["app", "ai", "author", "authors_database", "topics", "plugins", "comments", "support", "about"] as const;
+const VALID_SETTINGS_TABS = ["app", "appearance", "ai", "author", "authors_database", "topics", "plugins", "comments", "support", "about"] as const;
 type SettingsTab = (typeof VALID_SETTINGS_TABS)[number];
 
 function isSettingsTab(value: string | null): value is SettingsTab {
@@ -132,6 +133,7 @@ export default function Settings() {
                     // they are not Tabs.Trigger nodes.
                     const tabDefs: {value: SettingsTab; label: string; testId: string}[] = [
                         {value: "app", label: t("ui.settings.tab_general", "Allgemein"), testId: "settings-tab-app"},
+                        {value: "appearance", label: t("ui.settings.tab_appearance", "Darstellung"), testId: "settings-tab-appearance"},
                         {value: "ai", label: t("ui.settings.tab_ai", "KI-Assistent"), testId: "settings-tab-ai"},
                         {value: "author", label: t("ui.settings.tab_author", "Autor"), testId: "settings-tab-author"},
                         {value: "authors_database", label: t("ui.settings.tab_authors_database", "Autoren-Datenbank"), testId: "settings-tab-authors-database"},
@@ -211,6 +213,9 @@ export default function Settings() {
                         }}
                         saving={saving}
                     />
+                </Tabs.Content>
+                <Tabs.Content value="appearance">
+                    <AppearanceSettings />
                 </Tabs.Content>
                 <Tabs.Content value="ai">
                     <AiAssistantSettings
