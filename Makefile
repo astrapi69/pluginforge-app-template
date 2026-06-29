@@ -16,7 +16,7 @@
        check-file-sizes check-complexity check-complexity-gate check-complexity-gate-update \
        check-directory-size check-directory-size-gate \
        lint lint-fix \
-       sync-i18n sync-i18n-check \
+       sync-i18n sync-i18n-check verify-docs \
        clean prod prod-down prod-logs help
 
 # --- Development ---
@@ -319,6 +319,11 @@ sync-i18n: ## Regenerate frontend/src/data/i18n/*.json from the backend YAML cat
 
 sync-i18n-check: ## Exit non-zero if the bundled i18n JSON drifts from the backend YAML
 	@cd backend && poetry run python ../scripts/sync_i18n.py --check
+
+# --- Docs verification (docs/patterns/04-docs-verification.md) ---
+
+verify-docs: ## Fail when docs drift from the repo (patterns index + rules references)
+	@python3 scripts/verify_docs.py
 
 # --- Release (gitflow; docs/patterns/03-release-automation.md) ---
 # These assume a gitflow layout: `develop` is the active branch, `main`
