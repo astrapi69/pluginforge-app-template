@@ -11,6 +11,8 @@ import {useTheme} from "./hooks/useTheme";
 import {I18nProvider} from "./hooks/useI18n";
 import {DialogProvider} from "./components/AppDialog";
 import OfflineBanner from "./components/OfflineBanner";
+import UpdatePrompt from "./components/pwa/UpdatePrompt";
+import InstallPrompt from "./components/pwa/InstallPrompt";
 import SkipToContent from "./components/SkipToContent";
 import {BulkAiFillJobProvider} from "./contexts/BulkAiFillJobContext";
 import BulkAiFillDock from "./components/BulkAiFillDock";
@@ -80,6 +82,8 @@ export default function App() {
         <HelpProvider>
             <SkipToContent />
             <OfflineBanner />
+            <UpdatePrompt />
+            <InstallPrompt />
             <Routes>
                 <Route path="/" element={<Dashboard/>}/>
                 <Route path="/book/:bookId" element={<BookEditor/>}/>
