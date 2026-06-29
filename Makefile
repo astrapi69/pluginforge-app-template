@@ -10,6 +10,9 @@
        sync-versions sync-versions-dry sync-versions-check \
        generate-trial-key \
        lock-all-plugins verify-plugin-locks \
+       test-fast test-changed \
+       audit-backend audit-frontend bandit-backend security-backend check-security \
+       release-prepare release-finish release-publish \
        clean prod prod-down prod-logs help
 
 # --- Development ---
@@ -160,6 +163,41 @@ test-backend: ## Run backend tests
 #		poetry env use python3.12 -q 2>/dev/null; \
 #		poetry run pytest tests/ -v
 
+# --- Fast gates + Test Impact Analysis (docs/patterns/08-test-impact-analysis.md) ---
+
+test-fast: ## Fast PR-mirror gate: backend ruff+mypy+pytest, frontend tsc+vitest (no coverage, no plugins)
+	@echo ""
+	@echo "=== test-fast: backend ruff check app/ ==="
+	cd backend && poetry run ruff check app/
+	@echo ""
+	@echo "=== test-fast: backend mypy app/ ==="
+	cd backend && poetry env use python3.12 -q 2>/dev/null; poetry run mypy app/
+	@echo ""
+	@echo "=== test-fast: backend pytest tests/ ==="
+	cd backend && poetry env use python3.12 -q 2>/dev/null; poetry run pytest tests/ -q
+	@echo ""
+	@echo "=== test-fast: frontend tsc --noEmit ==="
+	cd frontend && npx tsc --noEmit
+	@echo ""
+	@echo "=== test-fast: frontend vitest run ==="
+	cd frontend && npx vitest run
+	@echo ""
+	@echo "test-fast mirrors the PR gate. Full suite incl. plugins: 'make test'."
+
+test-changed: ## Test Impact Analysis: only tests affected vs $(TIA_BASE) (vitest --changed + pytest --testmon)
+	@echo ""
+	@echo "=== test-changed: frontend Vitest --changed $(TIA_BASE) ==="
+	cd frontend && npx vitest run --changed $(TIA_BASE) --passWithNoTests
+	@echo ""
+	@echo "=== test-changed: backend pytest --testmon (vs .testmondata) ==="
+	cd backend && poetry run pip install -q pytest-testmon
+	cd backend && { poetry env use python3.12 -q 2>/dev/null; poetry run pytest tests/ --testmon -q; code=$$?; [ $$code -eq 5 ] && exit 0; exit $$code; }
+	@echo ""
+	@echo "test-changed runs only impacted tests. Full run: 'make test' (nightly/CI run the full suite)."
+
+# Base ref for Test Impact Analysis. Under gitflow set TIA_BASE=origin/develop.
+TIA_BASE ?= origin/main
+
 # --- Coverage (heavy, opt-in; CI runs this on every push - see .github/workflows/coverage.yml) ---
 
 test-coverage: test-coverage-backend test-coverage-frontend ## Run ALL tests with coverage (slow; prefer CI)
@@ -241,6 +279,90 @@ sync-versions-dry: ## Show what sync-versions would change without writing
 
 sync-versions-check: ## Exit non-zero if any subsystem version drifts from canonical
 	@python3 scripts/sync_versions.py --check
+
+# --- Release (gitflow; docs/patterns/03-release-automation.md) ---
+# These assume a gitflow layout: `develop` is the active branch, `main`
+# holds releases only. Create a `develop` branch before first use. The
+# full pre-tag gate lives in .claude/rules/release-workflow.md.
+
+release-prepare: ## Gitflow: cut release/$(VERSION) from develop. Usage: make release-prepare VERSION=X.Y.Z
+ifndef VERSION
+	$(error VERSION is required, e.g. make release-prepare VERSION=1.2.3)
+endif
+	@echo "=== Checkout develop + create release/$(VERSION) ==="
+	git checkout develop
+	git pull origin develop
+	git checkout -b release/$(VERSION)
+	@echo ""
+	@echo "On release/$(VERSION). Now: bump backend/pyproject.toml, make sync-versions,"
+	@echo "draft changelog/releases/v$(VERSION).md, run the release gate, commit."
+	@echo "Then: make release-finish VERSION=$(VERSION)"
+
+release-finish: ## Gitflow: merge release/$(VERSION) to main (tag) + back to develop. Usage: make release-finish VERSION=X.Y.Z
+ifndef VERSION
+	$(error VERSION is required, e.g. make release-finish VERSION=1.2.3)
+endif
+	@echo "=== Pre-tag verification (verify_version_pins.sh) ==="
+	@bash scripts/verify_version_pins.sh $(VERSION)
+	@echo "=== Merge release/$(VERSION) into main (no-ff) + tag ==="
+	git checkout main
+	git pull origin main
+	git merge --no-ff release/$(VERSION) -m "Release v$(VERSION)"
+	git tag -a v$(VERSION) -m "Release v$(VERSION)"
+	git push origin main --tags
+	@echo "=== Merge release/$(VERSION) back into develop (no-ff) ==="
+	git checkout develop
+	git pull origin develop
+	git merge --no-ff release/$(VERSION) -m "Merge release/$(VERSION) back into develop"
+	git push origin develop
+	@echo "=== Delete release/$(VERSION) ==="
+	git branch -d release/$(VERSION)
+	git push origin --delete release/$(VERSION)
+	@echo ""
+	@echo "Tagged + merged. Next: make release-publish VERSION=$(VERSION)"
+
+release-publish: ## Create GitHub Release from changelog/releases/vX.Y.Z.md. Usage: make release-publish VERSION=X.Y.Z
+ifndef VERSION
+	$(error VERSION is required, e.g. make release-publish VERSION=1.2.3)
+endif
+	@if [ ! -f "changelog/releases/v$(VERSION).md" ]; then \
+		echo "ERROR: changelog/releases/v$(VERSION).md missing."; \
+		echo "Draft the per-release notes file first (release-workflow.md Step 3)."; \
+		exit 1; \
+	fi
+	@echo "=== Creating GitHub Release v$(VERSION) ==="
+	gh release create v$(VERSION) \
+		--title "myapp v$(VERSION)" \
+		--notes-file changelog/releases/v$(VERSION).md
+
+# --- Security scanning (docs/patterns/10-security-scanning.md) ---
+# Warn-only sweep mirrors the nightly scan; check-security is the narrow
+# blocking gate. Ignore-lists start EMPTY - populate with YOUR reviewed
+# and accepted findings, never another app's accepted-CVE list.
+
+audit-backend: ## pip-audit the backend venv (incl. plugin path-deps); warn-only
+	@echo "=== pip-audit (backend venv, incl. plugin path-deps) ==="
+	@cd backend && poetry run pip-audit --skip-editable --progress-spinner=off || true
+
+audit-frontend: ## npm audit the frontend lockfile; warn-only
+	@echo "=== npm audit (frontend) ==="
+	@cd frontend && npm audit --package-lock-only || true
+
+bandit-backend: ## bandit SAST over app + plugins + scripts (MEDIUM+ severity & confidence); warn-only
+	@echo "=== bandit (app + plugins + scripts; MEDIUM+ severity & confidence) ==="
+	@cd backend && poetry run python -m pip install -q bandit >/dev/null 2>&1 || \
+		echo "WARN: could not install bandit (offline?); skipping the bandit run."
+	@cd backend && poetry run bandit -r app ../plugins ../scripts -ll -ii \
+		-x '*/tests/*,*/test_*.py' || true
+
+security-backend: audit-backend bandit-backend ## Backend security sweep (warn-only, mirrors the nightly scan)
+
+check-security: ## Blocking dependency gate: pip-audit + npm audit fail on HIGH/CRITICAL (pre-PR check)
+	@echo "=== check-security: pip-audit (backend, fails on any known vuln) ==="
+	@cd backend && poetry run pip-audit --skip-editable --progress-spinner=off
+	@echo "=== check-security: npm audit --audit-level=high (frontend) ==="
+	@cd frontend && npm audit --package-lock-only --audit-level=high
+	@echo "check-security passed: no high/critical dependency vulnerabilities."
 
 # --- License ---
 # Licensing infrastructure lives in backend/app/licensing.py. The
