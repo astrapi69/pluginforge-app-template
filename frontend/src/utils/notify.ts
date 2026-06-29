@@ -14,6 +14,7 @@
 import React from 'react'
 import {toast} from 'react-toastify'
 import {ApiError} from '../api/client'
+import {friendlyMessage} from './friendlyError'
 
 // Truncate the visible error message so the toast stays readable.
 // The full detail is still embedded in the ErrorReportDialog body.
@@ -28,7 +29,7 @@ function truncateForDisplay(message: string): string {
   return message.slice(0, MAX_DISPLAY_LENGTH) + '...'
 }
 
-function ErrorContent({message, apiError}: {message: string; apiError?: ApiError}) {
+function ErrorContent({message, rawMessage, apiError}: {message: string; rawMessage?: string; apiError?: ApiError}) {
   return React.createElement(
     'div',
     {
@@ -63,7 +64,7 @@ function ErrorContent({message, apiError}: {message: string; apiError?: ApiError
           e.stopPropagation()
           // Dispatch a custom event that ErrorReportDialog listens for
           window.dispatchEvent(new CustomEvent('myapp:open-error-report', {
-            detail: {message, apiError},
+            detail: {message: rawMessage ?? message, apiError},
           }))
         },
         style: {
@@ -217,7 +218,10 @@ export const notify = {
   error: (message: string, apiError?: unknown) => {
     recordToast('error', message)
     const err = apiError instanceof ApiError ? apiError : undefined
-    return toast.error(React.createElement(ErrorContent, {message, apiError: err}), {
+    // Friendly message for users (raw detail only in Developer Mode); the
+    // raw message + apiError still flow to the "Report issue" dialog.
+    const display = friendlyMessage(message, apiError)
+    return toast.error(React.createElement(ErrorContent, {message: display, rawMessage: message, apiError: err}), {
       autoClose: 15000,
       closeOnClick: false,
     })
