@@ -2,7 +2,7 @@
 
 > Backported from adaptive-learner. Template-neutral; adapt the names to your app.
 
-**Status in this template:** not yet implemented. Only `frontend/src/db/drafts.ts` uses Dexie today (single-purpose draft autosave); no `IStorageService` abstraction or `frontend/src/storage/` directory exists.
+**Status in this template:** the **seam ships**; the second backing does not. `frontend/src/storage/` provides `IStorageService` (`types.ts`, minimal: `settings` + `backup`), `ApiStorage` (`api-storage.ts`, delegates to the `api` client), and `getStorage()` (`index.ts`, selects by `VITE_STORAGE_MODE`, api-only for now). `DataSettings` already reaches its backup calls through `getStorage()` as the worked example. **Adopt it incrementally**: grow the interface and route one component off `api.*` at a time. A real `DexieStorage` (browser IndexedDB) is the per-app effort you add when you need offline/static deployment — `getStorage()` warns and falls back to api if `VITE_STORAGE_MODE=dexie` is set before it exists. (`frontend/src/db/drafts.ts` already uses Dexie for draft autosave, unrelated to this seam.)
 
 ## Why
 
