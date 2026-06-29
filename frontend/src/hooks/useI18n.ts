@@ -1,8 +1,25 @@
 import {createContext, useContext, useEffect, useState, useCallback, type ReactNode} from "react";
 import {api} from "../api/client";
 import React from "react";
+import deCatalog from "../data/i18n/de.json";
 
 type I18nStrings = Record<string, unknown>;
+
+const DEFAULT_LANG = "de";
+
+// Bundled i18n catalogs (pattern 05): generated from backend/config/i18n/*.yaml
+// by `make sync-i18n`. The default language is imported eagerly for an instant
+// first paint; the other languages are lazy chunks loaded on a language switch,
+// so the frontend needs no backend roundtrip for translations.
+const catalogLoaders = import.meta.glob<{default: I18nStrings}>("../data/i18n/*.json");
+
+async function loadCatalog(lang: string): Promise<I18nStrings> {
+    if (lang === DEFAULT_LANG) return deCatalog as I18nStrings;
+    const loader = catalogLoaders[`../data/i18n/${lang}.json`];
+    if (!loader) return deCatalog as I18nStrings;
+    const module = await loader();
+    return module.default;
+}
 
 interface I18nContextValue {
     t: (key: string, fallback?: string) => string;
@@ -12,39 +29,40 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-// Module-level cache to avoid refetching on remount
-let cachedLang = "";
-let cachedStrings: I18nStrings = {};
+// Module-level cache to avoid reloading on remount. Seeded with the eager
+// default so the very first render already has strings.
+let cachedLang = DEFAULT_LANG;
+let cachedStrings: I18nStrings = deCatalog as I18nStrings;
 
 export function I18nProvider({children}: {children: ReactNode}) {
     const [strings, setStrings] = useState<I18nStrings>(cachedStrings);
     const [lang, setLangState] = useState(cachedLang || "de");
 
-    // Load language preference from app settings on mount
+    // Resolve the preferred language from app settings on mount (best-effort;
+    // falls back to the default when the backend is unavailable).
     useEffect(() => {
-        if (cachedLang) return; // already loaded
         api.settings.getApp().then((config) => {
-            const appLang = ((config.app as Record<string, unknown>)?.default_language as string) || "de";
+            const appLang = ((config.app as Record<string, unknown>)?.default_language as string) || DEFAULT_LANG;
             setLangState(appLang);
         }).catch(() => {});
     }, []);
 
-    // Fetch strings when language changes
+    // Load the bundled catalog when the language changes.
     useEffect(() => {
+        let cancelled = false;
         if (lang === cachedLang && Object.keys(cachedStrings).length > 0) {
             setStrings(cachedStrings);
             return;
         }
-        api.i18n
-            .get(lang)
-            .then((data) => {
-                cachedLang = lang;
-                cachedStrings = data;
-                setStrings(data);
-            })
-            .catch(() => {
-                /* Silent bootstrap fallback: t() reverts to fallback strings. */
-            });
+        loadCatalog(lang).then((data) => {
+            if (cancelled) return;
+            cachedLang = lang;
+            cachedStrings = data;
+            setStrings(data);
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [lang]);
 
     const setLang = useCallback((newLang: string) => {
