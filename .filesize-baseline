@@ -1,0 +1,18 @@
+# Cohesion ratchet baseline (docs/patterns/07).
+# Existing files over the 1000-line error threshold, frozen at their current
+# size. They are tolerated but MUST NOT grow; the gate fails if any exceeds
+# its recorded max. This list may only SHRINK - split a file and remove its
+# entry. Several of these are the EXAMPLE-DOMAIN demo files; they shrink
+# naturally as you replace the example domain with your own.
+#
+# Format: <relative path>  <max-lines>
+frontend/src/api/client.ts                                    2766
+scripts/bootstrap/bootstrap.py                                2736
+frontend/src/components/import-wizard/steps/PreviewPanel.tsx  1622
+frontend/src/components/BookMetadataEditor.tsx                1512
+frontend/src/pages/ArticleEditor.tsx                          1485
+frontend/src/components/Editor.tsx                            1472
+frontend/src/components/articles/ConvertToBookWizard.tsx      1455
+frontend/src/pages/ArticleList.tsx                            1446
+frontend/src/components/CommentsAdminSection.tsx              1144
+backend/app/schemas/__init__.py                               1082

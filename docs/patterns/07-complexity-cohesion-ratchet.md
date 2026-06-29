@@ -2,10 +2,11 @@
 
 > Backported from adaptive-learner. Template-neutral; adapt the names to your app.
 
-**Status in this template:** not yet wired. This doc describes the
-mechanism so you can add it when the codebase is large enough to need it.
-The `.claude/rules/quality-checks.md` strategy already calls for it; this
-is the enforcement half.
+**Status in this template:** the **cohesion (file-size) gate ships** -
+`scripts/check-file-sizes.sh` + `make check-file-sizes`, with a shrink-only
+`.filesize-baseline` (existing god-files frozen) + a `.filesize-whitelist`
+(deliberately-large files). The **complexity (radon/eslint) gate** and the
+god-folder watcher are still documented-only - add them as below.
 
 ---
 
