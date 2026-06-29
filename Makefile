@@ -14,6 +14,7 @@
        audit-backend audit-frontend bandit-backend security-backend check-security \
        release-prepare release-finish release-publish \
        check-file-sizes check-complexity check-complexity-gate check-complexity-gate-update \
+       check-directory-size check-directory-size-gate \
        clean prod prod-down prod-logs help
 
 # --- Development ---
@@ -275,6 +276,12 @@ check-complexity-gate: ## Complexity ratchet gate: fail on new/regressed offende
 
 check-complexity-gate-update: ## Regenerate .complexity-baseline from current offenders (ratchet may only shrink)
 	@bash scripts/check-complexity.sh --update-baseline
+
+check-directory-size: ## God-folder watcher (warn-only): >15 flat source files per dir under frontend/src
+	@bash scripts/check-directory-size.sh
+
+check-directory-size-gate: ## God-folder ratchet gate: fail on a NEW oversized dir vs .dirsize-baseline
+	@bash scripts/check-directory-size.sh --gate
 
 # --- E2E Tests ---
 
