@@ -24,6 +24,7 @@ import ErrorReportDialog from "./components/ErrorReportDialog";
 import AiSetupWizard, {shouldShowAiWizard} from "./components/AiSetupWizard";
 import {ensureFirstUseDate} from "./components/DonationReminderBanner";
 import ShortcutCheatsheet from "./components/ShortcutCheatsheet";
+import CommandPaletteHost from "./components/CommandPaletteHost";
 import {useKeyboardShortcuts, Shortcut} from "./hooks/useKeyboardShortcuts";
 import {api, ApiError} from "./api/client";
 import {ToastContainer} from "react-toastify";
@@ -112,6 +113,7 @@ export default function App() {
                 secretsFilePath={secretsFilePath}
             />
             <ShortcutCheatsheet open={showShortcuts} onClose={() => setShowShortcuts(false)}/>
+            <CommandPaletteHost onShowShortcuts={() => setShowShortcuts(true)}/>
             <ToastContainer
                 position="bottom-right"
                 autoClose={3000}
