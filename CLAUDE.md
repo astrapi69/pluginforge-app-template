@@ -73,8 +73,14 @@ make test-changed         # Test Impact Analysis: only tests affected vs the bas
 make test-coverage        # opt-in coverage run
 make test-backend         # backend only
 make test-frontend        # Vitest
+make lint / lint-fix      # ESLint on frontend/src
+make check-file-sizes     # cohesion gate (file size, .filesize-baseline)
+make check-complexity-gate         # complexity ratchet (radon + eslint, .complexity-baseline)
+make check-directory-size-gate     # god-folder ratchet (.dirsize-baseline)
+make verify-docs          # docs drift gate (patterns index + rules refs)
 make check-security       # blocking HIGH/CRITICAL dependency gate (pip-audit + npm audit)
 make security-backend     # warn-only sweep (pip-audit + bandit)
+make sync-i18n / sync-i18n-check   # backend YAML i18n -> bundled frontend JSON (+ drift gate)
 make sync-versions        # propagate the canonical version to all subsystems
 make release-prepare VERSION=x.y.z   # gitflow: cut release/x.y.z from develop
 make release-finish  VERSION=x.y.z   # gitflow: merge to main (tag) + back to develop
