@@ -2,11 +2,16 @@
 
 > Backported from adaptive-learner. Template-neutral; adapt the names to your app.
 
-**Status in this template:** the **cohesion (file-size) gate ships** -
-`scripts/check-file-sizes.sh` + `make check-file-sizes`, with a shrink-only
-`.filesize-baseline` (existing god-files frozen) + a `.filesize-whitelist`
-(deliberately-large files). The **complexity (radon/eslint) gate** and the
-god-folder watcher are still documented-only - add them as below.
+**Status in this template:** the **cohesion (file-size) gate** and the
+**complexity ratchet gate (Python/radon)** both ship -
+`scripts/check-file-sizes.sh` + `scripts/check-complexity.sh` (+
+`radon_warn.py` / `complexity_gate.py`), with `make check-file-sizes` /
+`check-complexity` / `check-complexity-gate` / `check-complexity-gate-update`
+and shrink-only `.filesize-baseline` + `.complexity-baseline` (plus a
+`.filesize-whitelist`). radon is a backend dev-dependency. The **TypeScript
+(eslint) half of the complexity gate degrades gracefully** and is inactive
+until the template has an ESLint flat config (`eslint.config.js`); the
+**god-folder watcher** is still documented-only - add it as below.
 
 ---
 
