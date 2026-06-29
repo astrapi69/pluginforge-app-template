@@ -8,10 +8,14 @@
 `radon_warn.py` / `complexity_gate.py`), with `make check-file-sizes` /
 `check-complexity` / `check-complexity-gate` / `check-complexity-gate-update`
 and shrink-only `.filesize-baseline` + `.complexity-baseline` (plus a
-`.filesize-whitelist`). radon is a backend dev-dependency. The **TypeScript
-(eslint) half of the complexity gate degrades gracefully** and is inactive
-until the template has an ESLint flat config (`eslint.config.js`); the
-**god-folder watcher** is still documented-only - add it as below.
+`.filesize-whitelist`). radon is a backend dev-dependency. The **god-folder
+watcher** also ships - `scripts/check-directory-size.sh` + `make
+check-directory-size` / `check-directory-size-gate` with a shrink-only
+`.dirsize-baseline`. The **TypeScript (eslint) half of the complexity gate is
+now active** too: `frontend/eslint.config.js` ships, so `check-complexity`
+lints `frontend/src` and `.complexity-baseline` grandfathers the existing TS
+cc>20 offenders alongside the Python ones. All three ratchet watchers (plus
+both complexity languages) are wired.
 
 ---
 
