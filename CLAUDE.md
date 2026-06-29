@@ -26,11 +26,18 @@ Detailed rules live in `.claude/rules/`. They generalise patterns learned in `ad
 - `coding-standards.md` — naming, function design, tests, dependencies
 
 **On demand** (read for specific tasks):
+- `tdd.md` — Test-Driven Development workflow (Red-Green-Refactor, four tests per feature/fix)
 - `code-hygiene.md` — linting, pre-commit, error handling architecture, API conventions
 - `lessons-learned.md` — known pitfalls (carried over; prune as you customize)
 - `quality-checks.md` — test strategy, mutmut/Stryker, pre-commit checklists
+- `reusability.md` — props-driven reusable code + the Language -> Framework -> Library -> Self hierarchy
+- `vibe-coding.md` — short per-task rules + fixed priority order + release-freeze
 - `ai-workflow.md` — order for features/plugins, prohibitions, docs protocol
 - `release-workflow.md` — release process (triggered by "release new version")
+
+Larger cross-cutting designs (dual storage, release automation, complexity
+ratchets, Test Impact Analysis, design tokens, security scanning, ...) are
+documented as opt-in patterns under [`docs/patterns/`](docs/patterns/).
 
 On a conflict between CLAUDE.md and the rules, the rules win.
 
@@ -56,9 +63,16 @@ make install              # Poetry + npm + plugins
 make dev                  # backend (8000) + frontend (5173) in parallel
 make dev-bg / dev-down    # background mode
 make test                 # backend + frontend, no coverage
+make test-fast            # PR-mirror gate: ruff+mypy+pytest, tsc+vitest (no plugins)
+make test-changed         # Test Impact Analysis: only tests affected vs the base ref
 make test-coverage        # opt-in coverage run
 make test-backend         # backend only
 make test-frontend        # Vitest
+make check-security       # blocking HIGH/CRITICAL dependency gate (pip-audit + npm audit)
+make security-backend     # warn-only sweep (pip-audit + bandit)
+make sync-versions        # propagate the canonical version to all subsystems
+make release-prepare VERSION=x.y.z   # gitflow: cut release/x.y.z from develop
+make release-finish  VERSION=x.y.z   # gitflow: merge to main (tag) + back to develop
 make prod                 # Docker Compose
 make prod-down            # stop Docker
 make clean                # remove build artifacts
