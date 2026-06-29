@@ -2,7 +2,7 @@
 
 > Backported from adaptive-learner. Template-neutral; adapt the names to your app.
 
-**Status in this template:** the single-source propagation machinery (`scripts/sync_versions.py`, `make sync-versions` / `sync-versions-dry` / `sync-versions-check`, `scripts/verify_version_pins.sh`) and the CI enforcement workflow (`.github/workflows/release-gate.yml`) are present. Explicit `release-test` and `release-tag` Makefile targets are not yet wired; the equivalent steps live as a manual checklist in `.claude/rules/release-workflow.md` Steps 4-7.
+**Status in this template:** the single-source propagation machinery (`scripts/sync_versions.py`, `make sync-versions` / `sync-versions-dry` / `sync-versions-check`, `scripts/verify_version_pins.sh`) and the CI enforcement workflow (`.github/workflows/release-gate.yml`) are present. The gitflow `release-prepare` / `release-finish` / `release-publish` Makefile targets now ship (they assume a `develop` branch — create one before use). The aggregate `release-test` gate is still left as a manual checklist in `.claude/rules/release-workflow.md` Steps 4-7; the skeleton below shows how to wire it.
 
 ---
 
