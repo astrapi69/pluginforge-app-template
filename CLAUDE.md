@@ -44,7 +44,7 @@ On a conflict between CLAUDE.md and the rules, the rules win.
 ## Tech stack
 
 - **Backend:** Python 3.11+, FastAPI, SQLAlchemy 2.0, SQLite, Pydantic v2, Poetry
-- **Frontend:** React 18+, TypeScript (strict), Vite, Radix UI, @dnd-kit, Lucide, react-toastify
+- **Frontend:** React 19, TypeScript 6 (strict), Vite 8, Vitest 4, Radix UI, @dnd-kit, Lucide, react-toastify
 - **Plugins:** pluginforge ^0.10.0 (PyPI), entry points under group `myapp.plugins`. Host passes `app_id="myapp"` + `app_version`, so plugins must declare `target_application = "myapp"` or they are rejected with `missing_target_application`. The user-overlay layer is applied via `config_overlay.refresh_manager_overlay(manager)` which wraps PluginForge v0.10.0's `merge_app_config()` public API.
 - **Launcher:** PyInstaller-based cross-OS desktop launcher (`launcher/`)
 - **Testing:** pytest, Vitest, Playwright, mutmut, Stryker
