@@ -8,7 +8,13 @@
 import {BookOpen, Code2, ExternalLink, Scale} from "lucide-react";
 import {useI18n} from "../../hooks/useI18n";
 import VersionSection from "./VersionSection";
+import ShareAppSection from "./ShareAppSection";
+import UpdateCheckControl from "../UpdateCheckControl";
 import styles from "./About.module.css";
+
+// Replace with your app's GitHub repo (used by the update check).
+const REPO_OWNER = "astrapi69";
+const REPO_NAME = "pluginforge-app-template";
 
 interface AppLink {
   key: string;
@@ -74,6 +80,13 @@ export default function AboutTab() {
           })}
         </ul>
       </section>
+
+      <section className={styles.section} data-testid="about-updates">
+        <h3 className={styles.heading}>{t("ui.about.updates_title", "Updates")}</h3>
+        <UpdateCheckControl owner={REPO_OWNER} repo={REPO_NAME} />
+      </section>
+
+      <ShareAppSection />
 
       <section className={styles.section} data-testid="about-credits">
         <h3 className={styles.heading}>{t("ui.about.credits_title", "Credits")}</h3>
