@@ -11,6 +11,7 @@ import {useTheme} from "./hooks/useTheme";
 import {I18nProvider} from "./hooks/useI18n";
 import {DialogProvider} from "./components/AppDialog";
 import OfflineBanner from "./components/OfflineBanner";
+import ErrorBoundary from "./components/ErrorBoundary";
 import UpdatePrompt from "./components/pwa/UpdatePrompt";
 import InstallPrompt from "./components/pwa/InstallPrompt";
 import SkipToContent from "./components/SkipToContent";
@@ -84,6 +85,7 @@ export default function App() {
             <OfflineBanner />
             <UpdatePrompt />
             <InstallPrompt />
+            <ErrorBoundary>
             <Routes>
                 <Route path="/" element={<Dashboard/>}/>
                 <Route path="/book/:bookId" element={<BookEditor/>}/>
@@ -93,6 +95,7 @@ export default function App() {
                 <Route path="/help" element={<Help/>}/>
                 <Route path="/get-started" element={<GetStarted/>}/>
             </Routes>
+            </ErrorBoundary>
             <EventRecorderSetup/>
             <BulkAiFillDock/>
             <HelpPanel/>
