@@ -1498,7 +1498,6 @@ function AudiobookDownloads({bookId, bookChapters}: {bookId: string; bookChapter
                                                 <Trash2 size={12}/>
                                             </button>
                                         </div>
-                                        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                                         <audio controls src={p.url} style={{width: "100%", height: 28}} preload="none"/>
                                     </li>
                                 ))}

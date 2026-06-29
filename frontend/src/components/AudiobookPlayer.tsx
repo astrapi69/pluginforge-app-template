@@ -223,7 +223,6 @@ export default function AudiobookPlayer({chapters, currentIndex, bookTitle, onCh
       role="region"
       aria-label={t("ui.audiobook.player.label", "Audiobook-Player")}
     >
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} preload="auto"/>
 
       {/* Progress bar - full width at the top of the bar */}

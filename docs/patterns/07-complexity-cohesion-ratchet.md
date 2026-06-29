@@ -11,9 +11,11 @@ and shrink-only `.filesize-baseline` + `.complexity-baseline` (plus a
 `.filesize-whitelist`). radon is a backend dev-dependency. The **god-folder
 watcher** also ships - `scripts/check-directory-size.sh` + `make
 check-directory-size` / `check-directory-size-gate` with a shrink-only
-`.dirsize-baseline`. The only remaining gap is the **TypeScript (eslint) half
-of the complexity gate**, which degrades gracefully and stays inactive until
-the template has an ESLint flat config (`eslint.config.js`).
+`.dirsize-baseline`. The **TypeScript (eslint) half of the complexity gate is
+now active** too: `frontend/eslint.config.js` ships, so `check-complexity`
+lints `frontend/src` and `.complexity-baseline` grandfathers the existing TS
+cc>20 offenders alongside the Python ones. All three ratchet watchers (plus
+both complexity languages) are wired.
 
 ---
 

@@ -15,6 +15,7 @@
        release-prepare release-finish release-publish \
        check-file-sizes check-complexity check-complexity-gate check-complexity-gate-update \
        check-directory-size check-directory-size-gate \
+       lint lint-fix \
        clean prod prod-down prod-logs help
 
 # --- Development ---
@@ -262,6 +263,14 @@ check-types-frontend: ## Run tsc --noEmit on frontend
 	@echo ""
 	@echo "=== TypeScript Frontend ==="
 	cd frontend && npx tsc --noEmit
+
+lint: ## Run ESLint on the frontend (errors block; warnings are informational)
+	@echo ""
+	@echo "=== ESLint Frontend ==="
+	cd frontend && npm run lint
+
+lint-fix: ## ESLint --fix on the frontend
+	cd frontend && npm run lint:fix
 
 # --- Cohesion + complexity gates (docs/patterns/07-complexity-cohesion-ratchet.md) ---
 
