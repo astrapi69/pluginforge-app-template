@@ -1,0 +1,10 @@
+# Cohesion whitelist (docs/patterns/07).
+# Deliberately large, single-concern files that are cohesive by design and
+# should NEVER count as an error (unlike the .filesize-baseline ratchet, these
+# are permanent, not "split me later"). One path per line; # = comment.
+#
+# Typical entries: a single-file domain model / schema module, a generated
+# file, a large static-data table. Start empty; add with a reason.
+#
+# Example:
+# backend/app/models/__init__.py   # single-file domain model (intentional)
