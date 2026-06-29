@@ -16,6 +16,7 @@ import {AuthorsDatabase} from "../components/settings/AuthorsDatabase";
 import {TopicsSettings} from "../components/settings/TopicsSettings";
 import {PluginSettings} from "../components/settings/PluginSettings";
 import {AppearanceSettings} from "../components/settings/AppearanceSettings";
+import FeatureSection from "../components/FeatureSection";
 import AboutTab from "../components/about/AboutTab";
 import styles from "./Settings.module.css";
 
@@ -212,6 +213,19 @@ export default function Settings() {
                             setSaving(false);
                         }}
                         saving={saving}
+                    />
+                    {/*
+                      * Demo of the feature-state policy (architecture.md SYNC-UI-GATE):
+                      * a section the user can see but not use here, with a localized
+                      * reason. Replace `state`/`reason` with your real gating - e.g.
+                      * derive it from {hasApiKey, mode} or @astrapi69/feature-strategy
+                      * (see .claude/prompts/feature-strategy.md). Remove if unused.
+                      */}
+                    <FeatureSection
+                        state="disabled"
+                        title={t("ui.sync.title", "Geräte-Synchronisierung")}
+                        reason={t("feature.desktop_only", "Nur mit der Desktop-App verfügbar")}
+                        testId="feature-sync-demo"
                     />
                 </Tabs.Content>
                 <Tabs.Content value="appearance">

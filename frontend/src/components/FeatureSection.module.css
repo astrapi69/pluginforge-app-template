@@ -1,0 +1,26 @@
+.section {
+    margin-bottom: 1.5rem;
+}
+
+.heading {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem;
+}
+
+.section[data-state="disabled"] .heading {
+    color: var(--text-muted);
+}
+
+.notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
